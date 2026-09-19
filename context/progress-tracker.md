@@ -17,12 +17,14 @@
 - [x] **Spec 12 Executed**: Creator Dashboard (`/dashboard`). Implemented wallet-gated creator view, `useCreatorModels` and `useCreatorEarnings` hooks, `EarningsSummary` hero card with cumulative MON royalties, `CreatorModelCard` displaying per-model downloads, royalties, and active seeders, on-chain model deactivation via `useDeactivateModel`, and zero-model upload CTA state. Clean production build and 0 lint warnings.
 - [x] **Landing Page Executed**: Full editorial landing page with sticky blur navbar (`LandingNavbar.tsx`), single-line Apfel Grotezk hero headline, established pastel secondary and mint accent colors, full-width edge-to-edge illustration (`HeroSection.tsx`), 1MB puzzle chunk architecture overview (`PuzzleFeatureSection.tsx`), 3-column centralized vs P2P comparison (`ComparisonSection.tsx`), capabilities carousel (`FeatureStreamCarousel.tsx`), interactive creator/seeder Mon split and AWS S3 cost savings calculator (`WorkflowAndCalculator.tsx`), FAQ accordion (`FaqSection.tsx`), and charcoal skyline footer (`SkylineFooter.tsx`). Built cleanly with 0 TypeScript/lint errors.
 - [x] **Spec 16 Executed**: Deployment & DevOps architecture for Vercel (Frontend) + Render (Go WebSocket backend) + Monad Testnet (Contracts). Created multi-stage Dockerfile, `render.yaml` blueprint, `frontend/vercel.json` SPA rewrite rules, and updated Go `main.go` to support `$PORT` environment variable.
+- [x] **Spec 02 Executed**: Smart contracts deployed to Monad Testnet (Chain ID 10143) via Foundry broadcast script with deployer wallet `0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90`. `ModelRegistry` deployed at `0xe2cEDee4817B11716728aed3C3d7AD0438813340` (tx: `0xfcd07827ea5ce838ceb65edaa2c9d2d8cfc5ba252ba52d50f3e020c3ce2f51d4`), `SplitPayment` deployed at `0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa` (tx: `0xfac22b8e270a2075775020a6a6f86457774bcf7d100711198ea5ed70a1b86a21`). Both verified on Sourcify/Blockvision explorer. Initial test model registered (`0xf082cc3628013d117f58e868c44fcedf3ed5716157359c17c4a210ca7c430b2f`, tx: `0x874dd5db24c3243fd57d6d4c68f33481001c74238eb771f8134205353b757282`). ABIs exported to `frontend/src/lib/abis/` and `frontend/.env` wired.
 
 ## Specs Status
 | # | Spec | Status | Priority |
 |---|------|--------|----------|
 | 00 | Product Map | ✅ Written | — |
 | 01 | Smart Contracts (Registry + SplitPayment) | ✅ Implemented & Tested (28/28 tests) | P0 |
+| 02 | Contract Deployment + ABI Export | ✅ Deployed & Verified (Monad Testnet) | P0 |
 | 03 | Frontend Scaffold + Design System | ✅ Implemented & Built | P1 |
 | 04 | Shared Types + Contract Hooks | ✅ Implemented & Typed | P1 |
 | 05 | Upload Flow | ✅ Implemented & Built | P2 |
@@ -33,7 +35,6 @@
 | 14 | Split Visualization | ✅ Implemented & Built | P5 |
 | 12 | Creator Dashboard | ✅ Implemented & Built | P6 |
 | 13 | Navigation + Polish | ⏳ Next Up | P6 |
-| 02 | Contract Deployment + ABI Export | ⏸️ Deferred to Live Integration | P7 |
 | 08 | Payment-Gated Transfer (x402 Live Wire) | ⏸️ Deferred to Live Integration | P7 |
 | 09 | Indexer Service | ⏸️ Deferred to Live Integration | P7 |
 | 15 | README, Pitch & Judge Defense | ⏳ Backlog | P8 |
@@ -54,14 +55,14 @@
 12. [ ] Phase 12: Spec 15 — README, pitch deck & judge defense doc
 
 ## Open Questions & Dependencies
-- Monad testnet faucet — need testnet MON for live on-chain deployment (Spec 02)
+- [x] Monad testnet faucet — deployed with funded wallet `0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90` (Spec 02)
 - [x] OpenZeppelin dependency for ReentrancyGuard — Approved & integrated
 - [x] IPFS Pinata integration — Added to `.env.example`
 - [x] gorilla/websocket dependency for Go signaling — Approved & integrated
 - [ ] Gas limit handling — Monad charges on gas_limit not gas used; SplitPayment contract calls need explicit tight gas limits in frontend
 - [ ] `useSendTransactionSync` — evaluate for chunk payment flow to get instant receipts
-- [ ] Contract verification — use Monad verification API (agents.devnads.com/v1/verify) when deploying in Spec 02
-- [ ] `.monskills` metadata file — create before final commit per MONSKILLS scaffold skill
+- [x] Contract verification — verified with Sourcify/Blockvision on Monad testnet (Chain ID 10143)
+- [x] `.monskills` metadata file — created with `built-with=monskills` and `chain=monad-testnet`
 
 ## Key Decisions Made
 - **Split model**: Creator-configurable via `creatorShareBps` (basis points), default 7000 (70%)
