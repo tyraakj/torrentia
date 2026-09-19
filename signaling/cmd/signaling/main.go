@@ -79,18 +79,12 @@ func main() {
 			return
 		}
 
-		uniquePeers, totalSeeders := tr.Stats()
+		_, totalSeeders := tr.Stats()
 		connectedPeers := hub.PeerCount()
-
-		// If connected peers are higher than tracker active peers, report max
-		reportedPeers := connectedPeers
-		if uniquePeers > reportedPeers {
-			reportedPeers = uniquePeers
-		}
 
 		resp := HealthResponse{
 			Status:    "ok",
-			Peers:     reportedPeers,
+			Peers:     connectedPeers,
 			Seeders:   totalSeeders,
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
 		}

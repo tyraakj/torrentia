@@ -142,27 +142,9 @@ func (p *Peer) WritePump() {
 				return
 			}
 
-			w, err := p.conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			if _, err := w.Write(message); err != nil {
-				return
-			}
-
-			// Flush any additional queued messages into this frame
-			n := len(p.send)
-			for i := 0; i < n; i++ {
-				nextMsg := <-p.send
-				if _, err := w.Write([]byte{'\n'}); err != nil {
-					return
-				}
-				if _, err := w.Write(nextMsg); err != nil {
-					return
-				}
-			}
-
-			if err := w.Close(); err != nil {
+			// Keep each queued JSON message as its own WebSocket frame.
+			// The browser client parses one JSON object per message event.
+			if err := p.conn.WriteMessage(websocket.TextMessage, message); err != nil {
 				return
 			}
 

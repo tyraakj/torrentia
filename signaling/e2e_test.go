@@ -129,7 +129,10 @@ func TestE2E_FullWebRTCSignalingAndTrackingFlow(t *testing.T) {
 	registerPeer(t, connBob, "peer-bob", "0x2222222222222222222222222222222222222222")
 
 	// Verify health check reflects 2 connected peers
-	resp2, _ := http.Get(server.URL + "/health")
+	resp2, err := http.Get(server.URL + "/health")
+	if err != nil {
+		t.Fatalf("second health check failed: %v", err)
+	}
 	defer resp2.Body.Close()
 	var health2 map[string]interface{}
 	_ = json.NewDecoder(resp2.Body).Decode(&health2)
