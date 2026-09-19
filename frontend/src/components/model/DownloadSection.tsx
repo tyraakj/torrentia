@@ -469,7 +469,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
               </span>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-              Make sure at least one peer is actively seeding this model on the Go signaling server (`ws://localhost:8081/ws`).
+              Make sure at least one peer is actively seeding this model on the configured Go signaling server.
             </p>
             <Button
               variant="secondary"
