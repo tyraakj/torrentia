@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: torrentia-signaling
+    env: docker
+    dockerfilePath: signaling/Dockerfile
+    dockerContext: signaling
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
