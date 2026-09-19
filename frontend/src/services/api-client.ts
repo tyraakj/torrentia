@@ -4,9 +4,18 @@
  * Adheres to Spec 10 & Spec 09 with standardized /v1 routes.
  */
 
+import { createPublicClient, http } from 'viem'
 import type { IndexedModel, PaymentSplitEvent } from '../lib/types'
+import { MODEL_REGISTRY_ABI } from '../lib/abis/ModelRegistryABI'
+import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
+import { monadTestnet } from '../lib/wagmi'
 
 const INDEXER_BASE_URL = import.meta.env.VITE_INDEXER_URL || 'http://localhost:8082'
+
+const chainClient = createPublicClient({
+  chain: monadTestnet,
+  transport: http(),
+})
 
 export interface SwarmStats {
   totalModels: number
@@ -170,7 +179,43 @@ export async function fetchModels(params?: {
 export async function fetchModel(modelId: string): Promise<IndexedModel | null> {
   const all = await fetchModels()
   const found = all.find((m) => m.modelId.toLowerCase() === modelId.toLowerCase())
-  return found || null
+  if (found) return found
+
+  // Direct chain lookup keeps a newly registered model openable before the
+  // optional indexer has been deployed or indexed the registration event.
+  if (!/^0x[0-9a-fA-F]{64}$/.test(modelId)) return null
+
+  try {
+    const onChainModel = await chainClient.readContract({
+      address: MODEL_REGISTRY_ADDRESS,
+      abi: MODEL_REGISTRY_ABI,
+      functionName: 'getModel',
+      args: [modelId as `0x${string}`],
+    })
+
+    if (onChainModel.originalCreator === '0x0000000000000000000000000000000000000000') {
+      return null
+    }
+
+    return {
+      modelId,
+      originalCreator: onChainModel.originalCreator,
+      metadataURI: onChainModel.metadataURI,
+      chunkPrice: onChainModel.chunkPrice,
+      creatorShareBps: Number(onChainModel.creatorShareBps),
+      chunkCount: Number(onChainModel.chunkCount),
+      active: onChainModel.active,
+      seederCount: 0,
+      totalDownloads: 0,
+      registeredAt: 0,
+      modelName: 'On-chain registered model',
+      category: 'Vision',
+      format: 'ONNX',
+      totalSize: Number(onChainModel.chunkCount) * 1048576,
+    }
+  } catch {
+    return null
+  }
 }
 
 /**

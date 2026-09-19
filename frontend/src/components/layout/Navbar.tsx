@@ -12,7 +12,7 @@ export const Navbar: React.FC = () => {
   const { disconnect } = useDisconnect()
 
   const navLinks = [
-    { to: '/model/llama-3-8b', label: 'Swarm Stream', icon: <Layers size={15} /> },
+    { to: '/marketplace', label: 'Swarm Stream', icon: <Layers size={15} /> },
     { to: '/upload', label: 'Upload Model', icon: <UploadCloud size={15} /> },
     { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
   ]
