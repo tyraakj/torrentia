@@ -4,6 +4,8 @@
 
 Torrentia distributes AI model weights directly between browsers. Creators upload a model, Torrentia chunks and hashes it, pins a lightweight manifest to IPFS, and registers the model on Monad. Downloaders discover peers through a Go signaling tracker, receive chunks over WebRTC, and pay the serving peer per chunk. `SplitPayment.sol` atomically sends the creator royalty and seeder incentive in the same transaction.
 
+**Project category:** decentralized AI infrastructure / DePIN and Web3 AI marketplace. Torrentia uses DeFi-style atomic revenue splitting for peer incentives, but it is not primarily a DeFi protocol.
+
 [![Monad Testnet](https://img.shields.io/badge/Monad-Testnet-836EF9)](https://testnet.monadscan.com)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636)](contracts/)
 [![Go](https://img.shields.io/badge/Go-1.27-00ADD8)](signaling/)
@@ -13,7 +15,7 @@ Torrentia distributes AI model weights directly between browsers. Creators uploa
 **Live demo:** configure the Vercel deployment URL here after publishing it.  
 **Demo video:** add a Loom or YouTube URL here when recorded.
 
-**Current deployment state:** Monad contracts are deployed and verified on Testnet. The Render signaling URL and Vercel frontend URL are the remaining production values to add here.
+**Current deployment state:** Monad contracts are deployed on Testnet. The Go signaling service is deployed at `wss://torrentia-signaling.onrender.com/ws`; the frontend is configured for Vercel deployment with the production signaling URL and contract addresses.
 
 ## Architecture
 
@@ -48,6 +50,10 @@ flowchart LR
 
 8. **Verify and stream.** The seeder verifies the transaction receipt and `PaymentSplit` event on-chain. Only then does it stream the chunk. The downloader verifies the SHA-256 hash and stores the chunk in IndexedDB.
 
+### Wallet-scoped browser storage
+
+IndexedDB chunks are keyed by both the model ID and connected wallet address. This prevents two wallets using the same browser profile from treating one another's cached chunks as already downloaded. A downloader therefore pays for missing chunks even when another wallet previously cached the same model locally.
+
 ## Smart Contracts and Monad
 
 Both contracts are deployed on Monad Testnet, chain ID `10143`.
@@ -80,11 +86,11 @@ The Foundry suite contains **28 passing tests** covering registration validation
 | Smart contracts | ✅ Deployed and tested | 28 Foundry tests pass; contracts are live on Monad Testnet. |
 | Go signaling and tracker | ✅ Implemented and tested | Thread-safe tracker, heartbeat eviction, WebSocket relay, graceful shutdown. |
 | Browser WebRTC transfer | ✅ Implemented | Data-channel chunk streaming, backpressure, IndexedDB storage, hash checks. |
-| On-chain payment flow | ✅ Wired | Real `payForChunk` calls, receipt confirmation, and `PaymentSplit` verification; live two-browser validation remains. |
+| On-chain payment flow | ✅ Wired | Real `payForChunk` calls, receipt confirmation, `PaymentSplit` verification, and Monadscan transaction links. |
 | Upload pipeline | ✅ Implemented | Client chunking, SHA-256 hashing, manifest pinning, and registration UI. |
 | Split visualization | ✅ Implemented | Live creator/seeder visualization and Monadscan transaction links. |
-| Indexer | ⏳ Optional MVP work | The frontend currently supports fallback/demo data; a Node/TS event indexer is the next marketplace infrastructure step. |
-| Production hosting | ⏳ Deployment pending | Go is configured for Render and the SPA for Vercel; production URLs and environment variables must be supplied. |
+| Model discovery | ✅ MVP-ready | The frontend reads `ModelRegistered` events directly from Monad in bounded RPC ranges; the Node/TS indexer remains optional. |
+| Production hosting | ✅ Configured | Signaling runs on Render and the SPA is configured for Vercel. Live environment variables must be set in the hosting dashboards. |
 
 ## Repository Layout
 
@@ -144,18 +150,21 @@ See the root [`.env.example`](.env.example) for the complete deployment variable
 VITE_MODEL_REGISTRY_ADDRESS=0xe2cEDee4817B11716728aed3C3d7AD0438813340
 VITE_SPLIT_PAYMENT_ADDRESS=0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa
 VITE_SIGNALING_URL=ws://localhost:8081/ws
+VITE_MODEL_REGISTRY_DEPLOYMENT_BLOCK=0x3ce5c19
 VITE_PINATA_JWT=your_pinata_jwt
 ```
 
 ### Two-browser demo
 
-1. Start the Go signaling server and frontend.
+1. Start the Go signaling server and frontend, or open the deployed Vercel frontend configured with `wss://torrentia-signaling.onrender.com/ws`.
 2. In Browser A, connect a wallet, upload a small model, and start seeding it.
-3. In Browser B, open the model page and connect a funded Monad Testnet wallet.
+3. In Browser B or a separate browser profile, open the model page and connect a funded Monad Testnet wallet. Wallet-scoped storage means simply switching wallets in the same profile is also safe after the wallet-cache update.
 4. Start the download.
 5. Approve the per-chunk MON payment.
 6. Open the Monadscan transaction link and show the atomic creator/seeder split.
 7. Browser B verifies and reassembles the downloaded file, then can start seeding it.
+
+The upload and payment interfaces expose direct Monadscan links for transaction verification. Use a small model with 3–5 chunks for a reliable presentation; each missing chunk requires a separate wallet signature.
 
 For a reliable presentation, use a small model with 3–5 chunks. The registered demo model is useful for verifying the contract event, but its placeholder IPFS URI does not contain browser-seedable model chunks.
 
