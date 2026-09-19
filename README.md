@@ -13,6 +13,8 @@ Torrentia distributes AI model weights directly between browsers. Creators uploa
 **Live demo:** configure the Vercel deployment URL here after publishing it.  
 **Demo video:** add a Loom or YouTube URL here when recorded.
 
+**Current deployment state:** Monad contracts are deployed and verified on Testnet. The Render signaling URL and Vercel frontend URL are the remaining production values to add here.
+
 ## Architecture
 
 ```mermaid
@@ -65,7 +67,7 @@ Deployment transactions:
 
 Monad-specific considerations:
 
-- Contract calls use explicit, tight gas limits because Monad charges based on the gas limit.
+- Production payment calls should use explicit, tight gas limits because Monad charges based on the gas limit.
 - Fast confirmation makes per-chunk native MON settlement practical for a live streaming demo.
 - The creator share is set at registration and the chunk price is uniform across all seeders.
 
@@ -78,11 +80,11 @@ The Foundry suite contains **28 passing tests** covering registration validation
 | Smart contracts | ✅ Deployed and tested | 28 Foundry tests pass; contracts are live on Monad Testnet. |
 | Go signaling and tracker | ✅ Implemented and tested | Thread-safe tracker, heartbeat eviction, WebSocket relay, graceful shutdown. |
 | Browser WebRTC transfer | ✅ Implemented | Data-channel chunk streaming, backpressure, IndexedDB storage, hash checks. |
-| On-chain payment flow | ✅ Wired | Real `payForChunk` calls, receipt confirmation, and `PaymentSplit` verification. |
+| On-chain payment flow | ✅ Wired | Real `payForChunk` calls, receipt confirmation, and `PaymentSplit` verification; live two-browser validation remains. |
 | Upload pipeline | ✅ Implemented | Client chunking, SHA-256 hashing, manifest pinning, and registration UI. |
 | Split visualization | ✅ Implemented | Live creator/seeder visualization and Monadscan transaction links. |
 | Indexer | ⏳ Optional MVP work | The frontend currently supports fallback/demo data; a Node/TS event indexer is the next marketplace infrastructure step. |
-| Production hosting | ⏳ Deployment configuration ready | Go is configured for Render and the SPA for Vercel; production URLs and environment variables must be supplied. |
+| Production hosting | ⏳ Deployment pending | Go is configured for Render and the SPA for Vercel; production URLs and environment variables must be supplied. |
 
 ## Repository Layout
 
@@ -119,6 +121,7 @@ The deployed addresses are recorded in [`contracts/deployments/monad-testnet.jso
 ```bash
 cd signaling
 go test ./...
+go vet ./...
 go run ./cmd/signaling --port 8081
 ```
 
