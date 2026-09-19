@@ -1,0 +1,1509 @@
+/* ==========================================================================
+   Torrentia Landing Page Styles — Apfel Grotezk & Exact Hero Palette
+   Exact Sampled Canvas: #F9FAF5 | Full-Width Uncut Hero | Yellow, Pink, Green Accents
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Apfel Grotezk Direct Self-Hosted Font Definitions */
+@font-face {
+  font-family: 'Apfel Grotezk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/apfel-grotezk-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/apfel-grotezk-latin-700-normal.woff2') format('woff2');
+}
+
+:root {
+  /* Exact Sampled Background from Hero Image */
+  --puzzle-bg: #F9FAF5;
+  --puzzle-bg-alt: #F3F5EE;
+  --puzzle-bg-card: #FFFFFF;
+  --puzzle-border: rgba(28, 25, 23, 0.09);
+  --puzzle-border-subtle: rgba(28, 25, 23, 0.05);
+
+  /* Primary Typography: Warm Deep Charcoal */
+  --puzzle-text-primary: #181615;
+  --puzzle-text-secondary: #57534E;
+  --puzzle-text-muted: #8C857E;
+
+  /* Primary Action Button: Warm Deep Charcoal */
+  --puzzle-charcoal: #181615;
+  --puzzle-charcoal-hover: #292523;
+
+  /* Accent 1: Hero Illustration Pastel Yellow */
+  --puzzle-yellow-bg: #FCF9E0;
+  --puzzle-yellow-border: #F3E879;
+  --puzzle-yellow-accent: #E5D545;
+  --puzzle-yellow-text: #736808;
+
+  /* Accent 2: Hero Illustration Pastel Pink / Coral */
+  --puzzle-pink-bg: #FDF1F2;
+  --puzzle-pink-border: #F6AAB0;
+  --puzzle-pink-accent: #E87A83;
+  --puzzle-pink-text: #91333B;
+
+  /* Accent 3: Hero Illustration Pastel Mint Green */
+  --puzzle-green-bg: #EBF7F4;
+  --puzzle-green-border: #9AE2CE;
+  --puzzle-green-accent: #47BFA1;
+  --puzzle-green-text: #1B6E57;
+}
+
+.torrentia-landing {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--puzzle-text-primary);
+  background-color: var(--puzzle-bg);
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
+/* Typography Overrides */
+.font-apfel {
+  font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* ==========================================
+   1. HERO SECTION: FITS IN ONE BREAKPOINT
+   ========================================== */
+.hero-atmosphere-stacked {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  max-height: 1080px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 6.25rem;
+  padding-bottom: 0;
+  background-color: var(--puzzle-bg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Upper Half Content */
+.hero-upper-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 960px;
+  width: 100%;
+  padding: 0.5rem 1.5rem 0.25rem 1.5rem;
+  flex-shrink: 0;
+}
+
+.hero-headline {
+  font-family: 'Apfel Grotezk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: clamp(2rem, 3.8vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--puzzle-text-primary);
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  display: block;
+}
+
+.hero-subtitle {
+  font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+  line-height: 1.45;
+  color: var(--puzzle-text-secondary);
+  max-width: 620px;
+  margin-bottom: 0.85rem;
+  font-weight: 500;
+}
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.btn-hero-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.65rem;
+  border-radius: 9999px;
+  background: var(--puzzle-charcoal);
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(24, 22, 21, 0.16);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+}
+
+.btn-hero-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(24, 22, 21, 0.25);
+  background: var(--puzzle-charcoal-hover);
+}
+
+/* Secondary Button using established Pink/Coral Accent & Mint Indicator */
+.btn-hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 42px;
+  padding: 0 1.5rem;
+  border-radius: 9999px;
+  background: var(--puzzle-pink-bg);
+  border: 1.5px solid var(--puzzle-pink-border);
+  color: var(--puzzle-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(246, 170, 176, 0.2);
+}
+
+.btn-hero-secondary:hover {
+  background: var(--puzzle-pink-border);
+  color: var(--puzzle-text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(246, 170, 176, 0.35);
+}
+
+.btn-accent-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--puzzle-green-accent);
+  box-shadow: 0 0 6px rgba(71, 191, 161, 0.6);
+  display: inline-block;
+}
+
+/* Lower Half: Full Width Image that fits perfectly in breakpoint */
+.hero-fullwidth-image-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: var(--puzzle-bg);
+  overflow: hidden;
+  margin-top: 0;
+}
+
+.hero-fullwidth-img {
+  width: 100%;
+  min-width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 8%;
+}
+
+/* ==========================================
+   2. MINIMALIST TOP NAVBAR (TRUE GLASSMORPHY)
+   ========================================== */
+.landing-navbar-wrapper {
+  position: fixed;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  padding: 0 1.5rem;
+  pointer-events: none;
+}
+
+.landing-navbar-pill {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1080px;
+  height: 52px;
+  padding: 0 1.25rem;
+  background: rgba(249, 250, 245, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 8px 32px rgba(24, 22, 21, 0.05),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px 0 rgba(24, 22, 21, 0.02);
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-navbar-pill.navbar-scrolled {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 12px 36px rgba(24, 22, 21, 0.09),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 1);
+}
+
+.landing-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-decoration: none;
+  color: var(--puzzle-text-primary);
+}
+
+.landing-nav-logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--puzzle-charcoal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--puzzle-yellow-accent);
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.2);
+}
+
+.landing-nav-logo-text {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: var(--puzzle-text-primary);
+}
+
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.landing-nav-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--puzzle-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.landing-nav-link:hover {
+  color: var(--puzzle-charcoal);
+}
+
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-nav-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 1.25rem;
+  border-radius: 9999px;
+  background: var(--puzzle-charcoal);
+  color: #ffffff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.2);
+}
+
+.btn-nav-primary:hover {
+  background: var(--puzzle-charcoal-hover);
+  transform: translateY(-1px);
+}
+
+/* ==========================================
+   3. PUZZLE CHUNK FEATURE SECTION
+   ========================================== */
+.puzzle-feature-section {
+  padding: 6rem 1.5rem;
+  background-color: var(--puzzle-bg);
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--puzzle-border-subtle);
+  border-bottom: 1px solid var(--puzzle-border-subtle);
+}
+
+.puzzle-feature-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  max-width: 1120px;
+  width: 100%;
+}
+
+.puzzle-feature-image-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(28, 25, 23, 0.08);
+  border: 1px solid var(--puzzle-border);
+  background: #ffffff;
+}
+
+.puzzle-feature-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.puzzle-feature-image-card:hover .puzzle-feature-img {
+  transform: scale(1.025);
+}
+
+.puzzle-feature-badge-float {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  background: rgba(24, 22, 21, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 0.75rem 1.1rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.puzzle-feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.section-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--puzzle-pink-text);
+  margin-bottom: 0.5rem;
+}
+
+.section-heading-large {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif !important;
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--puzzle-text-primary);
+  margin-bottom: 1rem;
+}
+
+.puzzle-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.puzzle-step-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ==========================================
+   4. COMPARISON SECTION
+   ========================================== */
+.comparison-section {
+  padding: 6rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background-color: var(--puzzle-bg);
+}
+
+.section-lead {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--puzzle-text-secondary);
+  max-width: 680px;
+  margin-bottom: 3.5rem;
+}
+
+.comparison-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1120px;
+  margin-bottom: 2.5rem;
+}
+
+.comparison-card {
+  background: var(--puzzle-bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--puzzle-border);
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.04);
+  padding: 2.25rem 1.85rem;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.comparison-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(28, 25, 23, 0.08);
+  border-color: var(--puzzle-charcoal);
+}
+
+.comparison-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: fit-content;
+  margin-bottom: 1.25rem;
+}
+
+.comparison-card-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--puzzle-text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.comparison-card-desc {
+  font-size: 0.90625rem;
+  line-height: 1.55;
+  color: var(--puzzle-text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.comparison-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  list-style: none;
+  padding: 0;
+  margin-top: auto;
+}
+
+.comparison-card-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: var(--puzzle-text-primary);
+  line-height: 1.5;
+}
+
+/* ==========================================
+   5. "BUILT DIFFERENT." CAROUSEL
+   ========================================== */
+.carousel-section {
+  padding: 5.5rem 1.5rem;
+  background-color: var(--puzzle-bg-alt);
+  overflow: hidden;
+  position: relative;
+  border-top: 1px solid var(--puzzle-border-subtle);
+  border-bottom: 1px solid var(--puzzle-border-subtle);
+}
+
+.carousel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto 2.25rem auto;
+}
+
+.carousel-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.carousel-main-heading {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--puzzle-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.carousel-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.carousel-arrow-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--puzzle-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--puzzle-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.carousel-arrow-btn:hover {
+  background: var(--puzzle-charcoal);
+  color: #ffffff;
+  border-color: var(--puzzle-charcoal);
+}
+
+.carousel-cards-scroll-container {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 2rem;
+  padding-left: max(1.5rem, calc((100vw - 1120px) / 2));
+  padding-right: max(1.5rem, calc((100vw - 1120px) / 2));
+  scrollbar-width: none;
+}
+
+.carousel-cards-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.feature-stream-card {
+  flex: 0 0 320px;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+}
+
+.stream-card-visual {
+  width: 100%;
+  height: 290px;
+  border-radius: 22px;
+  background-image: url('/feature-card-bg.png');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 6px 20px rgba(28, 25, 23, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-stream-card:hover .stream-card-visual {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.09);
+  border-color: rgba(28, 25, 23, 0.15);
+}
+
+.stream-card-caption {
+  margin-top: 1.1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #57534e;
+}
+
+.stream-card-bold {
+  font-weight: 700;
+  color: #1c1917;
+  margin-right: 0.3rem;
+}
+
+/* ==========================================
+   CAROUSEL UI MOCKUPS / SVGS
+   ========================================== */
+
+/* 1. WebRTC Connection Pill */
+.stream-mock-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: #ffffff;
+  padding: 8px 8px 8px 14px;
+  border-radius: 9999px;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  max-width: 90%;
+  animation: floatPulse 3.5s ease-in-out infinite;
+}
+
+.stream-mock-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+  flex-shrink: 0;
+}
+
+.stream-mock-pill-text {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1c1917;
+  white-space: nowrap;
+}
+
+.stream-mock-pill-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: #f4f4f5;
+  color: #71717a;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.stream-mock-pill-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1c1917;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* 2. Atomic Royalty Split Card */
+.stream-mock-doc-card {
+  width: 236px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.15rem;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  animation: floatPulse 4s ease-in-out infinite 0.5s;
+}
+
+.stream-mock-doc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stream-mock-doc-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.stream-mock-doc-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6366f1;
+  background: #eef2ff;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.stream-mock-split-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.split-creator-bar {
+  background: #6366f1;
+  height: 100%;
+}
+
+.split-seeder-bar {
+  background: #10b981;
+  height: 100%;
+}
+
+.stream-mock-doc-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stream-mock-doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.stream-mock-doc-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6366f1;
+  padding-top: 0.45rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* 3. x402 Payment Code Card */
+.stream-mock-code-card {
+  width: 244px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.15rem;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  animation: floatPulse 3.8s ease-in-out infinite 0.2s;
+}
+
+.stream-mock-code-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: -0.01em;
+}
+
+.stream-mock-code-line {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: #334155;
+}
+
+.stream-mock-code-line .code-kw {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.stream-mock-highlight-wrap {
+  position: relative;
+  margin-top: 0.7rem;
+  margin-bottom: 0.2rem;
+}
+
+.stream-mock-tooltip-pill {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1c1917;
+  color: #ffffff;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.stream-mock-tooltip-pill::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px 4px 0 4px;
+  border-style: solid;
+  border-color: #1c1917 transparent transparent transparent;
+}
+
+.stream-mock-highlighted-text {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #dbeafe;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.stream-mock-code-ok {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* 4. SHA-256 Card Stack */
+.stream-mock-stack {
+  position: relative;
+  width: 236px;
+  height: 125px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: floatPulse 4.2s ease-in-out infinite 0.7s;
+}
+
+.stream-mock-stack-back {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 20px rgba(28, 25, 23, 0.06);
+}
+
+.stream-mock-stack-card-3 {
+  width: 200px;
+  height: 80px;
+  border-radius: 12px;
+  top: 0;
+  opacity: 0.5;
+}
+
+.stream-mock-stack-card-2 {
+  width: 218px;
+  height: 85px;
+  border-radius: 13px;
+  top: 9px;
+  opacity: 0.8;
+}
+
+.stream-mock-stack-front {
+  position: relative;
+  width: 236px;
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 0.95rem 1rem;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  z-index: 2;
+  margin-top: 16px;
+}
+
+.stack-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.stack-filename {
+  font-weight: 700;
+  color: #1c1917;
+  font-family: monospace;
+}
+
+.stack-size {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.stack-hash-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-family: monospace;
+}
+
+.stack-badge-verified {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+/* 5. Auto-Reseed Squircle */
+.stream-mock-squircle-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  animation: floatPulse 3.6s ease-in-out infinite 0.4s;
+}
+
+.stream-mock-squircle {
+  width: 96px;
+  height: 96px;
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stream-mock-squircle-badge {
+  background: #ffffff;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #1c1917;
+  box-shadow: 0 6px 18px rgba(28, 25, 23, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.squircle-badge-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+}
+
+/* 6. Storage Card */
+.stream-mock-storage-card {
+  width: 236px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.15rem;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: floatPulse 4.4s ease-in-out infinite 0.1s;
+}
+
+.storage-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.storage-db-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1c1917;
+}
+
+.storage-status-pill {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.storage-model-name {
+  font-size: 0.75rem;
+  color: #475569;
+  font-family: monospace;
+}
+
+.storage-progress-bar {
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.storage-progress-fill {
+  height: 100%;
+  background: #10b981;
+}
+
+.storage-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+.storage-highlight {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+/* 7. Monad Engine Card */
+.stream-mock-monad-card {
+  width: 236px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.15rem;
+  box-shadow: 0 14px 34px rgba(28, 25, 23, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  animation: floatPulse 3.9s ease-in-out infinite 0.6s;
+}
+
+.monad-card-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.05em;
+}
+
+.monad-big-stat {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1c1917;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.monad-big-stat .stat-unit {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.monad-specs-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f1f5f9;
+  font-size: 0.6875rem;
+}
+
+.monad-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.spec-label {
+  color: #94a3b8;
+}
+
+.spec-val {
+  font-weight: 700;
+  color: #1c1917;
+}
+
+@keyframes floatPulse {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+
+/* ==========================================
+   6. HOW IT WORKS & CALCULATOR
+   ========================================== */
+.workflow-section {
+  padding: 6rem 1.5rem;
+  background-color: var(--puzzle-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.workflow-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 1120px;
+  margin-bottom: 5rem;
+}
+
+.workflow-step-card {
+  background: var(--puzzle-bg-card);
+  border-radius: 18px;
+  border: 1px solid var(--puzzle-border);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(28, 25, 23, 0.03);
+  transition: all 0.2s ease;
+}
+
+.workflow-step-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(28, 25, 23, 0.06);
+}
+
+.step-number-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Calculator Component */
+.calc-container {
+  width: 100%;
+  max-width: 1040px;
+  background: var(--puzzle-bg-card);
+  border-radius: 24px;
+  border: 1px solid var(--puzzle-border);
+  box-shadow: 0 20px 50px rgba(28, 25, 23, 0.06);
+  padding: 2.75rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+.calc-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.calc-slider-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.calc-slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calc-slider-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--puzzle-text-primary);
+}
+
+.calc-slider-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--puzzle-charcoal);
+}
+
+.calc-slider-input {
+  width: 100%;
+  accent-color: var(--puzzle-charcoal);
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+  cursor: pointer;
+}
+
+.calc-results-panel {
+  background: var(--puzzle-bg-alt);
+  border-radius: 20px;
+  border: 1px solid var(--puzzle-border);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* ==========================================
+   7. FAQ ACCORDION
+   ========================================== */
+.faq-section {
+  padding: 6rem 1.5rem;
+  background-color: var(--puzzle-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.faq-accordion-container {
+  width: 100%;
+  max-width: 840px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.faq-item {
+  background: var(--puzzle-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--puzzle-border);
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.02);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.faq-question-btn {
+  width: 100%;
+  padding: 1.35rem 1.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--puzzle-text-primary);
+  cursor: pointer;
+}
+
+.faq-answer-panel {
+  padding: 0 1.65rem 1.35rem 1.65rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--puzzle-text-secondary);
+}
+
+/* ==========================================
+   8. SKYLINE FOOTER (Atmospheric Landscape)
+   ========================================== */
+.skyline-footer {
+  position: relative;
+  background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.28) 0%, rgba(10, 15, 26, 0.50) 100%), url('/feature-card-bg.png');
+  background-position: center 35%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #ffffff;
+  padding: 5.5rem 2rem 2.5rem 2rem;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 20px 40px -20px rgba(0, 0, 0, 0.2);
+}
+
+.footer-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5rem;
+}
+
+.footer-grid-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 4.5rem;
+  align-items: flex-start;
+}
+
+.footer-brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.footer-brand-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.footer-brand-desc {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 380px;
+  margin: 0;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+.footer-nav-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-col-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.footer-nav-link {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.footer-nav-link:hover {
+  color: #ffffff;
+  transform: translateX(2px);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.footer-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.footer-bottom-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-copyright {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.footer-back-to-top {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.footer-back-to-top:hover {
+  color: #ffffff;
+}
+
+
+
+/* ==========================================
+   RESPONSIVE BREAKPOINTS
+   ========================================== */
+@media (max-width: 1024px) {
+  .puzzle-feature-container {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  .comparison-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .workflow-steps-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .calc-container {
+    grid-template-columns: 1fr;
+  }
+  .footer-nav-columns {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-atmosphere-stacked {
+    height: auto;
+    min-height: 100vh;
+    padding-top: 5rem;
+    overflow: visible;
+  }
+  .hero-headline {
+    white-space: normal;
+    font-size: 2.2rem;
+  }
+  .hero-fullwidth-image-wrapper {
+    height: 320px;
+    flex: none;
+  }
+  .landing-nav-links {
+    display: none;
+  }
+  .workflow-steps-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+  }
+  .footer-top-row {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .footer-headline-box {
+    text-align: left;
+  }
+}

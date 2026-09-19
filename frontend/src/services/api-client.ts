@@ -1,0 +1,256 @@
+/**
+ * API client for querying the Torrentia Indexer service and managing
+ * the model catalog with offline-resilient fallbacks.
+ * Adheres to Spec 10 & Spec 09 with standardized /v1 routes.
+ */
+
+import type { IndexedModel, PaymentSplitEvent } from '../lib/types'
+
+const INDEXER_BASE_URL = import.meta.env.VITE_INDEXER_URL || 'http://localhost:8082'
+
+export interface SwarmStats {
+  totalModels: number
+  totalDownloads: number
+  totalVolumeMon: string
+}
+
+export const FALLBACK_MODELS: IndexedModel[] = [
+  {
+    modelId: 'llama-3-8b',
+    modelName: 'Llama-3-8B-Instruct.Q4_K_M.gguf',
+    originalCreator: '0x71C83897F43a31c552E4F9f75f928f58b0933e4b',
+    metadataURI: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi',
+    chunkPrice: 100000000000000n, // 0.0001 MON
+    creatorShareBps: 7000, // 70% Creator / 30% Seeder
+    chunkCount: 4,
+    totalSize: 4194304, // 4 MB demo partition
+    active: true,
+    seederCount: 3,
+    totalDownloads: 482,
+    registeredAt: Date.now() - 86400000 * 3,
+    category: 'NLP',
+    format: 'GGUF',
+  },
+]
+
+
+/**
+ * Reads any locally registered models from browser localStorage (e.g. from /upload flow)
+ */
+function getLocalUploadedModels(): IndexedModel[] {
+  try {
+    const raw = localStorage.getItem('torrentia_local_models')
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as Array<Record<string, unknown>>
+    return parsed.map((item) => ({
+      modelId: String(item.modelId || ''),
+      modelName: String(item.modelName || 'Custom Uploaded Model'),
+      originalCreator: String(item.originalCreator || ''),
+      metadataURI: String(item.metadataURI || ''),
+      chunkPrice: BigInt(String(item.chunkPrice || '100000000000000')),
+      creatorShareBps: Number(item.creatorShareBps || 7000),
+      chunkCount: Number(item.chunkCount || 1),
+      totalSize: Number(item.totalSize || 1048576),
+      active: true,
+      seederCount: 1, // The local browser seeds it
+      totalDownloads: 0,
+      registeredAt: Number(item.registeredAt || Date.now()),
+      category: (item.category as string) || 'Vision',
+      format: (item.format as string) || 'ONNX',
+    }))
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Save a newly registered model locally so it instantly reflects in the Marketplace.
+ */
+export function saveLocalUploadedModel(model: IndexedModel): void {
+  try {
+    const existing = getLocalUploadedModels().filter((m) => m.modelId !== model.modelId)
+    const serializable = [
+      {
+        ...model,
+        chunkPrice: model.chunkPrice.toString(),
+      },
+      ...existing.map((m) => ({ ...m, chunkPrice: m.chunkPrice.toString() })),
+    ]
+    localStorage.setItem('torrentia_local_models', JSON.stringify(serializable))
+  } catch (err) {
+    console.error('Failed to save local model to storage:', err)
+  }
+}
+
+/**
+ * Fetches all models from the indexer API with fallback catalog merge.
+ */
+export async function fetchModels(params?: {
+  search?: string
+  category?: string
+  creator?: string
+}): Promise<IndexedModel[]> {
+  let models = [...FALLBACK_MODELS]
+  const localModels = getLocalUploadedModels()
+
+  // Prepend any locally created models
+  const existingIds = new Set(localModels.map((m) => m.modelId))
+  models = [...localModels, ...models.filter((m) => !existingIds.has(m.modelId))]
+
+  // Try live indexer query if available
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 2000)
+
+    const query = new URLSearchParams()
+    if (params?.search) query.set('search', params.search)
+    if (params?.category && params.category !== 'All') query.set('category', params.category)
+    if (params?.creator) query.set('creator', params.creator)
+
+    const url = `${INDEXER_BASE_URL}/v1/models${query.toString() ? `?${query.toString()}` : ''}`
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
+
+    if (res.ok) {
+      const data = (await res.json()) as Array<{
+        modelId: string
+        originalCreator: string
+        metadataURI: string
+        chunkPrice: string
+        creatorShareBps: number
+        chunkCount: number
+        active: boolean
+        seederCount: number
+        totalDownloads: number
+        registeredAt: number
+        modelName?: string
+        category?: string
+        format?: string
+        totalSize?: number
+      }>
+
+      if (Array.isArray(data) && data.length > 0) {
+        const liveModels: IndexedModel[] = data.map((d) => ({
+          ...d,
+          chunkPrice: BigInt(d.chunkPrice),
+        }))
+        // Merge live models with local models
+        const liveIds = new Set(liveModels.map((m) => m.modelId))
+        models = [...liveModels, ...localModels.filter((m) => !liveIds.has(m.modelId))]
+      }
+    }
+  } catch {
+    // Graceful fallback to cached/sample catalog on network failure
+  }
+
+  // Apply client-side search and category filtering
+  let filtered = models
+  if (params?.category && params.category !== 'All') {
+    filtered = filtered.filter((m) => m.category?.toLowerCase() === params.category?.toLowerCase())
+  }
+
+  if (params?.search && params.search.trim()) {
+    const q = params.search.trim().toLowerCase()
+    filtered = filtered.filter(
+      (m) =>
+        m.modelName?.toLowerCase().includes(q) ||
+        m.modelId.toLowerCase().includes(q) ||
+        m.originalCreator.toLowerCase().includes(q) ||
+        m.format?.toLowerCase().includes(q) ||
+        m.category?.toLowerCase().includes(q)
+    )
+  }
+
+  return filtered
+}
+
+/**
+ * Fetches a single model by its modelId.
+ */
+export async function fetchModel(modelId: string): Promise<IndexedModel | null> {
+  const all = await fetchModels()
+  const found = all.find((m) => m.modelId.toLowerCase() === modelId.toLowerCase())
+  return found || null
+}
+
+/**
+ * Fetches platform-wide swarm metrics.
+ */
+export async function fetchStats(): Promise<SwarmStats> {
+  const models = await fetchModels()
+  const totalModels = models.length
+  const totalDownloads = models.reduce((acc, m) => acc + m.totalDownloads, 0)
+
+  // Calculate volume in MON
+  let totalVolumeWei = 0n
+  for (const m of models) {
+    totalVolumeWei += m.chunkPrice * BigInt(m.chunkCount) * BigInt(m.totalDownloads)
+  }
+
+  // Convert wei to MON formatted string
+  const totalVolumeMon = (Number(totalVolumeWei / 1000000000000000n) / 1000).toFixed(2)
+
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 1500)
+    const res = await fetch(`${INDEXER_BASE_URL}/v1/stats`, { signal: controller.signal })
+    clearTimeout(timeoutId)
+
+    if (res.ok) {
+      const data = (await res.json()) as {
+        totalModels?: number
+        totalDownloads?: number
+        totalVolumeMon?: string
+      }
+      return {
+        totalModels: data.totalModels ?? totalModels,
+        totalDownloads: data.totalDownloads ?? totalDownloads,
+        totalVolumeMon: data.totalVolumeMon ?? totalVolumeMon,
+      }
+    }
+  } catch {
+    // Fallback to locally aggregated metrics
+  }
+
+  return {
+    totalModels,
+    totalDownloads,
+    totalVolumeMon,
+  }
+}
+
+/**
+ * Fetches recent payments for a model.
+ */
+export async function fetchPayments(modelId: string): Promise<PaymentSplitEvent[]> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 1500)
+    const res = await fetch(`${INDEXER_BASE_URL}/v1/models/${modelId}/payments`, {
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+
+    if (res.ok) {
+      const data = (await res.json()) as Array<{
+        modelId: string
+        seeder: string
+        creator: string
+        seederAmount: string
+        creatorAmount: string
+        totalPaid: string
+        txHash: string
+        blockNumber: number
+      }>
+      return data.map((d) => ({
+        ...d,
+        seederAmount: BigInt(d.seederAmount),
+        creatorAmount: BigInt(d.creatorAmount),
+        totalPaid: BigInt(d.totalPaid),
+      }))
+    }
+  } catch {
+    // Fallback
+  }
+  return []
+}
