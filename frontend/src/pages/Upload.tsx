@@ -13,6 +13,7 @@ import { chunkFile, generateModelId, DEFAULT_CHUNK_SIZE } from '../services/chun
 import { storeChunk } from '../services/chunk-store'
 import { pinManifest } from '../services/ipfs'
 import { useRegisterModel } from '../hooks/use-contracts'
+import { useSeeding } from '../hooks/use-p2p'
 import { ChunkManifest, ChunkInfo } from '../lib/types'
 import { formatFileSize } from '../lib/utils'
 import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
@@ -51,6 +52,11 @@ export const Upload: React.FC = () => {
   const totalCostMon = file ? (parseFloat(chunkPriceMon || '0') * estimatedChunks).toFixed(4) : '0.0000'
   const creatorPercent = Math.round(creatorShareBps / 100)
   const seederPercent = 100 - creatorPercent
+  const { isSeeding, startSeeding, stopSeeding } = useSeeding(
+    registeredModelId || undefined,
+    address,
+    pricePerChunkWei.toString(),
+  )
 
   // Handle Wallet Connect
   const handleConnectWallet = () => {
@@ -132,7 +138,7 @@ export const Upload: React.FC = () => {
         chunkCount: chunksInfo.length,
         totalSize: file.size,
         active: true,
-        seederCount: 1, // Current browser is seeding it
+        seederCount: 0,
         totalDownloads: 0,
         registeredAt: Date.now(),
         category: file.name.toLowerCase().includes('lora') ? 'LoRA' : 'Vision',
@@ -218,7 +224,7 @@ export const Upload: React.FC = () => {
                     Uploading "{modelName}"
                   </span>
                 </div>
-                {currentStep === 4 && <Badge variant="active">Live & Seeding</Badge>}
+                {currentStep === 4 && <Badge variant={isSeeding ? 'active' : 'seeding'}>{isSeeding ? 'Live & Seeding' : 'Ready to Seed'}</Badge>}
               </CardHeader>
               <CardBody style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                 <UploadProgress
@@ -249,9 +255,23 @@ export const Upload: React.FC = () => {
                       </span>
                     </div>
                     <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                      All {chunkProgress.total} chunks have been content-hashed and stored in your browser's IndexedDB. Your browser is now seeding this model to the swarm.
+                      All {chunkProgress.total} chunks have been content-hashed and stored in your wallet-scoped browser cache. Start seeding to announce them to the swarm.
                     </p>
                     <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            if (isSeeding) stopSeeding()
+                            else await startSeeding()
+                          } catch (err) {
+                            setError(err instanceof Error ? err.message : 'Unable to start seeding.')
+                          }
+                        }}
+                      >
+                        {isSeeding ? 'Stop Seeding' : 'Start Seeding to Swarm'}
+                      </Button>
                       <Link to={`/model/${registeredModelId}`}>
                         <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
                           View Model Page
