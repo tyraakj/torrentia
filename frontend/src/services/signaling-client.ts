@@ -72,7 +72,12 @@ export class SignalingClient {
       ? crypto.randomUUID()
       : `peer-${Math.random().toString(36).substring(2, 11)}`
     this.address = address || '0x0000000000000000000000000000000000000000'
-    this.url = url || (import.meta.env.VITE_SIGNALING_URL as string) || 'ws://localhost:8081/ws'
+    this.url =
+      url ||
+      (import.meta.env.VITE_SIGNALING_URL as string) ||
+      (import.meta.env.PROD
+        ? 'wss://torrentia-signaling.onrender.com/ws'
+        : 'ws://localhost:8081/ws')
   }
 
   public get currentStatus(): SignalingStatus {
