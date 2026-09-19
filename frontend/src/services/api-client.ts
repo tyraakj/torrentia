@@ -4,7 +4,7 @@
  * Adheres to Spec 10 & Spec 09 with standardized /v1 routes.
  */
 
-import { createPublicClient, http } from 'viem'
+import { createPublicClient, http, type Address } from 'viem'
 import type { IndexedModel, PaymentSplitEvent } from '../lib/types'
 import { MODEL_REGISTRY_ABI } from '../lib/abis/ModelRegistryABI'
 import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
@@ -16,6 +16,51 @@ const chainClient = createPublicClient({
   chain: monadTestnet,
   transport: http(),
 })
+
+const MODEL_REGISTRY_DEPLOYMENT_BLOCK = BigInt(
+  import.meta.env.VITE_MODEL_REGISTRY_DEPLOYMENT_BLOCK || '0x3ce5c19',
+)
+
+async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
+  const logs = await chainClient.getContractEvents({
+    address: MODEL_REGISTRY_ADDRESS,
+    abi: MODEL_REGISTRY_ABI,
+    eventName: 'ModelRegistered',
+    fromBlock: MODEL_REGISTRY_DEPLOYMENT_BLOCK,
+    args: creator ? { creator: creator as Address } : undefined,
+  })
+
+  return logs.flatMap((log) => {
+    const args = log.args
+    if (
+      !args.modelId ||
+      !args.creator ||
+      args.metadataURI === undefined ||
+      args.chunkPrice === undefined ||
+      args.creatorShareBps === undefined ||
+      args.chunkCount === undefined
+    ) {
+      return []
+    }
+
+    return {
+      modelId: args.modelId,
+      originalCreator: args.creator,
+      metadataURI: args.metadataURI,
+      chunkPrice: args.chunkPrice,
+      creatorShareBps: Number(args.creatorShareBps),
+      chunkCount: Number(args.chunkCount),
+      active: true,
+      seederCount: 0,
+      totalDownloads: 0,
+      registeredAt: 0,
+      modelName: 'On-chain registered model',
+      category: 'Vision',
+      format: 'ONNX',
+      totalSize: Number(args.chunkCount) * 1048576,
+    }
+  })
+}
 
 export interface SwarmStats {
   totalModels: number
@@ -106,6 +151,19 @@ export async function fetchModels(params?: {
   const existingIds = new Set(localModels.map((m) => m.modelId))
   models = [...localModels, ...models.filter((m) => !existingIds.has(m.modelId))]
 
+  // Read registration events directly so the dashboard and marketplace work
+  // before the optional Node/TS indexer is deployed.
+  try {
+    const onChainModels = await fetchOnChainModels(params?.creator)
+    const onChainIds = new Set(onChainModels.map((m) => m.modelId.toLowerCase()))
+    models = [
+      ...onChainModels,
+      ...models.filter((m) => !onChainIds.has(m.modelId.toLowerCase())),
+    ]
+  } catch {
+    // Keep local/demo fallback if the public RPC is unavailable.
+  }
+
   // Try live indexer query if available
   try {
     const controller = new AbortController()
@@ -145,7 +203,7 @@ export async function fetchModels(params?: {
         }))
         // Merge live models with local models
         const liveIds = new Set(liveModels.map((m) => m.modelId))
-        models = [...liveModels, ...localModels.filter((m) => !liveIds.has(m.modelId))]
+        models = [...liveModels, ...models.filter((m) => !liveIds.has(m.modelId))]
       }
     }
   } catch {
