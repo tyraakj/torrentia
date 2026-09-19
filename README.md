@@ -138,6 +138,8 @@ npm run dev
 
 Frontend environment variables:
 
+See the root [`.env.example`](.env.example) for the complete deployment variable reference. The frontend-specific file is [`frontend/.env.example`](frontend/.env.example).
+
 ```env
 VITE_MODEL_REGISTRY_ADDRESS=0xe2cEDee4817B11716728aed3C3d7AD0438813340
 VITE_SPLIT_PAYMENT_ADDRESS=0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa
