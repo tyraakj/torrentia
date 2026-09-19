@@ -10,6 +10,7 @@ frontend/dist-ssr/
 # Foundry / Smart Contracts
 contracts/out/
 contracts/cache/
+contracts/broadcast/
 
 # Go binaries
 signaling/signaling
