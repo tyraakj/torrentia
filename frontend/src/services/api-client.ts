@@ -10,7 +10,7 @@ import { MODEL_REGISTRY_ABI } from '../lib/abis/ModelRegistryABI'
 import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
 import { monadTestnet } from '../lib/wagmi'
 
-const INDEXER_BASE_URL = import.meta.env.VITE_INDEXER_URL || 'http://localhost:8082'
+const INDEXER_BASE_URL = String(import.meta.env.VITE_INDEXER_URL || '').trim()
 
 const chainClient = createPublicClient({
   chain: monadTestnet,
@@ -22,13 +22,29 @@ const MODEL_REGISTRY_DEPLOYMENT_BLOCK = BigInt(
 )
 
 async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
-  const logs = await chainClient.getContractEvents({
-    address: MODEL_REGISTRY_ADDRESS,
-    abi: MODEL_REGISTRY_ABI,
-    eventName: 'ModelRegistered',
-    fromBlock: MODEL_REGISTRY_DEPLOYMENT_BLOCK,
-    args: creator ? { creator: creator as Address } : undefined,
-  })
+  const latestBlock = await chainClient.getBlockNumber()
+  const rangeSize = 10_000n
+  const logs = []
+
+  for (
+    let fromBlock = MODEL_REGISTRY_DEPLOYMENT_BLOCK;
+    fromBlock <= latestBlock;
+    fromBlock += rangeSize
+  ) {
+    const toBlock = fromBlock + rangeSize - 1n < latestBlock
+      ? fromBlock + rangeSize - 1n
+      : latestBlock
+
+    const rangeLogs = await chainClient.getContractEvents({
+      address: MODEL_REGISTRY_ADDRESS,
+      abi: MODEL_REGISTRY_ABI,
+      eventName: 'ModelRegistered',
+      fromBlock,
+      toBlock,
+      args: creator ? { creator: creator as Address } : undefined,
+    })
+    logs.push(...rangeLogs)
+  }
 
   return logs.flatMap((log) => {
     const args = log.args
@@ -165,7 +181,7 @@ export async function fetchModels(params?: {
   }
 
   // Try live indexer query if available
-  try {
+  if (INDEXER_BASE_URL) try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 2000)
 
