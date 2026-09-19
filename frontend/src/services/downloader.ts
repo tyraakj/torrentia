@@ -30,6 +30,7 @@ export class Downloader {
   public readonly manifest: ChunkManifest
   public readonly creatorAddress: string
   public readonly creatorShareBps: number
+  public readonly walletAddress: string
   private signaling: SignalingClient
   private paymentProvider: PaymentProvider
 
@@ -52,7 +53,8 @@ export class Downloader {
     signaling: SignalingClient,
     paymentProvider: PaymentProvider,
     creatorAddress?: string,
-    creatorShareBps?: number
+    creatorShareBps?: number,
+    walletAddress?: string
   ) {
     this.modelId = modelId
     this.manifest = manifest
@@ -60,6 +62,7 @@ export class Downloader {
     this.paymentProvider = paymentProvider
     this.creatorAddress = creatorAddress || '0x0000000000000000000000000000000000000000'
     this.creatorShareBps = creatorShareBps ?? 7000
+    this.walletAddress = walletAddress || 'anonymous'
 
     this.state = {
       modelId,
@@ -140,7 +143,7 @@ export class Downloader {
 
     try {
       // 1. Check existing chunks in IndexedDB (resume capability)
-      const heldChunks = await getHeldChunks(this.modelId)
+      const heldChunks = await getHeldChunks(this.modelId, this.walletAddress)
       const heldSet = new Set(heldChunks)
       this.updateState({
         downloadedChunks: heldSet.size,
@@ -332,7 +335,7 @@ export class Downloader {
             }
 
             // Save chunk to IndexedDB
-            await storeChunk(this.modelId, chunkIndex, data)
+            await storeChunk(this.modelId, chunkIndex, data, this.walletAddress)
 
             for (const cb of this.chunkVerifiedCallbacks) {
               cb(chunkIndex)
@@ -363,7 +366,7 @@ export class Downloader {
 
   private async reassemble(): Promise<Blob> {
     this.updateState({ status: 'reassembling' })
-    const allChunks = await getAllChunks(this.modelId, this.manifest.chunks.length)
+    const allChunks = await getAllChunks(this.modelId, this.manifest.chunks.length, this.walletAddress)
     const blob = new Blob(allChunks, { type: 'application/octet-stream' })
 
     this.updateState({

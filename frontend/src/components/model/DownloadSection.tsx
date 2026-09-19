@@ -70,7 +70,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   // Check how many chunks this browser already holds in IndexedDB
   useEffect(() => {
     let isMounted = true
-    void getHeldChunks(model.modelId)
+    void getHeldChunks(model.modelId, address)
       .then((held) => {
         if (isMounted) {
           setLocalHeldCount(held.length)
@@ -86,7 +86,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     return () => {
       isMounted = false
     }
-  }, [model.modelId, downloadState.status])
+  }, [model.modelId, address, downloadState.status])
 
   // Total chunks
   const totalChunks = manifest?.chunks.length ?? model.chunkCount ?? 1
@@ -101,7 +101,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   // Handle local export if chunks exist in IndexedDB even after refresh
   const handleExportLocalFile = async () => {
     try {
-      const chunks = await getAllChunks(model.modelId, totalChunks)
+      const chunks = await getAllChunks(model.modelId, totalChunks, address)
       const blob = new Blob(chunks, { type: 'application/octet-stream' })
       const fileName = manifest?.modelName ? `${manifest.modelName}.bin` : `${model.modelName || 'model'}.bin`
       downloadBlob(blob, fileName)

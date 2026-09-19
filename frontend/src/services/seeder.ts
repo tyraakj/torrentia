@@ -77,7 +77,7 @@ export class Seeder {
   }
 
   public async reannounce(): Promise<number[]> {
-    const held = await getHeldChunks(this.modelId)
+    const held = await getHeldChunks(this.modelId, this.seederAddress)
     this.signaling.announceChunks(this.modelId, held)
     return held
   }
@@ -110,7 +110,7 @@ export class Seeder {
             return
           }
 
-          const chunkData = await getChunk(this.modelId, msg.chunkIndex)
+          const chunkData = await getChunk(this.modelId, msg.chunkIndex, this.seederAddress)
           if (!chunkData) {
             pc.send({
               type: 'error',

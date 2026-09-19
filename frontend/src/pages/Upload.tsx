@@ -78,7 +78,7 @@ export const Upload: React.FC = () => {
       // Step 1: Chunking, Hashing & Storing in IndexedDB
       let processed = 0
       for await (const chunk of chunkFile(file, DEFAULT_CHUNK_SIZE)) {
-        await storeChunk(modelId, chunk.index, chunk.data)
+        await storeChunk(modelId, chunk.index, chunk.data, address)
         chunksInfo.push({
           index: chunk.index,
           hash: chunk.hash,

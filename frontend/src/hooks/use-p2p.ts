@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
 import type { ChunkManifest, DownloadState } from '../lib/types'
 import { Downloader, downloadBlob, type PaymentProvider } from '../services/downloader'
 import { getHeldChunks } from '../services/chunk-store'
@@ -174,6 +174,7 @@ export function useDownload(
   creatorShareBps?: number
 ) {
   const { client } = useSignaling()
+  const { address } = useAccount()
   const publicClient = usePublicClient({ chainId: 10143 })
   const { data: walletClient } = useWalletClient({ chainId: 10143 })
   const onChainPaymentProvider = useMemo(
@@ -208,7 +209,8 @@ export function useDownload(
       client,
       effectivePaymentProvider,
       creatorAddress,
-      creatorShareBps
+      creatorShareBps,
+      address
     )
     downloaderRef.current = downloader
 
@@ -228,7 +230,7 @@ export function useDownload(
     const result = await downloader.start()
     setIsDownloading(false)
     return result
-  }, [modelId, manifest, isDownloading, client, paymentProvider, onChainPaymentProvider, creatorAddress, creatorShareBps])
+  }, [modelId, manifest, isDownloading, client, paymentProvider, onChainPaymentProvider, creatorAddress, creatorShareBps, address])
 
   const cancelDownload = useCallback(() => {
     if (downloaderRef.current) {
