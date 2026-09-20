@@ -86,15 +86,15 @@ export function useSeeding(
       setHeldChunks([])
       return []
     }
-    const held = await getHeldChunks(modelId)
+    const held = await getHeldChunks(modelId, seederAddress)
     setHeldChunks(held)
     return held
-  }, [modelId])
+  }, [modelId, seederAddress])
 
   useEffect(() => {
     let isMounted = true
     if (modelId) {
-      void getHeldChunks(modelId).then((held) => {
+      void getHeldChunks(modelId, seederAddress).then((held) => {
         if (isMounted) {
           setHeldChunks(held)
         }
@@ -103,7 +103,7 @@ export function useSeeding(
     return () => {
       isMounted = false
     }
-  }, [modelId])
+  }, [modelId, seederAddress])
 
   const startSeeding = useCallback(async () => {
     if (!modelId || !seederAddress || isSeeding) return
@@ -143,9 +143,9 @@ export function useSeeding(
 
   return {
     isSeeding,
-    signalingStatus,
-    heldChunks,
     activePeers,
+    heldChunks,
+    signalingStatus,
     startSeeding,
     stopSeeding,
     refreshHeldChunks,
@@ -173,8 +173,8 @@ export function useDownload(
   creatorAddress?: string,
   creatorShareBps?: number
 ) {
-  const { client } = useSignaling()
   const { address } = useAccount()
+  const { client } = useSignaling(address)
   const publicClient = usePublicClient({ chainId: 10143 })
   const { data: walletClient } = useWalletClient({ chainId: 10143 })
   const onChainPaymentProvider = useMemo(

@@ -177,12 +177,38 @@ export class Downloader {
           status: 'downloading',
         })
 
-        const seeder = this.findSeederForChunk(seeders, i)
-        if (!seeder) {
+        const candidates = this.getCandidateSeedersForChunk(seeders, i)
+        if (candidates.length === 0) {
           throw new Error(`No available seeder currently holds chunk ${i}`)
         }
 
-        await this.downloadChunk(seeder, i)
+        let downloaded = false
+        let lastError: Error | null = null
+
+        for (const seeder of candidates) {
+          if (this.isCancelled) break
+          try {
+            await this.downloadChunk(seeder, i)
+            downloaded = true
+            break
+          } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err))
+            console.warn(
+              `Failed downloading chunk ${i} from seeder ${seeder.seederAddress || seeder.peerId}, trying next peer...`,
+              lastError
+            )
+          }
+        }
+
+        if (this.isCancelled) {
+          this.updateState({ status: 'idle' })
+          return null
+        }
+
+        if (!downloaded) {
+          throw lastError || new Error(`All available seeders failed for chunk ${i}`)
+        }
+
         heldSet.add(i)
         this.updateState({
           downloadedChunks: heldSet.size,
@@ -203,8 +229,42 @@ export class Downloader {
     }
   }
 
-  private findSeederForChunk(seeders: SeederRecord[], chunkIndex: number): SeederRecord | undefined {
-    return seeders.find((s) => s.chunksHeld.includes(chunkIndex))
+  /**
+   * Evaluates and prioritizes candidates for serving a chunk.
+   * Priority:
+   * 1. 3rd-party seeders (excluding self and creator) so the on-chain split distributes to 2 distinct wallets.
+   * 2. Original creator seeder as fallback (when no 3rd-party seeders hold the chunk).
+   */
+  public getCandidateSeedersForChunk(seeders: SeederRecord[], chunkIndex: number): SeederRecord[] {
+    const eligible = seeders.filter((s) => s.chunksHeld.includes(chunkIndex))
+    if (eligible.length === 0) return []
+
+    const normalizedSelf = this.walletAddress?.toLowerCase()
+    const notSelf = normalizedSelf && normalizedSelf !== 'anonymous'
+      ? eligible.filter((s) => s.seederAddress?.toLowerCase() !== normalizedSelf)
+      : eligible
+    const candidatePool = notSelf.length > 0 ? notSelf : eligible
+
+    const normalizedCreator = this.creatorAddress?.toLowerCase()
+    const nonCreatorSeeders = normalizedCreator && normalizedCreator !== '0x0000000000000000000000000000000000000000'
+      ? candidatePool.filter((s) => s.seederAddress?.toLowerCase() !== normalizedCreator)
+      : candidatePool
+
+    const shuffle = <T>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5)
+
+    if (nonCreatorSeeders.length > 0) {
+      const creatorSeeders = candidatePool.filter(
+        (s) => normalizedCreator && s.seederAddress?.toLowerCase() === normalizedCreator
+      )
+      return [...shuffle(nonCreatorSeeders), ...shuffle(creatorSeeders)]
+    }
+
+    return shuffle(candidatePool)
+  }
+
+  public findSeederForChunk(seeders: SeederRecord[], chunkIndex: number): SeederRecord | undefined {
+    const candidates = this.getCandidateSeedersForChunk(seeders, chunkIndex)
+    return candidates[0]
   }
 
   private async getOrCreatePeerConnection(peerId: string): Promise<PeerConnection> {

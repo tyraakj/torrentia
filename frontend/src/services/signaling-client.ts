@@ -65,7 +65,19 @@ export class SignalingClient {
   private isExplicitlyClosed = false
   private pendingQueries = new Map<string, (seeders: SeederRecord[]) => void>()
 
-  private listeners: { [K in keyof EventMap]?: Set<EventMap[K]> } = {}
+  private listeners: {
+    offer: Set<EventMap['offer']>
+    answer: Set<EventMap['answer']>
+    iceCandidate: Set<EventMap['iceCandidate']>
+    status: Set<EventMap['status']>
+    error: Set<EventMap['error']>
+  } = {
+    offer: new Set(),
+    answer: new Set(),
+    iceCandidate: new Set(),
+    status: new Set(),
+    error: new Set(),
+  }
 
   constructor(url?: string, address?: string) {
     this.peerId = typeof crypto !== 'undefined' && crypto.randomUUID
@@ -89,21 +101,71 @@ export class SignalingClient {
   }
 
   public on<K extends keyof EventMap>(event: K, handler: EventMap[K]): () => void {
-    if (!this.listeners[event]) {
-      this.listeners[event] = new Set() as any
-    }
-    this.listeners[event]!.add(handler as any)
-    return () => {
-      this.listeners[event]?.delete(handler as any)
+    switch (event) {
+      case 'offer': {
+        const fn = handler as EventMap['offer']
+        this.listeners.offer.add(fn)
+        return () => { this.listeners.offer.delete(fn) }
+      }
+      case 'answer': {
+        const fn = handler as EventMap['answer']
+        this.listeners.answer.add(fn)
+        return () => { this.listeners.answer.delete(fn) }
+      }
+      case 'iceCandidate': {
+        const fn = handler as EventMap['iceCandidate']
+        this.listeners.iceCandidate.add(fn)
+        return () => { this.listeners.iceCandidate.delete(fn) }
+      }
+      case 'status': {
+        const fn = handler as EventMap['status']
+        this.listeners.status.add(fn)
+        return () => { this.listeners.status.delete(fn) }
+      }
+      case 'error': {
+        const fn = handler as EventMap['error']
+        this.listeners.error.add(fn)
+        return () => { this.listeners.error.delete(fn) }
+      }
+      default:
+        return () => {}
     }
   }
 
   private emit<K extends keyof EventMap>(event: K, ...args: Parameters<EventMap[K]>): void {
-    const handlers = this.listeners[event]
-    if (handlers) {
-      for (const fn of handlers) {
-        ;(fn as any)(...args)
-      }
+    switch (event) {
+      case 'offer':
+        for (const fn of this.listeners.offer) {
+          const [from, sdp] = args as Parameters<EventMap['offer']>
+          fn(from, sdp)
+        }
+        break
+      case 'answer':
+        for (const fn of this.listeners.answer) {
+          const [from, sdp] = args as Parameters<EventMap['answer']>
+          fn(from, sdp)
+        }
+        break
+      case 'iceCandidate':
+        for (const fn of this.listeners.iceCandidate) {
+          const [from, candidate] = args as Parameters<EventMap['iceCandidate']>
+          fn(from, candidate)
+        }
+        break
+      case 'status':
+        for (const fn of this.listeners.status) {
+          const [st] = args as Parameters<EventMap['status']>
+          fn(st)
+        }
+        break
+      case 'error':
+        for (const fn of this.listeners.error) {
+          const [err] = args as Parameters<EventMap['error']>
+          fn(err)
+        }
+        break
+      default:
+        break
     }
   }
 
@@ -242,6 +304,7 @@ export class SignalingClient {
     this.sendRaw({
       type: 'announce',
       modelId,
+      address: this.address,
       chunksHeld,
     })
   }

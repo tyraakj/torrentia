@@ -106,6 +106,7 @@ type RegisterMessage struct {
 type AnnounceMessage struct {
 	Type       string   `json:"type"`
 	ModelID    string   `json:"modelId"`
+	Address    string   `json:"address,omitempty"`
 	ChunksHeld []uint32 `json:"chunksHeld"`
 }
 
@@ -183,6 +184,10 @@ func (h *Hub) HandleMessage(p *Peer, raw []byte) error {
 		if err := json.Unmarshal(raw, &ann); err != nil || ann.ModelID == "" {
 			h.sendError(p, "invalid announce payload: modelId is required")
 			return fmt.Errorf("invalid announce payload: %w", err)
+		}
+
+		if ann.Address != "" {
+			p.SetAddress(ann.Address)
 		}
 
 		h.tracker.Announce(ann.ModelID, p.ID(), p.Address(), ann.ChunksHeld)
