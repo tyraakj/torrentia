@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+echo "🛡️ Pre-Commit Verification Gate..."
+
+# 1. Mechanical Suppression Gate
+if command -v node >/dev/null 2>&1; then
+  node scripts/check-suppressions.mjs
+else
+  bash scripts/check-suppressions.sh
+fi
