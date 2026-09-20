@@ -1,0 +1,25 @@
+# ============================================================================
+# Torrentia CODEOWNERS Governance
+# Repository Owner: @tyraakj
+# ============================================================================
+
+# Default fallback ownership for the entire repository
+* @tyraakj
+
+# Protected smart contracts (Monad EVM settlements, ModelRegistry & SplitPayment)
+# Changes strictly mandate review and approval from @tyraakj
+/contracts/ @tyraakj
+
+# Protected payment settlement & WebRTC P2P streaming transfer core
+/frontend/src/services/payment.ts @tyraakj
+/frontend/src/services/downloader.ts @tyraakj
+/frontend/src/services/seeder.ts @tyraakj
+/frontend/src/services/signaling-client.ts @tyraakj
+
+# Go Signaling & Swarm Tracker Service
+/signaling/ @tyraakj
+
+# CI/CD Governance and Mechanical Suppression Gates
+/.github/ @tyraakj
+/scripts/ @tyraakj
+/context/ @tyraakj
