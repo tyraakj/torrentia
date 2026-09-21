@@ -17,11 +17,6 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024 * 1024,
 	WriteBufferSize: 1024 * 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		// Allow all origins for hackathon demo.
-		// TODO: restrict CORS in production
-		return true
-	},
 }
 
 // Hub manages active WebSocket peers and dispatches signaling/tracking operations.
@@ -30,13 +25,21 @@ type Hub struct {
 	peers   map[string]*Peer
 	tracker *tracker.Tracker
 	relay   *signal.Relay
+	origins map[string]bool
 }
 
 // NewHub constructs a Hub connected to a tracker and a signaling relay.
 func NewHub(tr *tracker.Tracker) *Hub {
+	return NewHubWithOrigins(tr, nil)
+}
+
+// NewHubWithOrigins constructs a Hub with an optional WebSocket origin allowlist.
+// A nil allowlist preserves the permissive behavior used by local development.
+func NewHubWithOrigins(tr *tracker.Tracker, origins map[string]bool) *Hub {
 	h := &Hub{
 		peers:   make(map[string]*Peer),
 		tracker: tr,
+		origins: origins,
 	}
 	h.relay = signal.NewRelay(h)
 	return h
@@ -256,7 +259,14 @@ func (h *Hub) sendError(p *Peer, msg string) {
 
 // ServeWS upgrades the HTTP request to WebSocket and attaches it to the Hub.
 func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	if h.origins != nil && !h.origins[r.Header.Get("Origin")] {
+		http.Error(w, "origin not allowed", http.StatusForbidden)
+		return
+	}
+
+	requestUpgrader := upgrader
+	requestUpgrader.CheckOrigin = func(*http.Request) bool { return true }
+	conn, err := requestUpgrader.Upgrade(w, r, nil)
 	if err != nil {
 		slog.Error("websocket upgrade failed", "err", err)
 		return

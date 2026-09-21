@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -48,7 +49,8 @@ func main() {
 	)
 
 	tr := tracker.NewTracker()
-	hub := ws.NewHub(tr)
+	allowedOrigins := parseAllowedOrigins(os.Getenv("ALLOWED_ORIGINS"))
+	hub := ws.NewHubWithOrigins(tr, allowedOrigins)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -67,11 +69,12 @@ func main() {
 
 	// Health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		// Allow CORS for browser health checks
-		// TODO: restrict CORS in production
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		if origin := r.Header.Get("Origin"); origin != "" && allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Add("Vary", "Origin")
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method == http.MethodOptions {
@@ -94,8 +97,10 @@ func main() {
 	})
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", *port),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%d", *port),
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       60 * time.Second,
 	}
 
 	go func() {
@@ -117,4 +122,17 @@ func main() {
 	} else {
 		slog.Info("server shutdown complete")
 	}
+}
+
+func parseAllowedOrigins(value string) map[string]bool {
+	origins := make(map[string]bool)
+	for origin := range strings.SplitSeq(value, ",") {
+		if origin = strings.TrimSpace(origin); origin != "" {
+			origins[origin] = true
+		}
+	}
+	if len(origins) == 0 {
+		return nil
+	}
+	return origins
 }
