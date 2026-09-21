@@ -33,7 +33,7 @@ export const SkylineFooter: React.FC = () => {
             <span className="footer-col-header">PRODUCT</span>
             <ul className="footer-links-list">
               <li>
-                <Link to="/model/llama-3-8b" className="footer-nav-link">Explore Swarm</Link>
+                <Link to="/marketplace" className="footer-nav-link">Explore Swarm</Link>
               </li>
               <li>
                 <Link to="/upload" className="footer-nav-link">Upload Model</Link>

@@ -73,7 +73,7 @@ export const LandingNavbar: React.FC = () => {
           >
             Upload Model
           </Link>
-          <Link to="/model/llama-3-8b" className="btn-nav-primary">
+          <Link to="/marketplace" className="btn-nav-primary">
             <span>Launch App</span>
             <ArrowUpRight size={14} style={{ marginLeft: '4px' }} />
           </Link>

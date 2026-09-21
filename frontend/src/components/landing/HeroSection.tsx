@@ -20,7 +20,7 @@ export const HeroSection: React.FC = () => {
 
         {/* Action Buttons using established charcoal primary and pastel pink secondary with mint accent */}
         <div className="hero-cta-group">
-          <Link to="/model/llama-3-8b" className="btn-hero-primary">
+          <Link to="/marketplace" className="btn-hero-primary">
             <span>Explore Swarm</span>
             <ArrowRight size={15} />
           </Link>
