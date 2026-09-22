@@ -55,7 +55,7 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
           }}
         >
           <ShieldCheck size={13} color="#059669" />
-          <span>Verified Passport</span>
+          <span>Verified model</span>
         </div>
       ) : (
         <div
@@ -74,14 +74,14 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
           }}
         >
           <AlertCircle size={13} color="#d97706" />
-          <span>Passport Resolving</span>
+          <span>Checking model</span>
         </div>
       )}
 
       {/* 2. Swarm Availability Status */}
       {isSwarmAvailable ? (
         <div
-          title={`${seederCount} active peer node${seederCount === 1 ? '' : 's'} serving verified pieces in the swarm.`}
+          title={`${seederCount} provider${seederCount === 1 ? '' : 's'} currently available.`}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -105,11 +105,11 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
             }}
           />
           <Radio size={12} color="#059669" />
-          <span>Available ({seederCount} Peer{seederCount === 1 ? '' : 's'})</span>
+          <span>Available ({seederCount} provider{seederCount === 1 ? '' : 's'})</span>
         </div>
       ) : (
         <div
-          title="No active peer nodes currently serving pieces for this model in the swarm."
+          title="No providers are currently available for this model."
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -124,14 +124,14 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
           }}
         >
           <AlertTriangle size={12} color="#b91c1c" />
-          <span>Unavailable in Swarm (0 Peers)</span>
+          <span>Currently unavailable</span>
         </div>
       )}
 
       {/* 3. On-Chain Settlement Status */}
       {isPaid ? (
         <div
-          title="On-chain piece settlement confirmed on Monad."
+          title="Payment confirmed on the network."
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -146,11 +146,11 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
           }}
         >
           <CheckCircle2 size={12} color="#4f46e5" />
-          <span>Settled on Monad</span>
+          <span>Payment confirmed</span>
         </div>
       ) : (
         <div
-          title="Atomic 70/30 split settled per 1MB piece on Monad."
+          title="Payments are automatically shared between the creator and provider."
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -165,7 +165,7 @@ export const ModelStatusBadges: React.FC<ModelStatusBadgesProps> = ({
           }}
         >
           <Coins size={12} color="#78716c" />
-          <span>Atomic Monad Settlement</span>
+          <span>Automatic creator payout</span>
         </div>
       )}
     </div>

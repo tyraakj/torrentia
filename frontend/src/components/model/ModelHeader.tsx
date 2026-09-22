@@ -119,7 +119,7 @@ export const ModelHeader: React.FC<ModelHeaderProps> = ({
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
           <Sparkles size={13} color="var(--color-accent-bright)" />
-          <span>Decentralized AI weights distributed peer-to-peer on Monad</span>
+              <span>AI models shared directly between people</span>
         </div>
       </div>
 
