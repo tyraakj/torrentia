@@ -10,6 +10,13 @@ import { MODEL_REGISTRY_ABI } from '../lib/abis/ModelRegistryABI'
 import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
 import { monadTestnet } from '../lib/wagmi'
 import { allowMockFallbacks } from '../lib/app-mode'
+import {
+  isEnvioConfigured,
+  fetchEnvioModels,
+  fetchEnvioModel,
+  fetchEnvioStats,
+  fetchEnvioPayments,
+} from './envio-client'
 
 const INDEXER_BASE_URL = String(import.meta.env.VITE_INDEXER_URL || '').trim()
 
@@ -172,17 +179,39 @@ export async function fetchModels(params?: {
     models = [...models, ...FALLBACK_MODELS.filter((m) => !localIds.has(m.modelId))]
   }
 
-  // Read registration events directly so the dashboard and marketplace work
-  // before the optional Node/TS indexer is deployed.
-  try {
-    const onChainModels = await fetchOnChainModels(params?.creator)
-    const onChainIds = new Set(onChainModels.map((m) => m.modelId.toLowerCase()))
-    models = [
-      ...onChainModels,
-      ...models.filter((m) => !onChainIds.has(m.modelId.toLowerCase())),
-    ]
-  } catch {
-    // Keep local/demo fallback if the public RPC is unavailable.
+  // 1. Prioritize Envio HyperIndex GraphQL Service (Spec 20)
+  let envioLoaded = false
+  if (isEnvioConfigured()) {
+    try {
+      const envioModels = await fetchEnvioModels({
+        creator: params?.creator,
+        limit: 100,
+      })
+      if (envioModels.length > 0) {
+        const envioIds = new Set(envioModels.map((m) => m.modelId.toLowerCase()))
+        models = [
+          ...envioModels,
+          ...models.filter((m) => !envioIds.has(m.modelId.toLowerCase())),
+        ]
+        envioLoaded = true
+      }
+    } catch {
+      // Fall through to direct chain/indexer query on Envio error
+    }
+  }
+
+  // 2. Direct on-chain event scan fallback if Envio is not configured or returned zero records
+  if (!envioLoaded) {
+    try {
+      const onChainModels = await fetchOnChainModels(params?.creator)
+      const onChainIds = new Set(onChainModels.map((m) => m.modelId.toLowerCase()))
+      models = [
+        ...onChainModels,
+        ...models.filter((m) => !onChainIds.has(m.modelId.toLowerCase())),
+      ]
+    } catch {
+      // Keep local/demo fallback if the public RPC is unavailable.
+    }
   }
 
   // Try live indexer query if available
@@ -256,6 +285,16 @@ export async function fetchModels(params?: {
  * Fetches a single model by its modelId.
  */
 export async function fetchModel(modelId: string): Promise<IndexedModel | null> {
+  // 1. Query Envio HyperIndex GraphQL service first if configured (Spec 20)
+  if (isEnvioConfigured()) {
+    try {
+      const envioModel = await fetchEnvioModel(modelId)
+      if (envioModel) return envioModel
+    } catch {
+      // Fall through to local and chain lookup
+    }
+  }
+
   const all = await fetchModels()
   const found = all.find((m) => m.modelId.toLowerCase() === modelId.toLowerCase())
   if (found) return found
@@ -301,6 +340,16 @@ export async function fetchModel(modelId: string): Promise<IndexedModel | null> 
  * Fetches platform-wide swarm metrics.
  */
 export async function fetchStats(): Promise<SwarmStats> {
+  // 1. Query Envio NetworkOverview first if configured (Spec 20)
+  if (isEnvioConfigured()) {
+    try {
+      const envioStats = await fetchEnvioStats()
+      if (envioStats) return envioStats
+    } catch {
+      // Fall through to local metrics calculation
+    }
+  }
+
   const models = await fetchModels()
   const totalModels = models.length
   const totalDownloads = models.reduce((acc, m) => acc + m.totalDownloads, 0)
@@ -347,6 +396,16 @@ export async function fetchStats(): Promise<SwarmStats> {
  * Fetches recent payments for a model.
  */
 export async function fetchPayments(modelId: string): Promise<PaymentSplitEvent[]> {
+  // 1. Query Envio PaymentSplitEvents first if configured (Spec 20)
+  if (isEnvioConfigured()) {
+    try {
+      const envioPayments = await fetchEnvioPayments(modelId, 50)
+      if (envioPayments.length > 0) return envioPayments
+    } catch {
+      // Fall through to REST indexer or empty fallback
+    }
+  }
+
   try {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 1500)
