@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"torrentia/signaling/internal/auth"
 	"torrentia/signaling/internal/signal"
 	"torrentia/signaling/internal/tracker"
 
@@ -257,5 +258,149 @@ func TestHub_UnregisteredOperations(t *testing.T) {
 	_ = ws.ReadJSON(&errResp)
 	if errResp.Type != "error" || !strings.Contains(errResp.Message, "unknown message type") {
 		t.Fatalf("expected unknown message type error, got %+v", errResp)
+	}
+}
+
+func TestHub_AuthenticatedUpgrade(t *testing.T) {
+	secret := []byte("torrentia-hub-test-secret-12345")
+	tr := tracker.NewTracker()
+	hub := NewHubWithConfig(tr, HubConfig{
+		AuthRequired: true,
+		AuthSecret:   secret,
+	})
+
+	server := httptest.NewServer(http.HandlerFunc(hub.ServeWS))
+	defer server.Close()
+
+	wsBaseURL := "ws" + strings.TrimPrefix(server.URL, "http")
+
+	// 1. Unauthenticated connection rejected with 401
+	_, resp, err := websocket.DefaultDialer.Dial(wsBaseURL, nil)
+	if err == nil {
+		t.Fatalf("expected connection without token to fail")
+	}
+	if resp != nil && resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected 401 Unauthorized, got %d", resp.StatusCode)
+	}
+
+	// 2. Invalid token rejected with 401
+	_, resp, err = websocket.DefaultDialer.Dial(wsBaseURL+"?token=invalid-token", nil)
+	if err == nil {
+		t.Fatalf("expected connection with invalid token to fail")
+	}
+	if resp != nil && resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("expected 401 Unauthorized, got %d", resp.StatusCode)
+	}
+
+	// 3. Valid token succeeds and automatically registers peer
+	expectedAddr := "0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90"
+	validToken, assignedPeerID, _, err := auth.GenerateSessionToken(expectedAddr, secret)
+	if err != nil {
+		t.Fatalf("generate token failed: %v", err)
+	}
+
+	ws, resp, err := websocket.DefaultDialer.Dial(wsBaseURL+"?token="+validToken, nil)
+	if err != nil {
+		t.Fatalf("dial with valid token failed: %v", err)
+	}
+	defer ws.Close()
+
+	if resp.StatusCode != http.StatusSwitchingProtocols {
+		t.Fatalf("expected 101 Switching Protocols, got %d", resp.StatusCode)
+	}
+
+	// Verify server sends auto-registration ack with token claims
+	var ack map[string]string
+	if err := ws.ReadJSON(&ack); err != nil {
+		t.Fatalf("read auto-registration ack failed: %v", err)
+	}
+	if ack["type"] != "registered" || ack["peerId"] != assignedPeerID || ack["address"] != expectedAddr {
+		t.Fatalf("unexpected ack content: %+v", ack)
+	}
+
+	// 4. Peer cannot re-register identity
+	_ = ws.WriteJSON(map[string]string{
+		"type":    "register",
+		"peerId":  "fake-peer-id",
+		"address": "0x9999999999999999999999999999999999999999",
+	})
+	var errResp signal.ErrorResponse
+	if err := ws.ReadJSON(&errResp); err != nil {
+		t.Fatalf("read error failed: %v", err)
+	}
+	if errResp.Type != "error" || !strings.Contains(errResp.Message, "cannot re-register") {
+		t.Fatalf("expected cannot re-register error, got %+v", errResp)
+	}
+
+	// 5. Spoofed address in announce is overridden by authenticated address
+	_ = ws.WriteJSON(map[string]interface{}{
+		"type":       "announce",
+		"modelId":    "model-secure",
+		"address":    "0xSpoofedAddress",
+		"chunksHeld": []uint32{0, 1},
+	})
+	var annAck map[string]string
+	_ = ws.ReadJSON(&annAck)
+	if annAck["type"] != "announced" {
+		t.Fatalf("expected announced ack, got %+v", annAck)
+	}
+
+	// Query tracker to verify it used expectedAddr instead of 0xSpoofedAddress
+	seeders := tr.Query("model-secure")
+	if len(seeders) != 1 || seeders[0].Address != expectedAddr {
+		t.Fatalf("expected authenticated address %s, got %+v", expectedAddr, seeders)
+	}
+}
+
+func TestHub_QuotasAndLimits(t *testing.T) {
+	tr := tracker.NewTracker()
+	hub := NewHub(tr)
+
+	server := httptest.NewServer(http.HandlerFunc(hub.ServeWS))
+	defer server.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(server.URL, "http")
+
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("dial failed: %v", err)
+	}
+	defer ws.Close()
+
+	// Register peer
+	_ = ws.WriteJSON(map[string]string{
+		"type":   "register",
+		"peerId": "quota-peer",
+	})
+	var ack map[string]string
+	_ = ws.ReadJSON(&ack)
+
+	// 1. Announce > 500,000 chunks rejected
+	hugeChunks := make([]uint32, 500001)
+	_ = ws.WriteJSON(map[string]interface{}{
+		"type":       "announce",
+		"modelId":    "model-big",
+		"chunksHeld": hugeChunks,
+	})
+	var errResp signal.ErrorResponse
+	if err := ws.ReadJSON(&errResp); err != nil {
+		t.Fatalf("read error failed: %v", err)
+	}
+	if errResp.Type != "error" || !strings.Contains(errResp.Message, "quota") {
+		t.Fatalf("expected quota error, got %+v", errResp)
+	}
+
+	// 2. Signaling payload > 64KB rejected
+	largePayload := strings.Repeat("A", 65*1024)
+	_ = ws.WriteJSON(map[string]interface{}{
+		"type":    "offer",
+		"to":      "some-peer",
+		"payload": largePayload,
+	})
+	if err := ws.ReadJSON(&errResp); err != nil {
+		t.Fatalf("read error failed: %v", err)
+	}
+	if errResp.Type != "error" || !strings.Contains(errResp.Message, "64KB limit") {
+		t.Fatalf("expected 64KB limit error, got %+v", errResp)
 	}
 }
