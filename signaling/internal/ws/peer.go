@@ -26,15 +26,25 @@ type Peer struct {
 	mu      sync.RWMutex
 	id      string
 	address string
+	limiter *PeerMessageLimiter
 }
 
-// NewPeer creates an uninitialized Peer wrapper.
+// NewPeer creates an uninitialized Peer wrapper with default rate limiting.
 func NewPeer(hub *Hub, conn *websocket.Conn) *Peer {
 	return &Peer{
-		hub:  hub,
-		conn: conn,
-		send: make(chan []byte, 256),
+		hub:     hub,
+		conn:    conn,
+		send:    make(chan []byte, 256),
+		limiter: NewPeerMessageLimiter(50.0), // 50 msg/sec max
 	}
+}
+
+// AllowMessage checks if the peer is within its allowed message rate limit.
+func (p *Peer) AllowMessage() bool {
+	if p.limiter == nil {
+		return true
+	}
+	return p.limiter.Allow()
 }
 
 // ID returns the peer's registered identifier.
