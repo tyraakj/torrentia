@@ -36,11 +36,11 @@ export const PaymentLog: React.FC<PaymentLogProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <History size={16} color="var(--color-accent-bright)" />
           <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            On-Chain Payment Log
+            Payment activity
           </h3>
         </div>
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-          Monad Testnet Events
+          Verified payments
         </span>
       </div>
 
@@ -56,7 +56,7 @@ export const PaymentLog: React.FC<PaymentLogProps> = ({
             fontSize: 'var(--text-xs)',
           }}
         >
-          No on-chain payment splits recorded for this model yet.
+          No payments recorded for this model yet.
         </div>
       ) : (
         <div
@@ -90,7 +90,7 @@ export const PaymentLog: React.FC<PaymentLogProps> = ({
                   </div>
                   <div style={{ fontSize: '10px', color: '#78716c' }}>
                     Creator: +{parseFloat(formatEther(p.creatorAmount)).toFixed(6)} ({creatorPercent}%) •
-                    Seeder ({truncateAddress(p.seeder, 3)}): +{parseFloat(formatEther(p.seederAmount)).toFixed(6)} ({seederPercent}%)
+                    Provider ({truncateAddress(p.seeder, 3)}): +{parseFloat(formatEther(p.seederAmount)).toFixed(6)} ({seederPercent}%)
                   </div>
                 </div>
               </div>

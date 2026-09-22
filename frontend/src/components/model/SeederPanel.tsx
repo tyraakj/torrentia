@@ -87,7 +87,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
             }}
           />
           <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Swarm Seeders ({onlineCount})
+            Available providers ({onlineCount})
           </h3>
         </div>
 
@@ -95,7 +95,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
           type="button"
           onClick={() => void fetchSeeders()}
           disabled={isRefreshing}
-          title="Refresh Swarm Peers"
+          title="Refresh providers"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -133,7 +133,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
           <Radio size={12} color={signalingStatus === 'connected' ? 'var(--color-success)' : 'var(--color-warning)'} />
-          <span>Go Tracker: {signalingStatus === 'connected' ? 'Connected' : 'Reconnecting...'}</span>
+          <span>Network: {signalingStatus === 'connected' ? 'Connected' : 'Reconnecting...'}</span>
         </div>
         <span>Updated: {lastUpdated.toLocaleTimeString()}</span>
       </div>
@@ -155,10 +155,10 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
         >
           <AlertCircle size={24} color="var(--color-warning)" />
           <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>
-            No Active Seeders in Swarm
+            No providers available right now
           </div>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', maxWidth: '320px', lineHeight: 1.4 }}>
-            Currently no peers are connected to serve chunks for this model. The original uploader or any peer holding chunks can start seeding to earn 30% per chunk transfer.
+            This model is not available for download right now. Leave this page open after downloading to help provide it to others and earn rewards.
           </p>
         </div>
       ) : (
@@ -186,7 +186,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
                   <div>
                     <AddressDisplay address={seeder.seederAddress} chars={3} showLink={false} />
                     <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                      Peer ID: {seeder.peerId.slice(0, 8)}...
+                      Provider {seeder.peerId.slice(0, 8)}...
                     </div>
                   </div>
                 </div>
@@ -207,7 +207,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
                       }}
                     >
                       <CheckCircle2 size={11} />
-                      Full Seeder ({heldCount}/{totalChunks})
+                      Full copy ({heldCount}/{totalChunks})
                     </span>
                   ) : (
                     <span
