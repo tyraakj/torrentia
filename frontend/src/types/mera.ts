@@ -27,16 +27,6 @@ export interface PasskeyDiagnostics {
   browserInfo: string
 }
 
-export interface ChunkVoucherPayload {
-  sessionId: `0x${string}`
-  modelId: `0x${string}`
-  chunkIndex: number
-  chunkHash: `0x${string}`
-  seederAddress: `0x${string}`
-  chunkPrice: bigint
-  nonce: bigint
-}
-
 export interface ExportedCredentials {
   mnemonic: string
   privateKey: `0x${string}`

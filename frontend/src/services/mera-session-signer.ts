@@ -1,19 +1,8 @@
 import { SPLIT_PAYMENT_ADDRESS } from '../lib/contracts'
 import { monadTestnet } from '../lib/wagmi'
-import type { ChunkVoucherPayload } from '../types/mera'
+import { CHUNK_CLAIM_TYPES, PAYMENT_SESSION_DOMAIN } from '../lib/types/payment-session'
+import type { ChunkVoucherPayload } from '../lib/types/payment-session'
 import { MeraAuthService } from './auth/mera-auth'
-
-const CHUNK_PAYMENT_CLAIM_TYPES = {
-  ChunkPaymentClaim: [
-    { name: 'sessionId', type: 'bytes32' },
-    { name: 'modelId', type: 'bytes32' },
-    { name: 'chunkIndex', type: 'uint32' },
-    { name: 'chunkHash', type: 'bytes32' },
-    { name: 'seeder', type: 'address' },
-    { name: 'amount', type: 'uint256' },
-    { name: 'nonce', type: 'uint256' },
-  ],
-} as const
 
 export class MeraSessionSigner {
   /**
@@ -31,24 +20,21 @@ export class MeraSessionSigner {
     }
 
     const domain = {
-      name: 'TorrentiaSessionChannel',
-      version: '1',
+      ...PAYMENT_SESSION_DOMAIN,
       chainId: BigInt(monadTestnet.id),
       verifyingContract,
     } as const
 
     const signature = await account.signTypedData({
       domain,
-      types: CHUNK_PAYMENT_CLAIM_TYPES,
+      types: CHUNK_CLAIM_TYPES,
       primaryType: 'ChunkPaymentClaim',
       message: {
         sessionId: payload.sessionId,
-        modelId: payload.modelId,
         chunkIndex: payload.chunkIndex,
         chunkHash: payload.chunkHash,
         seeder: payload.seederAddress,
-        amount: payload.chunkPrice,
-        nonce: payload.nonce,
+        deadline: payload.deadline,
       },
     })
 
