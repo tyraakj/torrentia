@@ -7,15 +7,19 @@ import {
   HardDrive,
   RefreshCw,
   Zap,
-  Wallet,
   Radio,
   AlertTriangle,
   Flame,
+  Copy,
+  Check,
+  Terminal,
+  Server,
 } from 'lucide-react'
 import type { ChunkManifest, IndexedModel } from '../../lib/types'
 import { useDownload, useSeeding } from '../../hooks/use-p2p'
 import { getHeldChunks, getAllChunks } from '../../services/chunk-store'
 import { downloadBlob } from '../../services/downloader'
+import { useDownloadStateMachine } from '../../hooks/use-download-state-machine'
 import { SplitVisualization } from '../payment/SplitVisualization'
 import { LivePaymentFeed } from '../payment/LivePaymentFeed'
 import { Button } from '../ui/Button'
@@ -39,6 +43,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   // Local storage chunk awareness
   const [localHeldCount, setLocalHeldCount] = useState<number>(0)
   const [checkingLocal, setCheckingLocal] = useState(true)
+  const [copiedCli, setCopiedCli] = useState(false)
 
   // Download & Seeding hooks
   const {
@@ -67,7 +72,12 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     model.chunkPrice.toString()
   )
 
-  // Check how many chunks this browser already holds in IndexedDB
+  // Total pieces & cost
+  const totalChunks = manifest?.chunks.length ?? model.chunkCount ?? 1
+  const totalCostMon = formatEther(model.chunkPrice * BigInt(totalChunks))
+  const isFullyDownloadedLocally = localHeldCount >= totalChunks && totalChunks > 0
+
+  // Check how many pieces this browser already holds in IndexedDB
   useEffect(() => {
     let isMounted = true
     void getHeldChunks(model.modelId, address)
@@ -88,17 +98,12 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     }
   }, [model.modelId, address, downloadState.status])
 
-  // Total chunks
-  const totalChunks = manifest?.chunks.length ?? model.chunkCount ?? 1
-  const totalCostMon = formatEther(model.chunkPrice * BigInt(totalChunks))
-  const isFullyDownloadedLocally = localHeldCount >= totalChunks && totalChunks > 0
-
   const handleConnectWallet = () => {
     const injected = connectors.find((c) => c.type === 'injected') || connectors[0]
     if (injected) connect({ connector: injected })
   }
 
-  // Handle local export if chunks exist in IndexedDB even after refresh
+  // Handle local export if pieces exist in IndexedDB
   const handleExportLocalFile = async () => {
     try {
       const chunks = await getAllChunks(model.modelId, totalChunks, address)
@@ -110,27 +115,33 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     }
   }
 
-  // Active status description
-  const getStatusText = () => {
-    switch (downloadState.status) {
-      case 'discovering':
-        return 'Discovering swarm seeders via Go WebSocket tracker...'
-      case 'paying':
-        return `Submitting atomic 70/30 split payment for Chunk ${downloadState.currentChunkIndex + 1} on Monad...`
-      case 'downloading':
-        return `Streaming 16 KB WebRTC binary frames for Chunk ${downloadState.currentChunkIndex + 1} of ${totalChunks}...`
-      case 'verifying':
-        return `Verifying SHA-256 content hash against IPFS manifest...`
-      case 'reassembling':
-        return `Reassembling ${totalChunks} verified chunks into local file...`
-      case 'complete':
-        return 'All chunks transferred, verified, and reassembled!'
-      case 'error':
-        return downloadState.error || 'Download interrupted.'
-      default:
-        return 'Ready to connect to Monad swarm.'
-    }
+  const handleCopyCli = () => {
+    const cmd = `torrentia-seeder --model ${model.modelId}`
+    navigator.clipboard.writeText(cmd)
+    setCopiedCli(true)
+    setTimeout(() => setCopiedCli(false), 2000)
   }
+
+  // Initialize deterministic 10-state machine
+  const { stateDetails, handlePrimaryAction } = useDownloadStateMachine({
+    model,
+    manifest,
+    heldChunkCount: localHeldCount,
+    downloadStatus: downloadState.status,
+    downloadError: downloadState.error,
+    activeTransport: downloadState.activeTransport,
+    currentChunkIndex: downloadState.currentChunkIndex,
+    totalChunks,
+    isSeederOnline: model.seederCount > 0,
+    onStartDownload: async () => {
+      await startDownload()
+    },
+    onConnectWallet: handleConnectWallet,
+    onExportLocalFile: handleExportLocalFile,
+    onRetry: () => {
+      void startDownload()
+    },
+  })
 
   // Latest payment event
   const latestPayment = downloadState.payments.length > 0 ? downloadState.payments[0] : undefined
@@ -164,6 +175,8 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 'var(--space-4)',
+            flexWrap: 'wrap',
+            gap: 'var(--space-2)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -173,7 +186,50 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
             </h2>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Multi-Transport Badges */}
+            {stateDetails.activeTransport === 'persistent_seeder' && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '3px 9px',
+                  borderRadius: '9999px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  background: 'rgba(59, 130, 246, 0.12)',
+                  color: '#2563eb',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  boxShadow: '0 0 10px rgba(59, 130, 246, 0.2)',
+                }}
+              >
+                <Server size={12} />
+                <span>Persistent Seeder Node (HTTP/QUIC)</span>
+              </div>
+            )}
+
+            {stateDetails.activeTransport === 'browser_peer' && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '3px 9px',
+                  borderRadius: '9999px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  background: 'rgba(168, 85, 247, 0.12)',
+                  color: '#9333ea',
+                  border: '1px solid rgba(168, 85, 247, 0.3)',
+                  boxShadow: '0 0 10px rgba(168, 85, 247, 0.2)',
+                }}
+              >
+                <Radio size={12} />
+                <span>Direct Browser Peer (WebRTC)</span>
+              </div>
+            )}
+
             {isDownloading && (
               <Badge variant="seeding" style={{ animation: 'pulseGlow 1.5s infinite' }}>
                 <Zap size={11} /> Streaming Swarm
@@ -218,26 +274,26 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
               <div>
                 <div style={{ fontSize: '11px', color: '#78716c' }}>Partition Size</div>
                 <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: '#1c1917' }}>
-                  {totalChunks} chunks (1 MB ea)
+                  {totalChunks} pieces (1 MB ea)
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '11px', color: '#78716c' }}>Split Logic</div>
+                <div style={{ fontSize: '11px', color: '#78716c' }}>Creator Share (%)</div>
                 <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-creator-share)' }}>
                   {Math.round(model.creatorShareBps / 100)}% Creator / {100 - Math.round(model.creatorShareBps / 100)}% Peer
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '11px', color: '#78716c' }}>Local Cache</div>
+                <div style={{ fontSize: '11px', color: '#78716c' }}>Local Model Storage</div>
                 <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: isFullyDownloadedLocally ? 'var(--color-success)' : '#57534e' }}>
-                  {checkingLocal ? 'Checking...' : `${localHeldCount}/${totalChunks} chunks held`}
+                  {checkingLocal ? 'Checking...' : `${localHeldCount}/${totalChunks} pieces held`}
                 </div>
               </div>
             </div>
 
-            {/* If user already holds all chunks in IndexedDB */}
+            {/* If user already holds all pieces in IndexedDB */}
             {isFullyDownloadedLocally ? (
               <div
                 style={{
@@ -253,11 +309,11 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-success)' }}>
                   <CheckCircle2 size={18} />
                   <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
-                    Complete Model Already Cached in Your Browser!
+                    Complete Model Verified in Local Model Storage!
                   </span>
                 </div>
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                  You have all {totalChunks} verified chunks in your local IndexedDB. You can export the file to your computer or seed it to earn 30% per chunk request.
+                  You have all {totalChunks} verified pieces stored in your browser. You can export the file to your machine or seed it to earn 30% per piece requested by peers.
                 </p>
                 <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
                   <Button
@@ -266,7 +322,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                     onClick={handleExportLocalFile}
                     leftIcon={<HardDrive size={15} />}
                   >
-                    Save Model File
+                    Save Assembled Model (.bin)
                   </Button>
 
                   {isSeeding ? (
@@ -289,33 +345,27 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                 </div>
               </div>
             ) : (
-              /* Normal Download Action */
+              /* State Machine Primary CTA */
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                {!isConnected ? (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={handleConnectWallet}
-                    leftIcon={<Wallet size={18} />}
-                    style={{ width: '100%' }}
-                  >
-                    Connect Wallet to Download ({parseFloat(totalCostMon).toFixed(6)} MON)
-                  </Button>
-                ) : (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    onClick={() => void startDownload()}
-                    disabled={!manifest}
-                    leftIcon={<DownloadCloud size={18} />}
-                    style={{ width: '100%' }}
-                  >
-                    {manifest ? `Download from Swarm (${parseFloat(totalCostMon).toFixed(6)} MON)` : 'Loading Manifest...'}
-                  </Button>
-                )}
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handlePrimaryAction}
+                  disabled={!manifest && isConnected}
+                  leftIcon={stateDetails.recoveryAction ? <RefreshCw size={18} /> : <DownloadCloud size={18} />}
+                  style={{ width: '100%' }}
+                >
+                  {stateDetails.recoveryAction
+                    ? stateDetails.recoveryAction.label
+                    : !isConnected
+                    ? `Connect Wallet to Download (${parseFloat(totalCostMon).toFixed(6)} MON)`
+                    : manifest
+                    ? `Download from Swarm (${parseFloat(totalCostMon).toFixed(6)} MON)`
+                    : 'Validating Model Passport...'}
+                </Button>
 
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-                  Chunks stream over WebRTC data channels directly from peers. Each chunk payment triggers an atomic 70/30 split on Monad.
+                  Verified pieces stream over WebRTC data channels directly from peers. Each piece payment triggers an atomic 70/30 split on Monad.
                 </p>
               </div>
             )}
@@ -337,7 +387,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                 }}
               >
                 <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                  {getStatusText()}
+                  {stateDetails.message}
                 </span>
                 <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--color-accent-bright)' }}>
                   {Math.round((downloadState.downloadedChunks / totalChunks) * 100)}% ({downloadState.downloadedChunks}/{totalChunks})
@@ -376,7 +426,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
           </div>
         )}
 
-        {/* 3. DOWNLOAD COMPLETE CELEBRATION */}
+        {/* 3. DOWNLOAD COMPLETE CELEBRATION & SEEDING GUIDANCE */}
         {downloadState.status === 'complete' && (
           <div
             style={{
@@ -393,10 +443,10 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
               <CheckCircle2 size={24} />
               <div>
                 <div style={{ fontWeight: 800, fontSize: 'var(--text-lg)' }}>
-                  Download Complete & Verified!
+                  Download Complete & Cryptographically Verified!
                 </div>
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                  All {totalChunks} chunks verified via SHA-256 hashes and saved to IndexedDB.
+                  All {totalChunks} pieces verified via SHA-256 hashes against the Model Passport and saved locally.
                 </div>
               </div>
             </div>
@@ -409,13 +459,13 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                 onClick={() => saveFile(manifest?.modelName ? `${manifest.modelName}.bin` : undefined)}
                 leftIcon={<HardDrive size={16} />}
               >
-                Save File to Computer
+                Save Assembled Model (.bin)
               </Button>
 
-              {/* SEEDER ORGANIC GROWTH TOGGLE */}
+              {/* BROWSER SEEDING TOGGLE */}
               {isSeeding ? (
                 <Button variant="secondary" size="md" onClick={stopSeeding}>
-                  Stop Seeding
+                  Stop Browser Seeding
                 </Button>
               ) : (
                 <Button
@@ -427,29 +477,67 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                   }}
                   leftIcon={<Flame size={16} color="var(--color-warning)" />}
                 >
-                  Start Seeding to Swarm (+30% MON)
+                  Keep Seeding in This Browser (+30% MON)
                 </Button>
               )}
             </div>
 
-            {isSeeding && (
-              <div
+            {/* PERSISTENT CLI SEEDER GUIDANCE */}
+            <div
+              style={{
+                marginTop: 'var(--space-2)',
+                padding: 'var(--space-3)',
+                borderRadius: '8px',
+                background: 'rgba(28, 25, 23, 0.05)',
+                border: '1px solid rgba(28, 25, 23, 0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <Terminal size={12} />
+                  For 24/7 background seeding, run the Persistent CLI Seeder:
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCli}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: copiedCli ? '#10b981' : '#7c3aed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  {copiedCli ? <Check size={12} /> : <Copy size={12} />}
+                  {copiedCli ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+
+              <code
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem',
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--color-success)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '12px',
+                  background: '#1c1917',
+                  color: '#a7f3d0',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  display: 'block',
                 }}
               >
-                <Radio size={14} />
-                <span>You are actively seeding this model ({totalChunks}/{totalChunks} chunks) to the Monad swarm!</span>
-              </div>
-            )}
+                torrentia-seeder --model {model.modelId}
+              </code>
+            </div>
           </div>
         )}
 
-        {/* 4. ERROR STATE */}
+        {/* 4. ERROR STATE WITH DYNAMIC RECOVERY ACTION */}
         {downloadState.status === 'error' && (
           <div
             style={{
@@ -465,27 +553,25 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-error)' }}>
               <AlertTriangle size={18} />
               <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
-                {downloadState.error || 'Swarm download failed'}
+                {stateDetails.message}
               </span>
             </div>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-              Make sure at least one peer is actively seeding this model on the configured Go signaling server.
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => void startDownload()}
-              leftIcon={<RefreshCw size={14} />}
-              style={{ alignSelf: 'flex-start' }}
-            >
-              Retry Download
-            </Button>
+
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handlePrimaryAction}
+                leftIcon={<RefreshCw size={14} />}
+              >
+                {stateDetails.recoveryAction ? stateDetails.recoveryAction.label : 'Retry Download'}
+              </Button>
+            </div>
           </div>
         )}
       </div>
 
       {/* HERO SECTION: ANIMATED SPLIT VISUALIZATION */}
-      {/* Shows either the live chunk payment during download, or the cumulative summary upon completion, or the preview */}
       <SplitVisualization
         creatorShareBps={model.creatorShareBps}
         creatorAddress={model.originalCreator}
