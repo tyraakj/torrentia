@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useAccount, useConnect } from 'wagmi'
+import { useAccount, useConnect, useSignTypedData } from 'wagmi'
 import { parseEther } from 'viem'
 import { Link } from 'react-router-dom'
 import { Card, CardHeader, CardBody } from '../components/ui/Card'
@@ -11,7 +11,13 @@ import { ShareSlider } from '../components/upload/ShareSlider'
 import { UploadProgress } from '../components/upload/UploadProgress'
 import { chunkFile, generateModelId, DEFAULT_CHUNK_SIZE } from '../services/chunker'
 import { storeChunk } from '../services/chunk-store'
-import { pinManifest } from '../services/ipfs'
+import {
+  UPLOAD_BROKER_DOMAIN,
+  UPLOAD_INTENT_TYPES,
+  buildUploadIntent,
+  computeManifestHash,
+  submitToUploadBroker,
+} from '../services/broker-client'
 import { useRegisterModel } from '../hooks/use-contracts'
 import { useSeeding } from '../hooks/use-p2p'
 import { ChunkManifest, ChunkInfo } from '../lib/types'
@@ -24,6 +30,7 @@ export const Upload: React.FC = () => {
   const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
   const { register } = useRegisterModel()
+  const { signTypedDataAsync } = useSignTypedData()
 
   // Form State
   const [modelName, setModelName] = useState('')
@@ -94,7 +101,7 @@ export const Upload: React.FC = () => {
         setChunkProgress({ current: processed, total })
       }
 
-      // Step 2: Build & Pin Manifest to IPFS
+      // Step 2: Build & Pin Manifest to IPFS via Upload Broker
       setCurrentStep(2)
       const manifest: ChunkManifest = {
         modelId,
@@ -106,7 +113,43 @@ export const Upload: React.FC = () => {
         createdAt: timestamp,
       }
 
-      const cid = await pinManifest(manifest)
+      const rawJSON = JSON.stringify(manifest)
+      const manifestHash = await computeManifestHash(rawJSON)
+
+      const intent = buildUploadIntent({
+        creator: address as `0x${string}`,
+        modelId: modelId as `0x${string}`,
+        totalSize: file.size,
+        chunkCount: chunksInfo.length,
+        manifestHash,
+      })
+
+      let signature: `0x${string}` = '0x'
+      try {
+        signature = await signTypedDataAsync({
+          domain: UPLOAD_BROKER_DOMAIN,
+          types: UPLOAD_INTENT_TYPES,
+          primaryType: 'UploadIntent',
+          message: {
+            creator: intent.creator,
+            modelId: intent.modelId,
+            totalSize: intent.totalSize,
+            chunkCount: intent.chunkCount,
+            manifestHash: intent.manifestHash,
+            nonce: intent.nonce,
+            deadline: intent.deadline,
+          },
+        })
+      } catch (sigErr) {
+        throw new Error(
+          `Upload authorization rejected: ${
+            sigErr instanceof Error ? sigErr.message : 'User rejected signature'
+          }`
+        )
+      }
+
+      const brokerResult = await submitToUploadBroker(intent, signature, manifest)
+      const cid = brokerResult.cid
       setIpfsCid(cid)
 
       // Step 3: Register Model On-Chain via ModelRegistry
