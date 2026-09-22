@@ -24,6 +24,7 @@ import { SplitVisualization } from '../payment/SplitVisualization'
 import { LivePaymentFeed } from '../payment/LivePaymentFeed'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { CrossChainFundingModal } from '../payment/CrossChainFundingModal'
 
 export interface DownloadSectionProps {
   model: IndexedModel
@@ -44,6 +45,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   const [localHeldCount, setLocalHeldCount] = useState<number>(0)
   const [checkingLocal, setCheckingLocal] = useState(true)
   const [copiedCli, setCopiedCli] = useState(false)
+  const [isCrossChainFundingOpen, setIsCrossChainFundingOpen] = useState(false)
 
   // Download & Seeding hooks
   const {
@@ -140,6 +142,9 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     onExportLocalFile: handleExportLocalFile,
     onRetry: () => {
       void startDownload()
+    },
+    onOpenCrossChainFunding: () => {
+      setIsCrossChainFundingOpen(true)
     },
   })
 
@@ -362,6 +367,20 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                     : manifest
                     ? `Download from Swarm (${parseFloat(totalCostMon).toFixed(6)} MON)`
                     : 'Validating Model Passport...'}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsCrossChainFundingOpen(true)}
+                  style={{
+                    width: '100%',
+                    borderColor: 'hsla(265, 90%, 65%, 0.35)',
+                    color: 'var(--color-accent-bright)',
+                    background: 'hsla(265, 90%, 65%, 0.05)',
+                  }}
+                >
+                  ⚡ Pay from Base, Arbitrum, or Solana (Aurora Intents)
                 </Button>
 
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
@@ -594,6 +613,18 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
           creatorShareBps={model.creatorShareBps}
         />
       )}
+
+      {/* CROSS-CHAIN SWARM FUNDING MODAL (Spec 27: Aurora Intents) */}
+      <CrossChainFundingModal
+        isOpen={isCrossChainFundingOpen}
+        onClose={() => setIsCrossChainFundingOpen(false)}
+        onSuccess={() => {
+          void startDownload()
+        }}
+        requiredAmountWei={model.chunkPrice * BigInt(totalChunks > 0 ? totalChunks : 1)}
+        recipientAddress={address}
+        modelName={model.modelName || 'AI Model Weights'}
+      />
     </div>
   )
 }
