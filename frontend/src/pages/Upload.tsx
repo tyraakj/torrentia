@@ -1,14 +1,29 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useAccount, useConnect, useSignTypedData } from 'wagmi'
 import { parseEther } from 'viem'
 import { Link } from 'react-router-dom'
-import { Card, CardHeader, CardBody } from '../components/ui/Card'
+import {
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Wallet,
+  ShieldCheck,
+  HardDrive,
+  FileCode,
+  Share2,
+  Terminal,
+  Check,
+  AlertTriangle,
+  Flame,
+  Radio,
+  ExternalLink,
+} from 'lucide-react'
+import { Card, CardBody } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Badge } from '../components/ui/Badge'
 import { FileDropZone } from '../components/upload/FileDropZone'
 import { ShareSlider } from '../components/upload/ShareSlider'
-import { UploadProgress } from '../components/upload/UploadProgress'
 import { chunkFile, generateModelId, DEFAULT_CHUNK_SIZE } from '../services/chunker'
 import { storeChunk } from '../services/chunk-store'
 import {
@@ -22,9 +37,18 @@ import { useRegisterModel } from '../hooks/use-contracts'
 import { useSeeding } from '../hooks/use-p2p'
 import { ChunkManifest, ChunkInfo } from '../lib/types'
 import { formatFileSize } from '../lib/utils'
-import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
+import { MODEL_REGISTRY_ADDRESS, getMonadscanTxUrl } from '../lib/contracts'
 import { saveLocalUploadedModel } from '../services/api-client'
-import { UploadCloud, CheckCircle, ArrowRight, Wallet, Sparkles, ShieldCheck } from 'lucide-react'
+import { allowMockFallbacks } from '../lib/app-mode'
+
+const POPULAR_LICENSES = [
+  'MIT',
+  'Apache-2.0',
+  'OpenRAIL-M',
+  'Llama-3-Community',
+  'CC-BY-4.0',
+  'GPL-3.0',
+]
 
 export const Upload: React.FC = () => {
   const { address, isConnected } = useAccount()
@@ -32,85 +56,147 @@ export const Upload: React.FC = () => {
   const { register } = useRegisterModel()
   const { signTypedDataAsync } = useSignTypedData()
 
-  // Form State
-  const [modelName, setModelName] = useState('')
+  // 5-Step Wizard State: 1 | 2 | 3 | 4 | 5
+  const [activeStep, setActiveStep] = useState<number>(1)
+
+  // Step 1: File Selection
   const [file, setFile] = useState<File | null>(null)
+
+  // Step 2: Hashing State
+  const [isHashing, setIsHashing] = useState(false)
+  const [hashProgress, setHashProgress] = useState({ current: 0, total: 0, mbps: 0 })
+  const [chunksInfo, setChunksInfo] = useState<ChunkInfo[]>([])
+  const [hashingComplete, setHashingComplete] = useState(false)
+  const cancelHashingRef = useRef(false)
+
+  // Step 3: Model Passport Metadata
+  const [modelName, setModelName] = useState('')
+  const [version, setVersion] = useState('1.0.0')
+  const [license, setLicense] = useState('Apache-2.0')
+  const [lineage, setLineage] = useState('')
+  const [registeredModelId, setRegisteredModelId] = useState<`0x${string}` | null>(null)
+  const [ipfsCid, setIpfsCid] = useState<string | null>(null)
+  const [isPinning, setIsPinning] = useState(false)
+
+  // Step 4: Economics
   const [chunkPriceMon, setChunkPriceMon] = useState('0.0001')
   const [creatorShareBps, setCreatorShareBps] = useState(7000) // 70% default
 
-  // Upload Execution State
-  const [isUploading, setIsUploading] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [chunkProgress, setChunkProgress] = useState({ current: 0, total: 0 })
-  const [ipfsCid, setIpfsCid] = useState<string | null>(null)
+  // Step 5: Publishing & Seeding
+  const [isRegistering, setIsRegistering] = useState(false)
   const [txHash, setTxHash] = useState<string | null>(null)
-  const [registeredModelId, setRegisteredModelId] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [copiedCli, setCopiedCli] = useState(false)
 
-  // Computed Live Metrics
-  const estimatedChunks = file ? Math.max(1, Math.ceil(file.size / DEFAULT_CHUNK_SIZE)) : 0
-  const pricePerChunkWei = (() => {
-    try {
-      return parseEther(chunkPriceMon || '0')
-    } catch {
-      return 0n
-    }
-  })()
-  const totalCostMon = file ? (parseFloat(chunkPriceMon || '0') * estimatedChunks).toFixed(4) : '0.0000'
-  const creatorPercent = Math.round(creatorShareBps / 100)
-  const seederPercent = 100 - creatorPercent
+  // Seeding Hook
   const { isSeeding, startSeeding, stopSeeding } = useSeeding(
     registeredModelId || undefined,
     address,
-    pricePerChunkWei.toString(),
+    chunkPriceMon ? parseEther(chunkPriceMon).toString() : '100000000000000'
   )
 
-  // Handle Wallet Connect
+  // Auto-fill model name from selected file
+  const handleFileSelect = (selectedFile: File | null) => {
+    setFile(selectedFile)
+    setHashingComplete(false)
+    setChunksInfo([])
+    setIpfsCid(null)
+    setTxHash(null)
+    setPublishError(null)
+
+    if (selectedFile) {
+      const baseName = selectedFile.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+      setModelName(baseName.charAt(0).toUpperCase() + baseName.slice(1))
+    }
+  }
+
+  // Computed Metrics
+  const estimatedChunks = file ? Math.max(1, Math.ceil(file.size / DEFAULT_CHUNK_SIZE)) : 0
+  const creatorPercent = Math.round(creatorShareBps / 100)
+  const seederPercent = 100 - creatorPercent
+  const priceNum = parseFloat(chunkPriceMon || '0')
+  const creatorEarnPerPiece = (priceNum * (creatorPercent / 100)).toFixed(6)
+  const seederEarnPerPiece = (priceNum * (seederPercent / 100)).toFixed(6)
+  const totalRevenue = (priceNum * estimatedChunks).toFixed(4)
+  const creatorTotalEarn = (priceNum * estimatedChunks * (creatorPercent / 100)).toFixed(4)
+  const seederTotalEarn = (priceNum * estimatedChunks * (seederPercent / 100)).toFixed(4)
+
   const handleConnectWallet = () => {
     const injected = connectors.find((c) => c.type === 'injected') || connectors[0]
     if (injected) connect({ connector: injected })
   }
 
-  // Multi-step Upload Execution
-  const handleStartUpload = async () => {
-    if (!address || !file || !modelName.trim()) return
-
-    setIsUploading(true)
-    setError(null)
-    setCurrentStep(1)
+  // Step 2 Action: Stream Slice, Hash & Store in Local IndexedDB
+  const handleStartHashing = async () => {
+    if (!file || !address) return
+    setIsHashing(true)
+    setPublishError(null)
+    cancelHashingRef.current = false
 
     const timestamp = Date.now()
-    const modelId = generateModelId(address, modelName, timestamp)
+    const modelId = generateModelId(address, modelName || file.name, timestamp)
     setRegisteredModelId(modelId)
 
-    const chunksInfo: ChunkInfo[] = []
+    const pieces: ChunkInfo[] = []
     const total = estimatedChunks
-    setChunkProgress({ current: 0, total })
+    setHashProgress({ current: 0, total, mbps: 0 })
+
+    const startTime = performance.now()
+    let bytesProcessed = 0
 
     try {
-      // Step 1: Chunking, Hashing & Storing in IndexedDB
       let processed = 0
       for await (const chunk of chunkFile(file, DEFAULT_CHUNK_SIZE)) {
+        if (cancelHashingRef.current) {
+          setIsHashing(false)
+          return
+        }
+
         await storeChunk(modelId, chunk.index, chunk.data, address)
-        chunksInfo.push({
+        pieces.push({
           index: chunk.index,
           hash: chunk.hash,
           size: chunk.data.byteLength,
         })
         processed++
-        setChunkProgress({ current: processed, total })
+        bytesProcessed += chunk.data.byteLength
+
+        const elapsedSec = (performance.now() - startTime) / 1000
+        const mbps = elapsedSec > 0 ? (bytesProcessed / (1024 * 1024)) / elapsedSec : 0
+
+        setHashProgress({
+          current: processed,
+          total,
+          mbps: Math.round(mbps * 10) / 10,
+        })
       }
 
-      // Step 2: Build & Pin Manifest to IPFS via Upload Broker
-      setCurrentStep(2)
+      setChunksInfo(pieces)
+      setHashingComplete(true)
+      setIsHashing(false)
+      setActiveStep(3)
+    } catch (err: unknown) {
+      setIsHashing(false)
+      const msg = err instanceof Error ? err.message : String(err)
+      setPublishError(`Local hashing error: ${msg}`)
+    }
+  }
+
+  // Step 3 Action: Pin Model Passport via Upload Broker
+  const handlePinPassport = async () => {
+    if (!file || !address || !registeredModelId || chunksInfo.length === 0) return
+    setIsPinning(true)
+    setPublishError(null)
+
+    try {
       const manifest: ChunkManifest = {
-        modelId,
-        modelName: modelName.trim(),
+        modelId: registeredModelId,
+        modelName: modelName.trim() || file.name,
         totalSize: file.size,
         chunkSize: DEFAULT_CHUNK_SIZE,
         chunks: chunksInfo,
-        modelCard: `# ${modelName.trim()}\n\nUploaded by ${address} to Torrentia P2P Swarm.`,
-        createdAt: timestamp,
+        modelCard: `# ${modelName.trim() || file.name} (v${version})\n\n- **License**: ${license}\n- **Lineage**: ${lineage || 'Base Architecture'}\n- **Verified Pieces**: ${chunksInfo.length} pieces\n\nUploaded by \`${address}\` to the Torrentia P2P Swarm on Monad.`,
+        createdAt: Date.now(),
       }
 
       const rawJSON = JSON.stringify(manifest)
@@ -118,352 +204,772 @@ export const Upload: React.FC = () => {
 
       const intent = buildUploadIntent({
         creator: address as `0x${string}`,
-        modelId: modelId as `0x${string}`,
+        modelId: registeredModelId as `0x${string}`,
         totalSize: file.size,
         chunkCount: chunksInfo.length,
         manifestHash,
       })
 
-      let signature: `0x${string}` = '0x'
-      try {
-        signature = await signTypedDataAsync({
-          domain: UPLOAD_BROKER_DOMAIN,
-          types: UPLOAD_INTENT_TYPES,
-          primaryType: 'UploadIntent',
-          message: {
-            creator: intent.creator,
-            modelId: intent.modelId,
-            totalSize: intent.totalSize,
-            chunkCount: intent.chunkCount,
-            manifestHash: intent.manifestHash,
-            nonce: intent.nonce,
-            deadline: intent.deadline,
-          },
-        })
-      } catch (sigErr) {
-        throw new Error(
-          `Upload authorization rejected: ${
-            sigErr instanceof Error ? sigErr.message : 'User rejected signature'
-          }`
-        )
-      }
+      const signature = await signTypedDataAsync({
+        domain: UPLOAD_BROKER_DOMAIN,
+        types: UPLOAD_INTENT_TYPES,
+        primaryType: 'UploadIntent',
+        message: {
+          creator: intent.creator,
+          modelId: intent.modelId,
+          totalSize: intent.totalSize,
+          chunkCount: intent.chunkCount,
+          manifestHash: intent.manifestHash,
+          nonce: intent.nonce,
+          deadline: intent.deadline,
+        },
+      })
 
       const brokerResult = await submitToUploadBroker(intent, signature, manifest)
-      const cid = brokerResult.cid
-      setIpfsCid(cid)
+      setIpfsCid(brokerResult.cid)
+      setIsPinning(false)
+      setActiveStep(4)
+    } catch (err: unknown) {
+      setIsPinning(false)
+      const msg = err instanceof Error ? err.message : String(err)
 
-      // Step 3: Register Model On-Chain via ModelRegistry
-      setCurrentStep(3)
-      const metadataURI = `ipfs://${cid}`
-      let hash = '0xmocktx' + Math.random().toString(16).substring(2).padEnd(56, '0')
+      // Strict Mode Governance (Spec 25): No fake fallback CIDs in testnet/mainnet
+      if (!allowMockFallbacks()) {
+        setPublishError(`Passport Pinning Failed: ${msg}. You must successfully pin metadata to IPFS before publishing on Monad.`)
+        return
+      }
 
+      // Demo fallback only
+      const demoCid = `bafkreidemo${Math.random().toString(16).substring(2, 34)}`
+      setIpfsCid(demoCid)
+      setActiveStep(4)
+    }
+  }
+
+  // Step 5 Action: Register on Monad
+  const handleRegisterOnChain = async () => {
+    if (!registeredModelId || !ipfsCid || !file || !address) return
+    setIsRegistering(true)
+    setPublishError(null)
+
+    const metadataURI = `ipfs://${ipfsCid}`
+    const priceWei = parseEther(chunkPriceMon || '0.0001')
+
+    try {
       if (MODEL_REGISTRY_ADDRESS && MODEL_REGISTRY_ADDRESS !== '0x0000000000000000000000000000000000000000') {
-        hash = await register({
-          modelId,
+        const hash = await register({
+          modelId: registeredModelId,
           metadataURI,
-          chunkPrice: pricePerChunkWei,
+          chunkPrice: priceWei,
           creatorShareBps,
           chunkCount: chunksInfo.length,
         })
+        setTxHash(hash)
       } else {
-        console.warn('ModelRegistry address not configured — registering in local swarm demo mode')
+        if (!allowMockFallbacks()) {
+          throw new Error('ModelRegistry contract address not configured on Monad testnet.')
+        }
+        setTxHash('0xmocktx' + Math.random().toString(16).substring(2).padEnd(56, '0'))
       }
-      setTxHash(hash)
 
-      // Save model locally so it instantly reflects in the Marketplace
+      // Save locally to immediate catalog
       saveLocalUploadedModel({
-        modelId,
-        modelName: modelName.trim(),
+        modelId: registeredModelId,
+        modelName: modelName.trim() || file.name,
         originalCreator: address,
         metadataURI,
-        chunkPrice: pricePerChunkWei,
+        chunkPrice: priceWei,
         creatorShareBps,
         chunkCount: chunksInfo.length,
         totalSize: file.size,
         active: true,
-        seederCount: 0,
+        seederCount: 1,
         totalDownloads: 0,
         registeredAt: Date.now(),
         category: file.name.toLowerCase().includes('lora') ? 'LoRA' : 'Vision',
-        format: file.name.endsWith('.safetensors') ? 'Safetensors' : 'ONNX',
+        format: file.name.endsWith('.safetensors') ? 'Safetensors' : file.name.endsWith('.gguf') ? 'GGUF' : 'ONNX',
       })
 
-      // Step 4: Ready to Seed
-      setCurrentStep(4)
+      setIsRegistering(false)
     } catch (err: unknown) {
-      console.error('Upload flow error:', err)
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred during upload.'
-      setError(message)
+      setIsRegistering(false)
+      const msg = err instanceof Error ? err.message : String(err)
+      setPublishError(`On-chain registration failed: ${msg}`)
     }
   }
 
-  const handleRetry = () => {
-    handleStartUpload()
-  }
-
-  // Render Disconnected State
-  if (!isConnected || !address) {
-    return (
-      <div style={{ maxWidth: '640px', margin: 'var(--space-12) auto', padding: 'var(--space-8)', width: '100%' }}>
-        <Card glow={true}>
-          <CardBody style={{ textAlign: 'center', padding: 'var(--space-12) var(--space-8)' }}>
-            <div
-              style={{
-                width: '64px',
-                height: '64px',
-                borderRadius: '50%',
-                background: 'rgba(124, 58, 237, 0.1)',
-                border: '1px solid rgba(124, 58, 237, 0.2)',
-                color: '#7c3aed',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto var(--space-4)',
-              }}
-            >
-              <Wallet size={32} />
-            </div>
-            <h2 style={{ fontSize: 'var(--text-2xl)', fontWeight: 700, marginBottom: 'var(--space-2)' }}>
-              Connect Wallet to Upload
-            </h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-6)' }}>
-              To distribute AI models and receive automatic on-chain revenue splits, connect your wallet to Monad Testnet.
-            </p>
-            <Button variant="primary" size="lg" onClick={handleConnectWallet}>
-              Connect Wallet
-            </Button>
-          </CardBody>
-        </Card>
-      </div>
-    )
+  const handleCopyCli = () => {
+    if (!registeredModelId) return
+    const cmd = `torrentia-seeder --model ${registeredModelId}`
+    navigator.clipboard.writeText(cmd)
+    setCopiedCli(true)
+    setTimeout(() => setCopiedCli(false), 2000)
   }
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
-      <div style={{ marginBottom: 'var(--space-8)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
-          <Sparkles size={16} color="var(--color-accent-bright)" />
-          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-accent-bright)' }}>
-            P2P MODEL REGISTRATION
-          </span>
-        </div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
+      {/* Page Title & Breadcrumb */}
+      <div style={{ marginBottom: 'var(--space-6)' }}>
         <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
-          Upload & Seed AI Model
+          Publish Model to Swarm
         </h1>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)' }}>
-          Your file is chunked and hashed directly in your browser. No centralized server ever hosts your model.
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
+          Five-step guided wizard to slice weights into verified pieces, pin the Model Passport, and configure atomic on-chain splits.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: isUploading ? '1fr' : '1.4fr 1fr', gap: 'var(--space-8)' }}>
-        {/* Left Column: Form or Stepper Progress */}
-        <div>
-          {isUploading ? (
-            <Card glow={true}>
-              <CardHeader>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                  <UploadCloud size={20} color="var(--color-accent)" />
-                  <span style={{ fontWeight: 600, fontSize: 'var(--text-base)' }}>
-                    Uploading "{modelName}"
-                  </span>
-                </div>
-                {currentStep === 4 && <Badge variant={isSeeding ? 'active' : 'seeding'}>{isSeeding ? 'Live & Seeding' : 'Ready to Seed'}</Badge>}
-              </CardHeader>
-              <CardBody style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-                <UploadProgress
-                  currentStep={currentStep}
-                  chunkProgress={chunkProgress}
-                  ipfsCid={ipfsCid}
-                  txHash={txHash}
-                  error={error}
-                  onRetry={handleRetry}
-                />
-
-                {currentStep === 4 && (
-                  <div
-                    style={{
-                      padding: 'var(--space-6)',
-                      borderRadius: 'var(--radius-md)',
-                      background: 'rgba(16, 185, 129, 0.08)',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 'var(--space-3)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-success)' }}>
-                      <CheckCircle size={20} />
-                      <span style={{ fontWeight: 700, fontSize: 'var(--text-base)' }}>
-                        Model Successfully Registered & Initialized!
-                      </span>
-                    </div>
-                    <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                      All {chunkProgress.total} chunks have been content-hashed and stored in your wallet-scoped browser cache. Start seeding to announce them to the swarm.
-                    </p>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={async () => {
-                          try {
-                            if (isSeeding) stopSeeding()
-                            else await startSeeding()
-                          } catch (err) {
-                            setError(err instanceof Error ? err.message : 'Unable to start seeding.')
-                          }
-                        }}
-                      >
-                        {isSeeding ? 'Stop Seeding' : 'Start Seeding to Swarm'}
-                      </Button>
-                      <Link to={`/model/${registeredModelId}`}>
-                        <Button variant="primary" size="sm" rightIcon={<ArrowRight size={14} />}>
-                          View Model Page
-                        </Button>
-                      </Link>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          setIsUploading(false)
-                          setFile(null)
-                          setModelName('')
-                        }}
-                      >
-                        Upload Another Model
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardBody>
-            </Card>
-          ) : (
-            <Card>
-              <CardHeader>
-                <span style={{ fontWeight: 600, fontSize: 'var(--text-base)' }}>
-                  Model Configuration
-                </span>
-                <Badge variant="seeding">Monad Swarm</Badge>
-              </CardHeader>
-              <CardBody style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-                {/* Model Name */}
-                <Input
-                  label="Model Repository / Name"
-                  placeholder="e.g. meta-llama/Llama-3-8B-Instruct"
-                  value={modelName}
-                  onChange={(e) => setModelName(e.target.value)}
-                  helperText="Unique name for your model manifest"
-                />
-
-                {/* File DropZone */}
-                <div>
-                  <label style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.35rem' }}>
-                    Model File
-                  </label>
-                  <FileDropZone file={file} onFileSelect={setFile} />
-                </div>
-
-                {/* Chunk Price */}
-                <Input
-                  label="Chunk Price (in MON)"
-                  type="number"
-                  step="0.00001"
-                  min="0.000001"
-                  value={chunkPriceMon}
-                  onChange={(e) => setChunkPriceMon(e.target.value)}
-                  helperText="Uniform price paid by downloaders per 1MB chunk"
-                />
-
-                {/* Revenue Split Slider */}
-                <ShareSlider
-                  valueBps={creatorShareBps}
-                  onChange={setCreatorShareBps}
-                />
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  disabled={!file || !modelName.trim()}
-                  onClick={handleStartUpload}
-                  leftIcon={<UploadCloud size={18} />}
-                  style={{ marginTop: 'var(--space-2)' }}
-                >
-                  Start Chunking & Register Model
-                </Button>
-              </CardBody>
-            </Card>
-          )}
-        </div>
-
-        {/* Right Column: Live Economics & Summary Card */}
-        {!isUploading && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <Card>
-              <CardHeader>
-                <span style={{ fontWeight: 600, fontSize: 'var(--text-sm)' }}>
-                  Swarm Economics Preview
-                </span>
-                <ShieldCheck size={16} color="var(--color-accent-bright)" />
-              </CardHeader>
-              <CardBody style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Selected File Size:</span>
-                  <span style={{ fontWeight: 600 }}>{file ? formatFileSize(file.size) : 'No file selected'}</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Total Chunk Count:</span>
-                  <span style={{ fontWeight: 600 }}>{estimatedChunks} chunks (1 MB each)</span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <span style={{ color: 'var(--color-text-muted)' }}>Price per Chunk:</span>
-                  <span style={{ fontWeight: 600 }}>{chunkPriceMon} MON</span>
-                </div>
-
-                <div style={{ height: '1px', background: 'var(--color-border-glass)' }} />
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <span style={{ color: 'var(--color-creator-share)', fontWeight: 600 }}>Your Royalty (Creator {creatorPercent}%):</span>
-                  <span style={{ fontWeight: 700, color: 'var(--color-creator-share)' }}>
-                    {(parseFloat(chunkPriceMon || '0') * (creatorPercent / 100)).toFixed(6)} MON / chunk
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-xs)' }}>
-                  <span style={{ color: 'var(--color-seeder-share)', fontWeight: 600 }}>Seeder Earns ({seederPercent}%):</span>
-                  <span style={{ fontWeight: 700, color: 'var(--color-seeder-share)' }}>
-                    {(parseFloat(chunkPriceMon || '0') * (seederPercent / 100)).toFixed(6)} MON / chunk
-                  </span>
-                </div>
-
-                <div style={{ height: '1px', background: 'var(--color-border-glass)' }} />
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', fontWeight: 700 }}>
-                  <span>Total Full Model Cost:</span>
-                  <span className="gradient-text">{totalCostMon} MON</span>
-                </div>
-              </CardBody>
-            </Card>
-
+      {/* 5-Step Step Indicator */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: 'var(--space-2)',
+          marginBottom: 'var(--space-8)',
+        }}
+      >
+        {[
+          { num: 1, label: '1. Select File' },
+          { num: 2, label: '2. Prepare & Hash' },
+          { num: 3, label: '3. Model Passport' },
+          { num: 4, label: '4. Set Economics' },
+          { num: 5, label: '5. Publish & Seed' },
+        ].map((s) => {
+          const isCurrent = activeStep === s.num
+          const isDone = activeStep > s.num
+          return (
             <div
-              className="glass"
+              key={s.num}
               style={{
-                borderRadius: 'var(--radius-md)',
-                padding: 'var(--space-4)',
-                fontSize: 'var(--text-xs)',
-                color: '#57534e',
-                lineHeight: 1.4,
-                background: 'rgba(255, 255, 255, 0.78)',
-                border: '1px solid rgba(28, 25, 23, 0.08)',
+                padding: '0.625rem 0.75rem',
+                borderRadius: '12px',
+                background: isCurrent
+                  ? 'rgba(124, 58, 237, 0.1)'
+                  : isDone
+                  ? 'rgba(16, 185, 129, 0.08)'
+                  : 'rgba(28, 25, 23, 0.03)',
+                border: isCurrent
+                  ? '1px solid #7c3aed'
+                  : isDone
+                  ? '1px solid rgba(16, 185, 129, 0.25)'
+                  : '1px solid rgba(28, 25, 23, 0.08)',
+                color: isCurrent ? '#7c3aed' : isDone ? '#059669' : '#78716c',
+                fontWeight: isCurrent ? 700 : 600,
+                fontSize: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s ease',
               }}
             >
-              <div style={{ fontWeight: 600, color: '#1c1917', marginBottom: '0.25rem' }}>
-                Why chunking matters
+              {isDone ? <Check size={13} /> : <span>{s.num}.</span>}
+              <span>{s.label.split('. ')[1]}</span>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Error Alert */}
+      {publishError && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '12px',
+            padding: '1rem',
+            marginBottom: 'var(--space-6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            color: '#b91c1c',
+            fontSize: '0.875rem',
+          }}
+        >
+          <AlertTriangle size={20} />
+          <div style={{ flex: 1 }}>{publishError}</div>
+        </div>
+      )}
+
+      {/* Main Grid: Wizard Form on Left (1.6fr), Sticky Summary on Right (1fr) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(0, 1.6fr) minmax(320px, 1fr)',
+          gap: 'var(--space-8)',
+          alignItems: 'start',
+        }}
+      >
+        {/* WIZARD CARD */}
+        <Card>
+          <CardBody style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            {/* STEP 1: SELECT MODEL FILE */}
+            {activeStep === 1 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Step 1: Select Model File
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                    Provide weights in open standard formats (.gguf, .safetensors, .onnx). Executables and scripts are blocked.
+                  </p>
+                </div>
+
+                <FileDropZone file={file} onFileSelect={handleFileSelect} />
+
+                {file && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+                    <Button
+                      variant="primary"
+                      onClick={() => setActiveStep(2)}
+                      rightIcon={<ArrowRight size={16} />}
+                    >
+                      Continue to Slicing & Hashing
+                    </Button>
+                  </div>
+                )}
               </div>
-              Downloader browsers fetch chunks in parallel from whoever is closest or fastest. With every chunk payment, the smart contract on Monad automatically splits the fee between you and that serving peer.
+            )}
+
+            {/* STEP 2: LOCAL STREAMING & HASHING */}
+            {activeStep === 2 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Step 2: Prepare & Local Streaming
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                    Slice weights into uniform 1 MB verified pieces and calculate cryptographic SHA-256 hashes in your browser.
+                  </p>
+                </div>
+
+                {/* Hashing Stats Box */}
+                <div
+                  style={{
+                    background: 'rgba(28, 25, 23, 0.03)',
+                    border: '1px solid rgba(28, 25, 23, 0.08)',
+                    borderRadius: '14px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600 }}>
+                      {hashingComplete
+                        ? 'All Pieces Sliced & Hashed!'
+                        : isHashing
+                        ? `Processing Pieces: ${hashProgress.current} / ${hashProgress.total}`
+                        : 'Ready to slice file into 1 MB pieces'}
+                    </span>
+                    {isHashing && (
+                      <span style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-mono)', color: '#7c3aed', fontWeight: 700 }}>
+                        {hashProgress.mbps} MB/s
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar */}
+                  <div
+                    style={{
+                      height: '8px',
+                      background: 'rgba(28, 25, 23, 0.08)',
+                      borderRadius: '9999px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: '100%',
+                        width: `${estimatedChunks > 0 ? (hashProgress.current / estimatedChunks) * 100 : 0}%`,
+                        background: 'linear-gradient(90deg, #7c3aed, #10b981)',
+                        transition: 'width 0.15s ease-out',
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#78716c' }}>
+                    <span>Target Storage: Local Model Storage (IndexedDB)</span>
+                    <span>Footprint: ~{formatFileSize(file?.size || 0)}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Button variant="ghost" onClick={() => setActiveStep(1)} leftIcon={<ArrowLeft size={16} />}>
+                    Back
+                  </Button>
+
+                  {!hashingComplete ? (
+                    <Button
+                      variant="primary"
+                      onClick={handleStartHashing}
+                      isLoading={isHashing}
+                      disabled={isHashing}
+                      leftIcon={<HardDrive size={16} />}
+                    >
+                      {isHashing ? 'Hashing Pieces...' : 'Start Slicing & Hashing'}
+                    </Button>
+                  ) : (
+                    <Button variant="primary" onClick={() => setActiveStep(3)} rightIcon={<ArrowRight size={16} />}>
+                      Continue to Passport
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: REVIEW MODEL PASSPORT */}
+            {activeStep === 3 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Step 3: Review Model Passport
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                    Define the cryptographic passport metadata, licensing, and upstream base model lineage.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
+                      Model Name
+                    </label>
+                    <Input
+                      value={modelName}
+                      onChange={(e) => setModelName(e.target.value)}
+                      placeholder="e.g. Llama-3-8B-Instruct-GGUF"
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
+                        Version (SemVer)
+                      </label>
+                      <Input
+                        value={version}
+                        onChange={(e) => setVersion(e.target.value)}
+                        placeholder="1.0.0"
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
+                        SPDX License
+                      </label>
+                      <select
+                        value={license}
+                        onChange={(e) => setLicense(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.625rem 0.75rem',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(28, 25, 23, 0.16)',
+                          background: '#ffffff',
+                          fontSize: '0.875rem',
+                          color: '#1c1917',
+                        }}
+                      >
+                        {POPULAR_LICENSES.map((lic) => (
+                          <option key={lic} value={lic}>
+                            {lic}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
+                      Upstream Lineage / Ancestry (Optional)
+                    </label>
+                    <Input
+                      value={lineage}
+                      onChange={(e) => setLineage(e.target.value)}
+                      placeholder="e.g. meta-llama/Meta-Llama-3-8B"
+                    />
+                  </div>
+
+                  {/* Passport IPFS Pinning Status */}
+                  <div
+                    style={{
+                      background: ipfsCid ? 'rgba(16, 185, 129, 0.08)' : 'rgba(28, 25, 23, 0.03)',
+                      border: ipfsCid ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(28, 25, 23, 0.08)',
+                      borderRadius: '12px',
+                      padding: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#78716c', fontWeight: 600 }}>
+                        IPFS Passport CID
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: ipfsCid ? '#059669' : '#1c1917', wordBreak: 'break-all' }}>
+                        {ipfsCid || 'Not pinned yet (requires wallet signature)'}
+                      </div>
+                    </div>
+
+                    {!ipfsCid && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handlePinPassport}
+                        isLoading={isPinning}
+                        leftIcon={<FileCode size={14} />}
+                      >
+                        Pin via Broker
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Button variant="ghost" onClick={() => setActiveStep(2)} leftIcon={<ArrowLeft size={16} />}>
+                    Back
+                  </Button>
+
+                  <Button
+                    variant="primary"
+                    disabled={!ipfsCid}
+                    onClick={() => setActiveStep(4)}
+                    rightIcon={<ArrowRight size={16} />}
+                  >
+                    Continue to Economics
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: SET ECONOMICS & ROYALTY SPLIT */}
+            {activeStep === 4 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Step 4: Set Economics & Royalty Split
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                    Specify uniform pricing per 1 MB piece and the on-chain revenue split between you and serving seeders.
+                  </p>
+                </div>
+
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
+                    Price per Verified Piece (MON)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.00001"
+                    min="0"
+                    value={chunkPriceMon}
+                    onChange={(e) => setChunkPriceMon(e.target.value)}
+                    placeholder="0.0001"
+                  />
+                </div>
+
+                <ShareSlider
+                  valueBps={creatorShareBps}
+                  onChange={(bps) => setCreatorShareBps(bps)}
+                />
+
+                {/* Plain Language Economics Card (Spec 25) */}
+                <div
+                  style={{
+                    background: 'rgba(28, 25, 23, 0.03)',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    border: '1px solid rgba(28, 25, 23, 0.08)',
+                    fontSize: '0.8125rem',
+                    lineHeight: 1.5,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: '#1c1917' }}>Plain-Language Split Calculations:</div>
+                  <div style={{ color: '#44403c' }}>
+                    • <strong>Per 1 MB Piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and the serving seeder receives <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
+                  </div>
+                  <div style={{ color: '#44403c' }}>
+                    • <strong>Full Model Download ({estimatedChunks} pieces):</strong> Creator earns <strong>{creatorTotalEarn} MON</strong>, Seeders earn <strong>{seederTotalEarn} MON</strong>.
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Button variant="ghost" onClick={() => setActiveStep(3)} leftIcon={<ArrowLeft size={16} />}>
+                    Back
+                  </Button>
+
+                  <Button variant="primary" onClick={() => setActiveStep(5)} rightIcon={<ArrowRight size={16} />}>
+                    Continue to Publish
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: PUBLISH & SEED */}
+            {activeStep === 5 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                <div>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
+                    Step 5: Publish & Seed
+                  </h3>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
+                    Register your model on Monad Testnet and activate swarm seeding to distribute verified pieces.
+                  </p>
+                </div>
+
+                {/* Action Card A: Register on Monad */}
+                <div
+                  style={{
+                    background: txHash ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+                    border: txHash ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(28, 25, 23, 0.12)',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Share2 size={18} color="#7c3aed" />
+                      <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
+                        Action A: Register on Monad
+                      </span>
+                    </div>
+                    {txHash && (
+                      <Badge variant="active">
+                        <CheckCircle2 size={12} /> Confirmed on Monad
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', margin: 0 }}>
+                    Executes <code>ModelRegistry.registerModel</code> to permanently register your model ID, IPFS passport URI, chunk count, and creator share on Monad.
+                  </p>
+
+                  {!txHash ? (
+                    <Button
+                      variant="primary"
+                      onClick={handleRegisterOnChain}
+                      isLoading={isRegistering}
+                      disabled={isRegistering || !isConnected}
+                    >
+                      {!isConnected ? 'Connect Wallet to Register' : 'Sign & Register on Monad'}
+                    </Button>
+                  ) : (
+                    <div style={{ fontSize: 'var(--text-xs)', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>Transaction confirmed:</span>
+                      <a
+                        href={getMonadscanTxUrl(txHash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ color: '#7c3aed', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                      >
+                        {txHash.slice(0, 14)}...{txHash.slice(-8)}
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Card B: Swarm Seeding */}
+                <div
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    border: '1px solid rgba(28, 25, 23, 0.12)',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Flame size={18} color="var(--color-warning)" />
+                      <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
+                        Action B: Swarm Seeding
+                      </span>
+                    </div>
+                    {isSeeding && (
+                      <Badge variant="seeding">
+                        <Radio size={12} /> Active Browser Seeder
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', margin: 0 }}>
+                    Seed pieces from this browser tab, or run the high-performance Persistent CLI Seeder in the background.
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    {isSeeding ? (
+                      <Button variant="secondary" size="sm" onClick={stopSeeding}>
+                        Stop Browser Seeding
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={startSeeding}
+                        leftIcon={<Flame size={14} color="var(--color-warning)" />}
+                      >
+                        Start Seeding in This Browser
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyCli}
+                      leftIcon={copiedCli ? <Check size={14} /> : <Terminal size={14} />}
+                    >
+                      {copiedCli ? 'Copied CLI Command' : 'Copy CLI Command'}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Success Next Steps */}
+                {txHash && (
+                  <div
+                    style={{
+                      background: 'hsla(155, 75%, 45%, 0.1)',
+                      border: '1px solid hsla(155, 75%, 45%, 0.3)',
+                      borderRadius: '14px',
+                      padding: '1rem',
+                      fontSize: 'var(--text-xs)',
+                      color: '#065f46',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong>🎉 Model Published!</strong> View your live model on the{' '}
+                    <Link to={`/model/${registeredModelId}`} style={{ color: '#7c3aed', fontWeight: 700 }}>
+                      Model Detail page
+                    </Link>{' '}
+                    or check your creator stats in the{' '}
+                    <Link to="/dashboard" style={{ color: '#7c3aed', fontWeight: 700 }}>
+                      Creator Dashboard
+                    </Link>
+                    .
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <Button variant="ghost" onClick={() => setActiveStep(4)} leftIcon={<ArrowLeft size={16} />}>
+                    Back to Economics
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* PERSISTENT RIGHT-HAND SUMMARY PANEL (Spec 25) */}
+        <div
+          className="glass"
+          style={{
+            position: 'sticky',
+            top: '84px',
+            borderRadius: '20px',
+            padding: 'var(--space-6)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-4)',
+            background: 'rgba(255, 255, 255, 0.85)',
+            border: '1px solid rgba(28, 25, 23, 0.1)',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.04)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileCode size={18} color="#7c3aed" />
+            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, margin: 0 }}>
+              Model Passport Summary
+            </h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8125rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Model Name</span>
+              <span style={{ fontWeight: 600, color: '#1c1917' }}>{modelName || '—'}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Total Size</span>
+              <span style={{ fontWeight: 600, color: '#1c1917' }}>{file ? formatFileSize(file.size) : '—'}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Verified Pieces</span>
+              <span style={{ fontWeight: 600, color: '#1c1917' }}>{estimatedChunks > 0 ? `${estimatedChunks} pieces (1 MB ea)` : '—'}</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Piece Price</span>
+              <span style={{ fontWeight: 600, color: 'var(--color-accent-bright)', fontFamily: 'var(--font-mono)' }}>
+                {chunkPriceMon ? `${chunkPriceMon} MON` : '—'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>On-Chain Split</span>
+              <span style={{ fontWeight: 600, color: '#1c1917' }}>
+                {creatorPercent}% Creator / {seederPercent}% Peer
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Est. Total Revenue</span>
+              <span style={{ fontWeight: 700, color: '#059669', fontFamily: 'var(--font-mono)' }}>
+                {totalRevenue} MON
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716c' }}>Creator Account</span>
+              {isConnected && address ? (
+                <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                  {address.slice(0, 6)}...{address.slice(-4)}
+                </span>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleConnectWallet}
+                  leftIcon={<Wallet size={12} />}
+                  style={{ fontSize: '11px', padding: '2px 8px', height: 'auto' }}
+                >
+                  Connect
+                </Button>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#78716c' }}>IPFS CID</span>
+              <span style={{ fontWeight: 600, color: ipfsCid ? '#059669' : '#78716c', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                {ipfsCid ? `${ipfsCid.slice(0, 10)}...${ipfsCid.slice(-6)}` : 'Pending Step 3'}
+              </span>
             </div>
           </div>
-        )}
+
+          <div
+            style={{
+              padding: '10px',
+              borderRadius: '10px',
+              background: 'rgba(124, 58, 237, 0.05)',
+              border: '1px solid rgba(124, 58, 237, 0.15)',
+              fontSize: '11px',
+              color: '#57534e',
+              lineHeight: 1.4,
+            }}
+          >
+            <ShieldCheck size={14} color="#7c3aed" style={{ display: 'inline', marginRight: '4px', verticalAlign: '-2px' }} />
+            <strong>Non-Custodial Swarm:</strong> Only the model passport is stored on IPFS. Weight pieces remain in peer storage and are transferred peer-to-peer.
+          </div>
+        </div>
       </div>
     </div>
   )
