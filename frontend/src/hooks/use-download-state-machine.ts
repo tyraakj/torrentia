@@ -32,6 +32,7 @@ export interface UseDownloadStateMachineProps {
   onConnectWallet: () => void
   onExportLocalFile: () => void
   onRetry: () => void
+  onOpenCrossChainFunding?: () => void
 }
 
 export function useDownloadStateMachine({
@@ -48,6 +49,7 @@ export function useDownloadStateMachine({
   onConnectWallet,
   onExportLocalFile,
   onRetry,
+  onOpenCrossChainFunding,
 }: UseDownloadStateMachineProps): {
   stateDetails: StateDetails
   handlePrimaryAction: () => void
@@ -160,8 +162,12 @@ export function useDownloadStateMachine({
             activeTransport: 'none',
             message: `Insufficient MON balance (${formatEther(userBalanceWei)} MON available, ${formatEther(totalCostWei)} MON required)`,
             recoveryAction: {
-              label: 'Open Monad Faucet',
-              action: () => window.open('https://testnet.monad.xyz', '_blank'),
+              label: onOpenCrossChainFunding
+                ? '⚡ Pay from Any Chain (USDC / ETH)'
+                : 'Open Monad Faucet',
+              action:
+                onOpenCrossChainFunding ||
+                (() => window.open('https://testnet.monad.xyz', '_blank')),
             },
           }
         }
