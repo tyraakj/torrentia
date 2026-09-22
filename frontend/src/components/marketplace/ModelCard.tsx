@@ -57,6 +57,23 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
           }}
         >
           <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            {model.isDemo && (
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  padding: '2px 7px',
+                  borderRadius: '9999px',
+                  background: 'rgba(245, 158, 11, 0.12)',
+                  color: '#b45309',
+                  border: '1px solid rgba(245, 158, 11, 0.3)',
+                  letterSpacing: '0.03em',
+                }}
+              >
+                Demo Data
+              </span>
+            )}
             {model.format && (
               <span
                 style={{
@@ -91,14 +108,18 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
             )}
           </div>
 
-          {/* Live Seeder Swarm Indicator */}
-          {model.seederCount > 0 ? (
+          {/* Live Peer Swarm Indicator */}
+          {model.staleSeederData ? (
+            <Badge variant="inactive" dot={true} style={{ fontSize: '11px', padding: '3px 9px' }}>
+              Unknown / Stale
+            </Badge>
+          ) : model.seederCount > 0 ? (
             <Badge variant="seeding" dot={true} style={{ fontSize: '11px', padding: '3px 9px' }}>
-              {model.seederCount} {model.seederCount === 1 ? 'seeder' : 'seeders'}
+              {model.seederCount} {model.seederCount === 1 ? 'peer' : 'peers'}
             </Badge>
           ) : (
             <Badge variant="inactive" dot={true} style={{ fontSize: '11px', padding: '3px 9px' }}>
-              0 seeders
+              0 peers online
             </Badge>
           )}
         </div>
@@ -141,17 +162,17 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
             marginBottom: 'var(--space-4)',
           }}
         >
-          {/* Chunk Price */}
+          {/* Piece Price */}
           <div>
             <div style={{ fontSize: '10px', color: '#78716c', textTransform: 'uppercase', fontWeight: 600, marginBottom: '2px' }}>
-              Price / Chunk
+              Price / Piece
             </div>
             <div style={{ fontWeight: 700, fontSize: 'var(--text-sm)', color: '#1c1917' }}>
               <MonAmount amountWei={model.chunkPrice} />
             </div>
           </div>
 
-          {/* Size & Chunks */}
+          {/* Size & Pieces */}
           <div>
             <div style={{ fontSize: '10px', color: '#78716c', textTransform: 'uppercase', fontWeight: 600, marginBottom: '2px' }}>
               Swarm Size
@@ -159,19 +180,19 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
             <div style={{ fontWeight: 600, fontSize: 'var(--text-xs)', color: '#44403c', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <HardDrive size={12} color="#78716c" />
               <span>{sizeFormatted}</span>
-              <span style={{ color: '#a8a29e' }}>({model.chunkCount} ch)</span>
+              <span style={{ color: '#a8a29e' }}>({model.chunkCount} pcs)</span>
             </div>
           </div>
         </div>
 
-        {/* 70/30 Split Bar Preview */}
+        {/* Creator / Peer Split Bar Preview */}
         <div style={{ marginBottom: 'var(--space-2)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', fontWeight: 600, marginBottom: '5px' }}>
             <span style={{ color: '#4f46e5' }}>
               Creator {creatorPercent}
             </span>
             <span style={{ color: '#059669' }}>
-              Seeder {seederPercent}
+              Peer {seederPercent}
             </span>
           </div>
           <div

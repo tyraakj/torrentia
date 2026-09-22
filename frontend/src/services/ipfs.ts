@@ -1,5 +1,6 @@
 import { ChunkManifest } from '../lib/types'
 import { computeManifestHash, buildUploadIntent, submitToUploadBroker } from './broker-client'
+import { allowMockFallbacks } from '../lib/app-mode'
 
 const IPFS_TIMEOUT_MS = 30000
 
@@ -39,6 +40,13 @@ export async function pinManifest(
       }
       return result.cid
     } catch (err) {
+      if (!allowMockFallbacks()) {
+        throw new Error(
+          `Failed to pin model passport to IPFS via upload broker: ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        )
+      }
       console.warn('Broker manifest pinning error, falling back to local demo storage:', err)
       const fallbackCid = `bafkreifallback${manifest.modelId.replace('0x', '').slice(0, 32)}`
       localManifestCache.set(fallbackCid, manifest)

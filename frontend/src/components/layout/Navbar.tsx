@@ -14,9 +14,9 @@ export const Navbar: React.FC = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false)
 
   const navLinks = [
-    { to: '/marketplace', label: 'Swarm Stream', icon: <Layers size={15} /> },
-    { to: '/upload', label: 'Upload Model', icon: <UploadCloud size={15} /> },
-    { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={15} /> },
+    { to: '/marketplace', label: 'Explore', icon: <Layers size={15} /> },
+    { to: '/upload', label: 'Publish', icon: <UploadCloud size={15} /> },
+    { to: '/dashboard', label: 'My Activity', icon: <LayoutDashboard size={15} /> },
   ]
 
   const isPasskeyAccount = connector?.id === 'mera-passkey'

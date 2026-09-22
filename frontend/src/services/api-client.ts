@@ -9,6 +9,7 @@ import type { IndexedModel, PaymentSplitEvent } from '../lib/types'
 import { MODEL_REGISTRY_ABI } from '../lib/abis/ModelRegistryABI'
 import { MODEL_REGISTRY_ADDRESS } from '../lib/contracts'
 import { monadTestnet } from '../lib/wagmi'
+import { allowMockFallbacks } from '../lib/app-mode'
 
 const INDEXER_BASE_URL = String(import.meta.env.VITE_INDEXER_URL || '').trim()
 
@@ -100,6 +101,7 @@ export const FALLBACK_MODELS: IndexedModel[] = [
     registeredAt: Date.now() - 86400000 * 3,
     category: 'NLP',
     format: 'GGUF',
+    isDemo: true,
   },
 ]
 
@@ -127,6 +129,7 @@ function getLocalUploadedModels(): IndexedModel[] {
       registeredAt: Number(item.registeredAt || Date.now()),
       category: (item.category as string) || 'Vision',
       format: (item.format as string) || 'ONNX',
+      isDemo: Boolean(item.isDemo),
     }))
   } catch {
     return []
@@ -160,12 +163,14 @@ export async function fetchModels(params?: {
   category?: string
   creator?: string
 }): Promise<IndexedModel[]> {
-  let models = [...FALLBACK_MODELS]
   const localModels = getLocalUploadedModels()
+  let models: IndexedModel[] = [...localModels]
 
-  // Prepend any locally created models
-  const existingIds = new Set(localModels.map((m) => m.modelId))
-  models = [...localModels, ...models.filter((m) => !existingIds.has(m.modelId))]
+  // Strictly govern fallback mock catalog: only inject in demo mode (Spec 25)
+  if (allowMockFallbacks()) {
+    const localIds = new Set(localModels.map((m) => m.modelId))
+    models = [...models, ...FALLBACK_MODELS.filter((m) => !localIds.has(m.modelId))]
+  }
 
   // Read registration events directly so the dashboard and marketplace work
   // before the optional Node/TS indexer is deployed.
