@@ -1,0 +1,18 @@
+{
+  "name": "torrentia-indexer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "High-throughput Envio HyperIndex event indexer for Torrentia on Monad Testnet",
+  "scripts": {
+    "codegen": "envio codegen",
+    "dev": "envio dev",
+    "start": "envio start",
+    "test": "envio test"
+  },
+  "dependencies": {
+    "envio": "3.0.0-alpha.21"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
