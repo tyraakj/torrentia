@@ -16,7 +16,7 @@ export const ModelCardViewer: React.FC<ModelCardViewerProps> = ({
   modelName,
   style,
 }) => {
-  const fallbackText = `# ${modelName}\n\nThis open-source model has been partitioned into 1 MB chunks and distributed across the Torrentia peer-to-peer swarm.\n\n### Swarm Architecture\n- **Chunk Protocol**: SHA-256 verified frames over WebRTC DataChannels\n- **Incentive Mechanism**: Atomic 70% Creator royalty / 30% Seeder incentive\n- **Settlement Layer**: Monad Testnet (sub-second finality, micro-gas)\n\n### Quickstart\nConnect your wallet on Monad Testnet and click **Download from Swarm** to stream and verify model weights directly into your browser or save them locally.`
+  const fallbackText = `# ${modelName}\n\nThis open-source model is delivered in verified pieces from people on the Torrentia network.\n\n### How it works\n- Each piece is checked before it is saved.\n- Your payment is automatically shared between the creator and the person providing the model.\n- After downloading, you can keep sharing the model with others.\n\n### Quickstart\nConnect your account and click **Download model** to receive a verified copy.`
 
   const raw = content && content.trim() ? content : fallbackText
 

@@ -49,7 +49,7 @@ export const ModelDetail: React.FC = () => {
         if (isMounted) {
           setManifest(null)
           setManifestError(
-            'Model Passport is temporarily unavailable from IPFS gateways. Cryptographic verification cannot proceed until the passport is reachable.',
+            'Model information is temporarily unavailable. Please try again in a moment.',
           )
         }
         return
@@ -69,7 +69,7 @@ export const ModelDetail: React.FC = () => {
             hash: '',
             size: chunkSize,
           })),
-          modelCard: `# ${model.modelName || 'Model'}\n\nThis open-source model is distributed peer-to-peer on the Torrentia swarm on Monad.\n\n### Specifications\n- **Verified Pieces**: ${chunkCount} pieces\n- **Partition Size**: 1 Megabyte per piece\n- **Settlement Protocol**: Monad EVM Testnet (SplitPayment.sol)\n- **Creator Share**: ${Math.round(model.creatorShareBps / 100)}% Creator / ${100 - Math.round(model.creatorShareBps / 100)}% Peer`,
+          modelCard: `# ${model.modelName || 'Model'}\n\nThis model is shared directly between people on the Torrentia network.\n\n### Details\n- **Verified pieces**: ${chunkCount}\n- **Piece size**: 1 Megabyte\n- **Creator earnings**: ${Math.round(model.creatorShareBps / 100)}%\n- **Provider reward**: ${100 - Math.round(model.creatorShareBps / 100)}%`,
           createdAt: model.registeredAt,
         }
         setManifest(syntheticManifest)
@@ -193,7 +193,7 @@ export const ModelDetail: React.FC = () => {
           alignItems: 'start',
         }}
       >
-        {/* Left / Main Column: Download, Split Hero, Documentation & Payment History */}
+        {/* Main column: download and model information */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {/* Central Interactive Download Section */}
           <DownloadSection
@@ -214,7 +214,7 @@ export const ModelDetail: React.FC = () => {
           />
         </div>
 
-        {/* Right Sidebar: Specs, Swarm Peers, Monad Economics */}
+        {/* Sidebar: file details and availability */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
           {/* File Specs & Revenue Grid */}
           <FileInfoPanel
@@ -228,7 +228,7 @@ export const ModelDetail: React.FC = () => {
             totalChunks={manifest?.chunks.length ?? model.chunkCount ?? 1}
           />
 
-          {/* Monad Value-Add Card */}
+          {/* Network information */}
           <div
             className="glass"
             style={{
@@ -245,14 +245,14 @@ export const ModelDetail: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Zap size={16} color="var(--color-accent-bright)" />
               <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#1c1917' }}>
-                Why Monad is Essential Here
+                Why this network works well
               </h4>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', lineHeight: 1.5 }}>
-              On Ethereum L1, settling {manifest?.chunks.length || model.chunkCount} sequential piece payments would take <strong>{(manifest?.chunks.length || model.chunkCount) * 12} seconds</strong> and freeze the download stream.
+              Torrentia sends the model in small verified pieces so downloads can continue even when one provider disconnects.
             </p>
             <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', lineHeight: 1.5 }}>
-              On Monad, <strong>400ms block times</strong> and <strong>sub-cent gas fees</strong> allow atomic 70/30 creator/peer settlement per piece in real time with zero buffering.
+              Payments are automatically shared between the creator and the people helping provide the model.
             </p>
             <div
               style={{
@@ -266,7 +266,7 @@ export const ModelDetail: React.FC = () => {
               }}
             >
               <ShieldCheck size={13} />
-              <span>400ms Blocks • 10,000 TPS • Atomic Split</span>
+              <span>Fast delivery • Verified pieces • Automatic payouts</span>
             </div>
           </div>
         </div>
