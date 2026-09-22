@@ -56,6 +56,7 @@ export interface PaymentSplitEvent {
   totalPaid: bigint
   txHash: string
   blockNumber: number
+  blockTimestamp?: number
 }
 
 export interface UploadFormData {
