@@ -34,6 +34,8 @@ export interface IndexedModel {
   category?: 'Vision' | 'NLP' | 'Audio' | 'LoRA' | 'Multimodal' | string
   format?: 'ONNX' | 'Safetensors' | 'GGUF' | 'PyTorch' | string
   totalSize?: number // bytes
+  isDemo?: boolean
+  staleSeederData?: boolean
 }
 
 export interface SeederRecord {
@@ -42,6 +44,7 @@ export interface SeederRecord {
   peerId: string
   chunksHeld: number[]
   lastHeartbeat: number
+  isHttpSeeder?: boolean
 }
 
 export interface PaymentSplitEvent {
@@ -72,6 +75,32 @@ export type DownloadStatus =
   | 'complete'
   | 'error'
 
+export type ActiveTransportType = 'persistent_seeder' | 'browser_peer' | 'none'
+
+export type DownloadStateMachineState =
+  | 'idle'
+  | 'checking_wallet'
+  | 'discovering_peers'
+  | 'preparing_payment'
+  | 'payment_pending'
+  | 'receiving_piece'
+  | 'verifying_hash'
+  | 'saved_locally'
+  | 'complete'
+  | 'error'
+
+export interface StateDetails {
+  state: DownloadStateMachineState
+  currentChunk: number
+  totalChunks: number
+  activeTransport: ActiveTransportType
+  message: string
+  recoveryAction?: {
+    label: string
+    action: () => void
+  }
+}
+
 export interface DownloadState {
   modelId: string
   totalChunks: number
@@ -80,4 +109,6 @@ export interface DownloadState {
   status: DownloadStatus
   payments: PaymentSplitEvent[]
   error?: string
+  activeTransport?: ActiveTransportType
 }
+
