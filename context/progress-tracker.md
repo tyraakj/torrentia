@@ -23,6 +23,7 @@
 - [x] **Spec 17 Executed**: Persistent CLI Seeder (`torrentia-seeder`) implemented in Go (`signaling/cmd/seeder/main.go` and `signaling/internal/seeder/`). Built content-addressed chunk store with atomic SHA-256 verification (`store.go`), IPFS manifest fetcher and schema validator (`manifest.go`), Monad JSON-RPC payment verifier decoding `PaymentSplit` events with replay protection (`verifier.go`), persistent WebSocket signaling client (`signaling_client.go`), dual-transport HTTP chunk server with 402 challenge flow (`http_server.go`), core daemon engine and catalog coordinator (`engine.go`), and system diagnostics runbook (`doctor.go`). Comprehensive unit and end-to-end integration test suite passing 100% (11/11 tests passing).
 - [x] **Spec 18 Executed**: Upload Broker & Manifest Provenance microservice in Go (`signaling/cmd/broker/` and `signaling/internal/broker/`). Eliminates P0 client-side credential exposure (`VITE_PINATA_JWT`). Implemented EIP-712 cryptographic upload intent recovery (`auth.go`), manifest schema & chunk math validator (`validator.go`), thread-safe replay protection nonce store (`store.go`), multi-provider IPFS pinning client (`pinner.go`), and HTTP REST server (`server.go`) with CORS and `/health`. Updated frontend upload flow (`Upload.tsx`, `broker-client.ts`, `ipfs.ts`) to sign EIP-712 intents with connected wallet. 100% unit and integration test coverage across all broker packages, clean production frontend build, and zero suppression violations.
 - [x] **Spec 26 Executed**: Mera-Powered Passkey UX & Frictionless Swarm Streaming ($2,500 Monad Metropolis Bounty). Implemented dual-wallet architecture combining WebAuthn PRF-derived Monad EOAs with fallback for injected wallets (MetaMask/Rabby). Created `MeraAuthService` (`frontend/src/services/auth/mera-auth.ts`) utilizing `@category-labs/mera` for PRF entropy generation, deterministic BIP-39 24-word / BIP-44 key derivation (`m/44'/60'/0'/0/0`), and in-memory secp256k1 signing sessions. Created custom Wagmi v3 connector `meraPasskey()` (`frontend/src/lib/mera-connector.ts`) providing standard EIP-1193 JSON-RPC communication. Built `MeraSessionSigner` (`frontend/src/services/mera-session-signer.ts`) enabling zero-prompt EIP-712 micro-voucher streaming for high-throughput P2P chunk downloads. Designed and integrated premium UI components: `PasskeyAuthModal`, `PasskeyNavbarBadge`, `ExportKeyModal`, and `PasskeyHeroCallout`. Automated unit test suite (`frontend/scripts/test-mera-auth.mjs`) passing 100%, clean production build (`tsc -b && vite build`), and zero mechanical suppression violations.
+- [x] **Spec 25 Executed**: Unified Product Flow, Download State Machine & Fallback Governance. Implemented 10-state deterministic download state machine (`useDownloadStateMachine`) with contextual recovery actions for wallet connection, Monad network switching, faucet funding, peer discovery retries, and local blob storage. Enforced Three Orthogonal Statuses on Model Detail (`ModelStatusBadges`) across Verified Passport integrity, Swarm Availability (online seeders), and On-Chain Settlement. Reorganized Upload into a 5-step guided wizard with sticky summary card. Enforced strict mode governance (`app-mode.ts`) hard-blocking synthetic fallback CIDs and fake txs in `testnet`/`mainnet`. Automated test suite (`test-download-state-machine.mjs`) passing 100%, clean build, and zero suppression violations.
 
 ## Specs Status
 | # | Spec | Status | Priority |
@@ -39,7 +40,7 @@
 | 11 | Model Detail + Download | ✅ Implemented & Built | P5 |
 | 14 | Split Visualization | ✅ Implemented & Built | P5 |
 | 12 | Creator Dashboard | ✅ Implemented & Built | P6 |
-| 13 | Navigation + Polish | ⏳ Next Up | P6 |
+| 13 | Navigation + Polish | ✅ Implemented & Polished | P6 |
 | 08 | Payment-Gated Transfer (Live Wire) | ⏸️ Deferred to Live Integration | P7 |
 | 09 | Indexer Service | ⏸️ Upgraded by Spec 20 (Envio) | P7 |
 | 15 | README, Pitch & Judge Defense | ⏳ Backlog | P8 |
@@ -52,7 +53,7 @@
 | 22 | Nansen Swarm Intelligence Console | ✅ Written | Bounty |
 | 23 | Developer SDK & Local Model Runner | ✅ Written | Roadmap |
 | 24 | Model Passport & Lineage Provenance | ✅ Written | P1/P2 |
-| 25 | Unified Product Flow & Fallback Governance | ✅ Written | UX/Polish |
+| 25 | Unified Product Flow & Fallback Governance | ✅ Implemented & Tested | UX/Polish |
 | 26 | Mera-Powered Passkey UX & Swarm Streaming | ✅ Implemented & Tested | Bounty |
 
 ## Build Order (Implementation)
@@ -65,7 +66,7 @@
 7. [x] Phase 7: Spec 10 — Marketplace Page (cards, search, stats, demo catalog)
 8. [x] Phase 8: Specs 11 & 14 — Model Detail, Download & Animated Split Visualization
 9. [x] Phase 9: Spec 12 — Creator Dashboard
-10. [ ] Phase 10: Spec 13 & 25 — Unified Product Flow, Navigation & Fallback Governance
+10. [x] Phase 10: Spec 13 & 25 — Unified Product Flow, Navigation & Fallback Governance
 11. [ ] Phase 11: Specs 02, 08, 20 — On-Chain & Envio HyperIndex Integration (Monad testnet deployment, live payment-gated transfer, Envio GraphQL service)
 12. [ ] Phase 12: Spec 15 — README, pitch deck & judge defense doc
 13. [x] Phase 13: Spec 17 — Persistent CLI Seeder (`torrentia-seeder` standalone Go node with local disk chunk store, dual HTTP/WebRTC transports, Monad RPC payment receipt verifier)
