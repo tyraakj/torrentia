@@ -195,7 +195,7 @@ export const Upload: React.FC = () => {
         totalSize: file.size,
         chunkSize: DEFAULT_CHUNK_SIZE,
         chunks: chunksInfo,
-        modelCard: `# ${modelName.trim() || file.name} (v${version})\n\n- **License**: ${license}\n- **Lineage**: ${lineage || 'Base Architecture'}\n- **Verified Pieces**: ${chunksInfo.length} pieces\n\nUploaded by \`${address}\` to the Torrentia P2P Swarm on Monad.`,
+      modelCard: `# ${modelName.trim() || file.name} (v${version})\n\n- **License**: ${license}\n- **Based on**: ${lineage || 'Original model'}\n- **Verified pieces**: ${chunksInfo.length}\n\nPublished by \`${address}\` to the Torrentia network.`,
         createdAt: Date.now(),
       }
 
@@ -235,7 +235,7 @@ export const Upload: React.FC = () => {
 
       // Strict Mode Governance (Spec 25): No fake fallback CIDs in testnet/mainnet
       if (!allowMockFallbacks()) {
-        setPublishError(`Passport Pinning Failed: ${msg}. You must successfully pin metadata to IPFS before publishing on Monad.`)
+        setPublishError(`Could not save the model information: ${msg}`)
         return
       }
 
@@ -605,7 +605,7 @@ export const Upload: React.FC = () => {
                   >
                     <div>
                       <div style={{ fontSize: '11px', color: '#78716c', fontWeight: 600 }}>
-                        IPFS Passport CID
+                    Saved model information
                       </div>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: ipfsCid ? '#059669' : '#1c1917', wordBreak: 'break-all' }}>
                         {ipfsCid || 'Not pinned yet (requires wallet signature)'}
@@ -620,7 +620,7 @@ export const Upload: React.FC = () => {
                         isLoading={isPinning}
                         leftIcon={<FileCode size={14} />}
                       >
-                        Pin via Broker
+                        Save information
                       </Button>
                     )}
                   </div>
@@ -637,7 +637,7 @@ export const Upload: React.FC = () => {
                     onClick={() => setActiveStep(4)}
                     rightIcon={<ArrowRight size={16} />}
                   >
-                    Continue to Economics
+                    Continue to pricing
                   </Button>
                 </div>
               </div>
@@ -648,16 +648,16 @@ export const Upload: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                 <div>
                   <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Step 4: Set Economics & Royalty Split
+                    Step 4: Set price and earnings
                   </h3>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    Specify uniform pricing per 1 MB piece and the on-chain revenue split between you and serving seeders.
+                    Choose the price per piece and how earnings are shared with people who provide your model.
                   </p>
                 </div>
 
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
-                    Price per Verified Piece (MON)
+                    Price per piece (MON)
                   </label>
                   <Input
                     type="number"
@@ -688,12 +688,12 @@ export const Upload: React.FC = () => {
                     gap: '6px',
                   }}
                 >
-                  <div style={{ fontWeight: 700, color: '#1c1917' }}>Plain-Language Split Calculations:</div>
+                  <div style={{ fontWeight: 700, color: '#1c1917' }}>Your estimated earnings:</div>
                   <div style={{ color: '#44403c' }}>
-                    • <strong>Per 1 MB Piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and the serving seeder receives <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
+                    • <strong>Per piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and the provider receives <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
                   </div>
                   <div style={{ color: '#44403c' }}>
-                    • <strong>Full Model Download ({estimatedChunks} pieces):</strong> Creator earns <strong>{creatorTotalEarn} MON</strong>, Seeders earn <strong>{seederTotalEarn} MON</strong>.
+                    • <strong>Full download ({estimatedChunks} pieces):</strong> You earn <strong>{creatorTotalEarn} MON</strong>; providers earn <strong>{seederTotalEarn} MON</strong>.
                   </div>
                 </div>
 
@@ -703,7 +703,7 @@ export const Upload: React.FC = () => {
                   </Button>
 
                   <Button variant="primary" onClick={() => setActiveStep(5)} rightIcon={<ArrowRight size={16} />}>
-                    Continue to Publish
+                    Continue to publish
                   </Button>
                 </div>
               </div>
@@ -714,10 +714,10 @@ export const Upload: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                 <div>
                   <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Step 5: Publish & Seed
+                    Step 5: Publish and share
                   </h3>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    Register your model on Monad Testnet and activate swarm seeding to distribute verified pieces.
+                    Publish your model and choose whether to keep sharing it from this browser.
                   </p>
                 </div>
 
@@ -737,7 +737,7 @@ export const Upload: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Share2 size={18} color="#7c3aed" />
                       <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
-                        Action A: Register on Monad
+                        Publish model
                       </span>
                     </div>
                     {txHash && (
@@ -748,7 +748,7 @@ export const Upload: React.FC = () => {
                   </div>
 
                   <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', margin: 0 }}>
-                    Executes <code>ModelRegistry.registerModel</code> to permanently register your model ID, IPFS passport URI, chunk count, and creator share on Monad.
+                    Publishes your model details, price, and earnings split to the network.
                   </p>
 
                   {!txHash ? (
@@ -758,7 +758,7 @@ export const Upload: React.FC = () => {
                       isLoading={isRegistering}
                       disabled={isRegistering || !isConnected}
                     >
-                      {!isConnected ? 'Connect Wallet to Register' : 'Sign & Register on Monad'}
+                      {!isConnected ? 'Connect account to publish' : 'Publish model'}
                     </Button>
                   ) : (
                     <div style={{ fontSize: 'var(--text-xs)', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -792,24 +792,24 @@ export const Upload: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Flame size={18} color="var(--color-warning)" />
                       <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
-                        Action B: Swarm Seeding
+                        Keep sharing this model
                       </span>
                     </div>
                     {isSeeding && (
                       <Badge variant="seeding">
-                        <Radio size={12} /> Active Browser Seeder
+                        <Radio size={12} /> Sharing from this browser
                       </Badge>
                     )}
                   </div>
 
                   <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', margin: 0 }}>
-                    Seed pieces from this browser tab, or run the high-performance Persistent CLI Seeder in the background.
+                    Keep this page open to help others download the model, or use the optional desktop seeder later.
                   </p>
 
                   <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                     {isSeeding ? (
                       <Button variant="secondary" size="sm" onClick={stopSeeding}>
-                        Stop Browser Seeding
+                        Stop sharing
                       </Button>
                     ) : (
                       <Button
@@ -818,7 +818,7 @@ export const Upload: React.FC = () => {
                         onClick={startSeeding}
                         leftIcon={<Flame size={14} color="var(--color-warning)" />}
                       >
-                        Start Seeding in This Browser
+                        Start sharing from this browser
                       </Button>
                     )}
 
@@ -828,7 +828,7 @@ export const Upload: React.FC = () => {
                       onClick={handleCopyCli}
                       leftIcon={copiedCli ? <Check size={14} /> : <Terminal size={14} />}
                     >
-                      {copiedCli ? 'Copied CLI Command' : 'Copy CLI Command'}
+                      {copiedCli ? 'Command copied' : 'Advanced setup'}
                     </Button>
                   </div>
                 </div>
@@ -860,7 +860,7 @@ export const Upload: React.FC = () => {
 
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                   <Button variant="ghost" onClick={() => setActiveStep(4)} leftIcon={<ArrowLeft size={16} />}>
-                    Back to Economics
+                  Back to pricing
                   </Button>
                 </div>
               </div>
@@ -887,7 +887,7 @@ export const Upload: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileCode size={18} color="#7c3aed" />
             <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, margin: 0 }}>
-              Model Passport Summary
+              Model summary
             </h3>
           </div>
 
@@ -903,7 +903,7 @@ export const Upload: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Verified Pieces</span>
+              <span style={{ color: '#78716c' }}>Pieces</span>
               <span style={{ fontWeight: 600, color: '#1c1917' }}>{estimatedChunks > 0 ? `${estimatedChunks} pieces (1 MB ea)` : '—'}</span>
             </div>
 
@@ -915,9 +915,9 @@ export const Upload: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>On-Chain Split</span>
+              <span style={{ color: '#78716c' }}>Earnings split</span>
               <span style={{ fontWeight: 600, color: '#1c1917' }}>
-                {creatorPercent}% Creator / {seederPercent}% Peer
+                {creatorPercent}% creator / {seederPercent}% provider
               </span>
             </div>
 
@@ -948,7 +948,7 @@ export const Upload: React.FC = () => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#78716c' }}>IPFS CID</span>
+              <span style={{ color: '#78716c' }}>Model information</span>
               <span style={{ fontWeight: 600, color: ipfsCid ? '#059669' : '#78716c', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
                 {ipfsCid ? `${ipfsCid.slice(0, 10)}...${ipfsCid.slice(-6)}` : 'Pending Step 3'}
               </span>
@@ -967,7 +967,7 @@ export const Upload: React.FC = () => {
             }}
           >
             <ShieldCheck size={14} color="#7c3aed" style={{ display: 'inline', marginRight: '4px', verticalAlign: '-2px' }} />
-            <strong>Non-Custodial Swarm:</strong> Only the model passport is stored on IPFS. Weight pieces remain in peer storage and are transferred peer-to-peer.
+            <strong>Your files stay yours:</strong> Model information is saved for discovery; the model itself is shared directly between people.
           </div>
         </div>
       </div>
