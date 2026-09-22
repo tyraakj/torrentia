@@ -5,7 +5,13 @@
  * and reassembles the complete file into a downloadable Blob.
  */
 
-import type { ChunkManifest, DownloadState, PaymentSplitEvent, SeederRecord } from '../lib/types'
+import type {
+  ActiveTransportType,
+  ChunkManifest,
+  DownloadState,
+  PaymentSplitEvent,
+  SeederRecord,
+} from '../lib/types'
 import { bufferToHex } from './chunker'
 import { getAllChunks, getHeldChunks, storeChunk } from './chunk-store'
 import { PeerConnection } from './peer-connection'
@@ -308,6 +314,8 @@ export class Downloader {
   }
 
   private async downloadChunk(seeder: SeederRecord, chunkIndex: number): Promise<void> {
+    const transport: ActiveTransportType = seeder.isHttpSeeder ? 'persistent_seeder' : 'browser_peer'
+    this.updateState({ activeTransport: transport })
     const pc = await this.getOrCreatePeerConnection(seeder.peerId)
 
     return new Promise((resolve, reject) => {
@@ -334,7 +342,7 @@ export class Downloader {
 
         if (msg.type === 'payment-required' && msg.chunkIndex === chunkIndex) {
           try {
-            this.updateState({ status: 'paying' })
+            this.updateState({ status: 'paying', activeTransport: transport })
             const txHash = await this.paymentProvider.makePayment(
               this.modelId,
               chunkIndex,
@@ -365,6 +373,7 @@ export class Downloader {
 
             this.updateState({
               status: 'downloading',
+              activeTransport: transport,
               payments: [paymentEvent, ...this.state.payments],
             })
 
