@@ -1,17 +1,26 @@
 import React from 'react'
-import { Calendar, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react'
-import type { IndexedModel } from '../../lib/types'
-import { Badge } from '../ui/Badge'
+import { Calendar, Sparkles, ShieldCheck } from 'lucide-react'
+import type { IndexedModel, ChunkManifest } from '../../lib/types'
 import { AddressDisplay } from '../ui/AddressDisplay'
 import { PaymentSplitBadge } from '../payment/PaymentSplitBadge'
+import { ModelStatusBadges } from './ModelStatusBadges'
 
 export interface ModelHeaderProps {
   model: IndexedModel
+  manifest?: ChunkManifest | null
+  seederCount?: number
+  isPaid?: boolean
   className?: string
   style?: React.CSSProperties
 }
 
-export const ModelHeader: React.FC<ModelHeaderProps> = ({ model, style }) => {
+export const ModelHeader: React.FC<ModelHeaderProps> = ({
+  model,
+  manifest,
+  seederCount = 0,
+  isPaid = false,
+  style,
+}) => {
   const registeredDate = model.registeredAt
     ? new Date(model.registeredAt).toLocaleDateString(undefined, {
         year: 'numeric',
@@ -85,16 +94,13 @@ export const ModelHeader: React.FC<ModelHeaderProps> = ({ model, style }) => {
           <PaymentSplitBadge creatorShareBps={model.creatorShareBps} size="sm" />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {model.active ? (
-            <Badge variant="active" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-              <CheckCircle2 size={12} />
-              Active Swarm
-            </Badge>
-          ) : (
-            <Badge variant="inactive">Inactive</Badge>
-          )}
-        </div>
+        {/* Orthogonal Status Indicators (Verified, Available, Paid) */}
+        <ModelStatusBadges
+          model={model}
+          manifest={manifest}
+          seederCount={seederCount || model.seederCount}
+          isPaid={isPaid}
+        />
       </div>
 
       {/* Model Title */}

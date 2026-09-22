@@ -33,33 +33,33 @@ export const FileInfoPanel: React.FC<FileInfoPanelProps> = ({ model, manifest, s
     },
     {
       icon: <Layers size={15} color="var(--color-info)" />,
-      label: 'Chunk Partitioning',
-      value: `${chunkCount} Chunks`,
-      subtext: `${formatFileSize(chunkSize)} / chunk`,
+      label: 'Verified Pieces',
+      value: `${chunkCount} Pieces`,
+      subtext: `${formatFileSize(chunkSize)} / piece`,
     },
     {
       icon: <Coins size={15} color="var(--color-warning)" />,
-      label: 'Price per Chunk',
+      label: 'Price per Verified Piece',
       value: `${parseFloat(chunkPriceMon).toFixed(6)} MON`,
-      subtext: 'Uniform fee per chunk',
+      subtext: 'Uniform fee per piece',
     },
     {
       icon: <Award size={15} color="var(--color-creator-share)" />,
-      label: 'Creator Royalty',
+      label: 'Creator Share (%)',
       value: `${creatorPercent}%`,
-      subtext: `${(parseFloat(chunkPriceMon) * (creatorPercent / 100)).toFixed(6)} MON/chunk`,
+      subtext: `${(parseFloat(chunkPriceMon) * (creatorPercent / 100)).toFixed(6)} MON/piece`,
     },
     {
       icon: <Zap size={15} color="var(--color-seeder-share)" />,
-      label: 'Seeder Incentive',
+      label: 'Peer / Seeder Node Share',
       value: `${seederPercent}%`,
-      subtext: `${(parseFloat(chunkPriceMon) * (seederPercent / 100)).toFixed(6)} MON/chunk`,
+      subtext: `${(parseFloat(chunkPriceMon) * (seederPercent / 100)).toFixed(6)} MON/piece`,
     },
     {
       icon: <Cpu size={15} color="var(--color-accent)" />,
       label: 'Full Swarm Cost',
       value: `${parseFloat(totalCostMon).toFixed(6)} MON`,
-      subtext: `For complete weights`,
+      subtext: `For complete model passport`,
     },
   ]
 
