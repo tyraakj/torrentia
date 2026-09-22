@@ -31,7 +31,7 @@ export const WorkflowAndCalculator: React.FC = () => {
 
         <div className="workflow-step-card">
           <div className="step-number-badge" style={{ background: '#f0fdf4', color: '#16a34a' }}>3</div>
-          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>x402 Atomic Split</h3>
+          <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>402 Atomic Split</h3>
           <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: 1.55 }}>
             Payment is executed on Monad in 1 second. The smart contract atomically splits funds between the original creator and the serving seeder.
           </p>

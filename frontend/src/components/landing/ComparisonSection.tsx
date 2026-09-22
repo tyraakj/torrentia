@@ -106,7 +106,7 @@ export const ComparisonSection: React.FC = () => {
             <Shield size={13} />
             <span>Atomic On-Chain Settlement</span>
           </div>
-          <h3 className="comparison-card-title">Monad x402 Engine</h3>
+          <h3 className="comparison-card-title">Monad Payment Engine</h3>
           <p className="comparison-card-desc">
             Every 1MB chunk transfer is settled atomically in 1 second on Monad, splitting revenue directly between creators and seeders.
           </p>

@@ -75,8 +75,8 @@ export const FeatureStreamCarousel: React.FC = () => {
       ),
     },
     {
-      id: 'x402',
-      title: 'x402 payment handshake',
+      id: 'payment-gate',
+      title: '402 payment handshake',
       desc: 'HTTP 402 micro-payment gates verify on-chain receipts on Monad before releasing weights to peer channels.',
       visual: (
         <div className="stream-mock-code-card">

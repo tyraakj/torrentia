@@ -61,7 +61,7 @@ export const Marketplace: React.FC = () => {
           }}
         >
           <Sparkles size={14} />
-          <span>Settled atomically on Monad Testnet via x402</span>
+          <span>Settled atomically on Monad Testnet via the 402 payment gate</span>
         </div>
 
         {/* Main Tagline */}

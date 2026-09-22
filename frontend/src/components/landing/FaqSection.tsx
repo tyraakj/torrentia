@@ -19,8 +19,8 @@ export const FaqSection: React.FC = () => {
       a: 'Monad provides 10,000 TPS, 1-second block finality, and ultra-efficient execution. In a streaming marketplace where 1MB chunk transfers trigger atomic payment splits in real-time, 1-second finality is critical to keep multi-peer weight streams running without payment lag.',
     },
     {
-      q: 'What is the x402 payment protocol?',
-      a: 'x402 is a decentralized payment-required protocol. When a downloader requests chunk #N, the serving peer issues a 402 challenge specifying the model price and seeder address. The downloader calls the SplitPayment contract on Monad, provides the transaction receipt as proof, and the seeder releases the weights.',
+      q: 'How does the 402 payment gate work?',
+      a: 'When a downloader requests chunk #N, the serving peer issues a custom 402 challenge specifying the model price and seeder address. The downloader calls the SplitPayment contract on Monad, provides the transaction receipt as proof, and the seeder releases the weights.',
     },
     {
       q: 'Why is the chunk price uniform regardless of who seeds it?',
