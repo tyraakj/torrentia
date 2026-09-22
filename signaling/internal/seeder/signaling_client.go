@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"sync"
 	"time"
 
@@ -18,6 +19,7 @@ type SignalingMessageHandler func(msgType string, fromPeer string, payload json.
 // SignalingClient manages a persistent WebSocket connection to the Torrentia signaling hub.
 type SignalingClient struct {
 	url           string
+	authToken     string
 	peerID        string
 	seederAddress string
 	conn          *websocket.Conn
@@ -38,6 +40,30 @@ func NewSignalingClient(url, peerID, seederAddress string) *SignalingClient {
 	}
 }
 
+// NewSignalingClientWithToken constructs a signaling client authenticated via a session token.
+// The peerID and seederAddress are assigned by the signaling server upon successful handshake.
+func NewSignalingClientWithToken(url, authToken string) *SignalingClient {
+	return &SignalingClient{
+		url:       url,
+		authToken: authToken,
+		closeChan: make(chan struct{}),
+	}
+}
+
+// PeerID returns the assigned or configured peer ID.
+func (c *SignalingClient) PeerID() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.peerID
+}
+
+// Address returns the authenticated or configured wallet address.
+func (c *SignalingClient) Address() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.seederAddress
+}
+
 // SetHandler configures the callback for incoming signaling messages (offers, ICE candidates).
 func (c *SignalingClient) SetHandler(h SignalingMessageHandler) {
 	c.mu.Lock()
@@ -50,21 +76,30 @@ func (c *SignalingClient) Connect(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, c.url, nil)
+	var reqHeader http.Header
+	if c.authToken != "" {
+		reqHeader = http.Header{
+			"Authorization": []string{"Bearer " + c.authToken},
+		}
+	}
+
+	conn, _, err := websocket.DefaultDialer.DialContext(ctx, c.url, reqHeader)
 	if err != nil {
 		return fmt.Errorf("dial signaling server: %w", err)
 	}
 	c.conn = conn
 
-	// 1. Send registration
-	regMsg := map[string]string{
-		"type":    "register",
-		"peerId":  c.peerID,
-		"address": c.seederAddress,
-	}
-	if err := conn.WriteJSON(regMsg); err != nil {
-		_ = conn.Close()
-		return fmt.Errorf("send register message: %w", err)
+	// If unauthenticated, send manual registration
+	if c.authToken == "" {
+		regMsg := map[string]string{
+			"type":    "register",
+			"peerId":  c.peerID,
+			"address": c.seederAddress,
+		}
+		if err := conn.WriteJSON(regMsg); err != nil {
+			_ = conn.Close()
+			return fmt.Errorf("send register message: %w", err)
+		}
 	}
 
 	// 2. Start background heartbeat ticker
@@ -101,6 +136,8 @@ func (c *SignalingClient) heartbeatLoop() {
 
 type incomingEnvelope struct {
 	Type    string          `json:"type"`
+	PeerID  string          `json:"peerId,omitempty"`
+	Address string          `json:"address,omitempty"`
 	From    string          `json:"from,omitempty"`
 	Payload json.RawMessage `json:"payload,omitempty"`
 	Message string          `json:"message,omitempty"`
@@ -134,7 +171,16 @@ func (c *SignalingClient) readLoop() {
 
 		switch env.Type {
 		case "registered":
-			slog.Info("signaling client registered", "peerId", c.peerID)
+			c.mu.Lock()
+			if env.PeerID != "" {
+				c.peerID = env.PeerID
+			}
+			if env.Address != "" {
+				c.seederAddress = env.Address
+			}
+			currentPeerID := c.peerID
+			c.mu.Unlock()
+			slog.Info("signaling client registered", "peerId", currentPeerID)
 		case "announced":
 			slog.Debug("signaling chunks announced ack received")
 		case "offer", "answer", "ice-candidate":
@@ -171,7 +217,7 @@ func (c *SignalingClient) Announce(modelID string, chunksHeld []uint32) error {
 	msg := map[string]interface{}{
 		"type":       "announce",
 		"modelId":    modelID,
-		"address":    c.seederAddress,
+		"address":    c.Address(),
 		"chunksHeld": chunksHeld,
 	}
 	return c.sendJSON(msg)
@@ -181,7 +227,7 @@ func (c *SignalingClient) Announce(modelID string, chunksHeld []uint32) error {
 func (c *SignalingClient) SendSignaling(msgType, toPeer string, payload interface{}) error {
 	msg := map[string]interface{}{
 		"type":    msgType,
-		"from":    c.peerID,
+		"from":    c.PeerID(),
 		"to":      toPeer,
 		"payload": payload,
 	}
