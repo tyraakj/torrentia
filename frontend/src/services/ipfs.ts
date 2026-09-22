@@ -1,4 +1,5 @@
 import { ChunkManifest } from '../lib/types'
+import { computeManifestHash, buildUploadIntent, submitToUploadBroker } from './broker-client'
 
 const IPFS_TIMEOUT_MS = 30000
 
@@ -6,72 +7,59 @@ const IPFS_TIMEOUT_MS = 30000
 const localManifestCache = new Map<string, ChunkManifest>()
 
 /**
- * Pins a ChunkManifest JSON to IPFS via Pinata.
- * Requires VITE_PINATA_JWT to be set in .env.
+ * Pins a ChunkManifest JSON to IPFS via the Go Upload Broker microservice.
+ * Eliminates client-side IPFS secrets while enforcing cryptographic provenance.
  */
-export async function pinManifest(manifest: ChunkManifest): Promise<string> {
-  const pinataJwt = import.meta.env.VITE_PINATA_JWT
+export async function pinManifest(
+  manifest: ChunkManifest,
+  signerParams?: {
+    creator: `0x${string}`
+    signature: `0x${string}`
+  }
+): Promise<string> {
+  const rawJSON = JSON.stringify(manifest)
 
-  if (!pinataJwt) {
-    // Offline / demo fallback CID
-    const localCid = `bafyreib${manifest.modelId.replace('0x', '').slice(0, 32)}demo`
-    localManifestCache.set(localCid, manifest)
+  if (signerParams) {
     try {
-      localStorage.setItem(`ipfs_${localCid}`, JSON.stringify(manifest))
-    } catch {
-      // ignore
+      const manifestHash = await computeManifestHash(rawJSON)
+      const intent = buildUploadIntent({
+        creator: signerParams.creator,
+        modelId: manifest.modelId as `0x${string}`,
+        totalSize: manifest.totalSize,
+        chunkCount: manifest.chunks.length,
+        manifestHash,
+      })
+
+      const result = await submitToUploadBroker(intent, signerParams.signature, manifest)
+      localManifestCache.set(result.cid, manifest)
+      try {
+        localStorage.setItem(`ipfs_${result.cid}`, rawJSON)
+      } catch {
+        // ignore
+      }
+      return result.cid
+    } catch (err) {
+      console.warn('Broker manifest pinning error, falling back to local demo storage:', err)
+      const fallbackCid = `bafkreifallback${manifest.modelId.replace('0x', '').slice(0, 32)}`
+      localManifestCache.set(fallbackCid, manifest)
+      try {
+        localStorage.setItem(`ipfs_${fallbackCid}`, rawJSON)
+      } catch {
+        // ignore
+      }
+      return fallbackCid
     }
-    return localCid
   }
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), IPFS_TIMEOUT_MS)
-
+  // Offline / demo fallback CID if no signature provided
+  const localCid = `bafyreib${manifest.modelId.replace('0x', '').slice(0, 32)}demo`
+  localManifestCache.set(localCid, manifest)
   try {
-    const response = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${pinataJwt}`,
-      },
-      body: JSON.stringify({
-        pinataContent: manifest,
-        pinataMetadata: {
-          name: `${manifest.modelName}-manifest.json`,
-        },
-      }),
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Pinata API error (${response.status}): ${errorText}`)
-    }
-
-    const data = await response.json()
-    const cid = data.IpfsHash as string
-    localManifestCache.set(cid, manifest)
-    try {
-      localStorage.setItem(`ipfs_${cid}`, JSON.stringify(manifest))
-    } catch {
-      // ignore
-    }
-    return cid
-  } catch (err) {
-    clearTimeout(timeoutId)
-    // Fallback to local CID if network or API error occurs
-    const localCid = `bafyreib${manifest.modelId.replace('0x', '').slice(0, 32)}fallback`
-    localManifestCache.set(localCid, manifest)
-    try {
-      localStorage.setItem(`ipfs_${localCid}`, JSON.stringify(manifest))
-    } catch {
-      // ignore
-    }
-    console.warn(`Pinata pinning failed (${err instanceof Error ? err.message : String(err)}), saved manifest locally with CID ${localCid}`)
-    return localCid
+    localStorage.setItem(`ipfs_${localCid}`, rawJSON)
+  } catch {
+    // ignore
   }
+  return localCid
 }
 
 /**
