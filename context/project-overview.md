@@ -7,7 +7,7 @@
 ### What It Is
 A decentralized peer-to-peer distribution network and marketplace for AI model weights where:
 - Distribution is **purely peer-to-peer** (BitTorrent-style chunked transfer over WebRTC data channels), eliminating centralized hosting bottlenecks, server costs, and bandwidth fees.
-- Every paid chunk transfer **automatically splits payment** on-chain between the *current seeder* and the *original creator* — settled via the x402 payment protocol on Monad.
+- Every paid chunk transfer **automatically splits payment** on-chain between the *current seeder* and the *original creator* — settled through Torrentia's custom payment gate and `SplitPayment` contract on Monad.
 
 ### Two Core Problems Solved
 Every architectural decision must trace back to one of these:
@@ -32,7 +32,7 @@ Highlighting the peer-to-peer swarm transfer as the breakthrough innovation: mul
 1. Smart contract: model registry + atomic split payment (the pitch)
 2. Upload flow: chunk file → hash → pin manifest → write registry
 3. WebRTC peer-to-peer chunk transfer between browser tabs
-4. 402 payment-gated transfer flow (x402 protocol)
+4. 402 payment-gated transfer flow (custom WebRTC payment handshake)
 5. Marketplace UI: browse, upload, download
 6. Live split visualization on download (Monadscan link)
 

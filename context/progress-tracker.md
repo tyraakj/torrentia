@@ -20,6 +20,9 @@
 - [x] **Spec 02 Executed**: Smart contracts deployed to Monad Testnet (Chain ID 10143) via Foundry broadcast script with deployer wallet `0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90`. `ModelRegistry` deployed at `0xe2cEDee4817B11716728aed3C3d7AD0438813340` (tx: `0xfcd07827ea5ce838ceb65edaa2c9d2d8cfc5ba252ba52d50f3e020c3ce2f51d4`), `SplitPayment` deployed at `0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa` (tx: `0xfac22b8e270a2075775020a6a6f86457774bcf7d100711198ea5ed70a1b86a21`). Both verified on Sourcify/Blockvision explorer. Initial test model registered (`0xf082cc3628013d117f58e868c44fcedf3ed5716157359c17c4a210ca7c430b2f`, tx: `0x874dd5db24c3243fd57d6d4c68f33481001c74238eb771f8134205353b757282`). ABIs exported to `frontend/src/lib/abis/` and `frontend/.env` wired.
 - [x] **Swarm Seeder Distribution & Split Bugfix**: Resolved single-wallet payout bug in downloader. Implemented prioritized candidate seeder selection in `downloader.ts` (`getCandidateSeedersForChunk`), balancing requests across 3rd-party swarm seeders (excluding self and creator) and falling back gracefully to creator/other seeders on failure. Fixed `seederAddress` parameter passing in `useSeeding` and `useDownload` (`use-p2p.ts`), and wired wallet address into `announce` payloads in both `signaling-client.ts` and Go signaling server (`hub.go`). Clean build and all unit tests passing.
 - [x] **Mechanical Suppression Gate Installed**: Created `scripts/check-suppressions.sh` and `scripts/check-suppressions.mjs` pre-commit verification gates. Configured Git hooks via `.husky/pre-commit` and `.git/hooks/pre-commit` (`core.hooksPath = .husky`). Audited codebase and eliminated all `as any` suppressions in `signaling-client.ts`, achieving 100% clean suppression gate pass.
+- [x] **Spec 17 Executed**: Persistent CLI Seeder (`torrentia-seeder`) implemented in Go (`signaling/cmd/seeder/main.go` and `signaling/internal/seeder/`). Built content-addressed chunk store with atomic SHA-256 verification (`store.go`), IPFS manifest fetcher and schema validator (`manifest.go`), Monad JSON-RPC payment verifier decoding `PaymentSplit` events with replay protection (`verifier.go`), persistent WebSocket signaling client (`signaling_client.go`), dual-transport HTTP chunk server with 402 challenge flow (`http_server.go`), core daemon engine and catalog coordinator (`engine.go`), and system diagnostics runbook (`doctor.go`). Comprehensive unit and end-to-end integration test suite passing 100% (11/11 tests passing).
+- [x] **Spec 18 Executed**: Upload Broker & Manifest Provenance microservice in Go (`signaling/cmd/broker/` and `signaling/internal/broker/`). Eliminates P0 client-side credential exposure (`VITE_PINATA_JWT`). Implemented EIP-712 cryptographic upload intent recovery (`auth.go`), manifest schema & chunk math validator (`validator.go`), thread-safe replay protection nonce store (`store.go`), multi-provider IPFS pinning client (`pinner.go`), and HTTP REST server (`server.go`) with CORS and `/health`. Updated frontend upload flow (`Upload.tsx`, `broker-client.ts`, `ipfs.ts`) to sign EIP-712 intents with connected wallet. 100% unit and integration test coverage across all broker packages, clean production frontend build, and zero suppression violations.
+- [x] **Spec 26 Executed**: Mera-Powered Passkey UX & Frictionless Swarm Streaming ($2,500 Monad Metropolis Bounty). Implemented dual-wallet architecture combining WebAuthn PRF-derived Monad EOAs with fallback for injected wallets (MetaMask/Rabby). Created `MeraAuthService` (`frontend/src/services/auth/mera-auth.ts`) utilizing `@category-labs/mera` for PRF entropy generation, deterministic BIP-39 24-word / BIP-44 key derivation (`m/44'/60'/0'/0/0`), and in-memory secp256k1 signing sessions. Created custom Wagmi v3 connector `meraPasskey()` (`frontend/src/lib/mera-connector.ts`) providing standard EIP-1193 JSON-RPC communication. Built `MeraSessionSigner` (`frontend/src/services/mera-session-signer.ts`) enabling zero-prompt EIP-712 micro-voucher streaming for high-throughput P2P chunk downloads. Designed and integrated premium UI components: `PasskeyAuthModal`, `PasskeyNavbarBadge`, `ExportKeyModal`, and `PasskeyHeroCallout`. Automated unit test suite (`frontend/scripts/test-mera-auth.mjs`) passing 100%, clean production build (`tsc -b && vite build`), and zero mechanical suppression violations.
 
 ## Specs Status
 | # | Spec | Status | Priority |
@@ -37,10 +40,20 @@
 | 14 | Split Visualization | ✅ Implemented & Built | P5 |
 | 12 | Creator Dashboard | ✅ Implemented & Built | P6 |
 | 13 | Navigation + Polish | ⏳ Next Up | P6 |
-| 08 | Payment-Gated Transfer (x402 Live Wire) | ⏸️ Deferred to Live Integration | P7 |
-| 09 | Indexer Service | ⏸️ Deferred to Live Integration | P7 |
+| 08 | Payment-Gated Transfer (Live Wire) | ⏸️ Deferred to Live Integration | P7 |
+| 09 | Indexer Service | ⏸️ Upgraded by Spec 20 (Envio) | P7 |
 | 15 | README, Pitch & Judge Defense | ⏳ Backlog | P8 |
 | 16 | Deployment & DevOps (Vercel + Render) | ✅ Written & Configured | P8 |
+| 17 | Persistent CLI Seeder (`torrentia-seeder`) | ✅ Implemented & Tested (11/11 tests) | P8 |
+| 18 | Upload Broker & Manifest Provenance | ✅ Implemented & Tested (12/12 tests) | P0 |
+| 19 | Authenticated Signaling & Distributed Presence | ✅ Written | P0/P1 |
+| 20 | Envio HyperIndex Event Indexer | ✅ Written | P0/P1 |
+| 21 | Download Sessions & Batched Payment Authorization | ✅ Written | P1 |
+| 22 | Nansen Swarm Intelligence Console | ✅ Written | Bounty |
+| 23 | Developer SDK & Local Model Runner | ✅ Written | Roadmap |
+| 24 | Model Passport & Lineage Provenance | ✅ Written | P1/P2 |
+| 25 | Unified Product Flow & Fallback Governance | ✅ Written | UX/Polish |
+| 26 | Mera-Powered Passkey UX & Swarm Streaming | ✅ Implemented & Tested | Bounty |
 
 ## Build Order (Implementation)
 1. [x] Phase 1: Spec 01 — Smart contracts (`ModelRegistry` + `SplitPayment` + 28 tests passing)
@@ -52,9 +65,15 @@
 7. [x] Phase 7: Spec 10 — Marketplace Page (cards, search, stats, demo catalog)
 8. [x] Phase 8: Specs 11 & 14 — Model Detail, Download & Animated Split Visualization
 9. [x] Phase 9: Spec 12 — Creator Dashboard
-10. [ ] Phase 10: Spec 13 — Navigation, toasts, and UI polish
-11. [ ] Phase 11: Specs 02, 08, 09 — On-Chain Integration (Monad testnet deployment, real x402 payment, indexer service)
+10. [ ] Phase 10: Spec 13 & 25 — Unified Product Flow, Navigation & Fallback Governance
+11. [ ] Phase 11: Specs 02, 08, 20 — On-Chain & Envio HyperIndex Integration (Monad testnet deployment, live payment-gated transfer, Envio GraphQL service)
 12. [ ] Phase 12: Spec 15 — README, pitch deck & judge defense doc
+13. [x] Phase 13: Spec 17 — Persistent CLI Seeder (`torrentia-seeder` standalone Go node with local disk chunk store, dual HTTP/WebRTC transports, Monad RPC payment receipt verifier)
+14. [ ] Phase 14: Specs 18 & 19 — Production Security & Signaling Scale (Upload broker server-side pinning, authenticated challenge-response WebSocket, Redis presence)
+15. [ ] Phase 15: Spec 21 — Download Sessions & Batched Settlement (`SplitPaymentV2` session channel, off-chain EIP-712 chunk claim vouchers)
+16. [ ] Phase 16: Spec 22 — Nansen Swarm Intelligence Console (Contributor profiling, swarm health indicator heuristics, decentralization HHI)
+17. [ ] Phase 17: Specs 23 & 24 — Developer SDK, Local Runner & Model Passport (`@torrentia/sdk`, `torrentia run`, `manifestVersion: 2`)
+18. [x] Phase 18: Spec 26 — Mera-Powered Passkey UX (Mera auth service, custom Wagmi connector, zero-prompt swarm streaming signer, biometrically gated export modal)
 
 ## Open Questions & Dependencies
 - [x] Monad testnet faucet — deployed with funded wallet `0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90` (Spec 02)

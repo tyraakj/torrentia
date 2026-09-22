@@ -48,7 +48,7 @@
 - Client-side chunking + hashing on upload
 - IPFS manifest pinning
 - WebRTC peer connections for chunk transfer
-- x402 payment flow state machine
+- Payment-gated transfer flow state machine
 - UI rendering
 
 ## Data Models
@@ -100,7 +100,7 @@ struct Model {
 5. **Content-addressed chunks** — every chunk is verified by its hash regardless of source peer.
 6. **No central file hosting** — model data lives in the swarm + IPFS, not on a centralized server.
 
-## Payment Flow (x402)
+## Payment Flow (Torrentia 402 Payment Gate)
 
 ```
 Downloader                    Seeder Peer                   Monad Chain

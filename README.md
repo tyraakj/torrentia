@@ -40,7 +40,7 @@ flowchart LR
 3. **Register on Monad.** The creator writes the model ID, IPFS URI, uniform chunk price, chunk count, and creator share to `ModelRegistry.sol`.
 4. **Discover seeders.** A downloader connects to the Go WebSocket service and queries which peers hold each model's chunks.
 5. **Connect peer-to-peer.** The browsers establish a WebRTC data channel. The Go service only relays SDP/ICE signaling and tracks ephemeral availability.
-6. **Request payment.** The downloader requests a chunk. The seeder responds with a `payment-required` message containing the model ID, chunk index, price, and seeder address. This is the WebRTC equivalent of the x402 payment gate.
+6. **Request payment.** The downloader requests a chunk. The seeder responds with a custom `payment-required` message containing the model ID, chunk index, price, and seeder address.
 7. **Split payment atomically.** The downloader calls `SplitPayment.payForChunk(modelId, seederAddress)` with native MON. The contract reads the model terms from `ModelRegistry` and sends both shares in one transaction:
 
    ```text

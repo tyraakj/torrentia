@@ -34,5 +34,5 @@ Record key decisions here as they're made:
 - **Contract toolchain**: Foundry
 - **Frontend framework**: Vite + React
 - **Indexer**: Custom Node/TS indexer (not Envio HyperIndex) — we need custom seeder-status caching and real-time WebSocket push, which a generic event indexer doesn't cover
-- **Wallet integration**: wagmi + injected connector (MetaMask etc.) — Para (MPC wallets) is a nice-to-have post-hackathon
+- **Wallet integration**: wagmi + hybrid dual-wallet (Mera WebAuthn PRF passkey connector for instant 1-tap onboarding and zero-prompt swarm streaming + injected connector for MetaMask/Rabby). Para (MPC wallets) is a post-hackathon alternative.
 - **MONSKILLS installed**: Local skills available in `.agents/skills/` — use `monskill` routing skill for Monad-specific guidance
