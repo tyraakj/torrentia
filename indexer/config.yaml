@@ -1,0 +1,27 @@
+name: torrentia-indexer
+description: "High-throughput Envio HyperIndex event indexer for Torrentia on Monad Testnet"
+field_selection:
+  transaction_fields:
+    - hash
+    - from
+networks:
+  - id: 10143
+    rpc_config:
+      url: "https://testnet-rpc.monad.xyz"
+    start_block: 63855640
+    contracts:
+      - name: ModelRegistry
+        abi_file_path: abis/ModelRegistry.json
+        address:
+          - "0xe2cEDee4817B11716728aed3C3d7AD0438813340"
+        handler: src/EventHandlers.ts
+        events:
+          - event: ModelRegistered(bytes32 indexed modelId, address indexed creator, string metadataURI, uint256 chunkPrice, uint16 creatorShareBps, uint32 chunkCount)
+          - event: ModelDeactivated(bytes32 indexed modelId, address indexed creator)
+      - name: SplitPayment
+        abi_file_path: abis/SplitPayment.json
+        address:
+          - "0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa"
+        handler: src/EventHandlers.ts
+        events:
+          - event: PaymentSplit(bytes32 indexed modelId, address indexed seeder, address indexed creator, uint256 seederAmount, uint256 creatorAmount, uint256 totalPaid)

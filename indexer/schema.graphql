@@ -1,0 +1,64 @@
+type Model @entity {
+  id: ID! # Hex string of modelId (bytes32)
+  creator: String! # Creator address
+  metadataURI: String! # IPFS CID
+  chunkPrice: BigInt! # In wei (MON)
+  chunkCount: Int!
+  totalSize: BigInt! # Bytes
+  creatorShareBps: Int! # Basis points (e.g. 7000 = 70%)
+  active: Boolean!
+  registeredAtBlock: Int!
+  registeredAtTimestamp: Int!
+  txHash: String!
+
+  # Aggregates updated on PaymentSplit
+  totalPaidChunks: BigInt!
+  totalVolumeMon: BigInt!
+  totalCreatorEarningsMon: BigInt!
+  totalSeederEarningsMon: BigInt!
+  uniqueSeedersCount: Int!
+  lastPaymentTimestamp: Int
+
+  # Relations
+  payments: [PaymentSplitEvent!]! @derivedFrom(field: "model")
+}
+
+type PaymentSplitEvent @entity {
+  id: ID! # ${chainId}-${txHash}-${logIndex}
+  model: Model!
+  seeder: String! # Seeder recipient address
+  creator: String! # Creator recipient address
+  seederAmount: BigInt! # Seeder payout (wei)
+  creatorAmount: BigInt! # Creator payout (wei)
+  totalAmount: BigInt! # totalPaid (wei)
+  blockNumber: Int!
+  blockTimestamp: Int!
+  txHash: String!
+}
+
+type CreatorStat @entity {
+  id: ID! # Creator address
+  totalModelsRegistered: Int!
+  activeModelsCount: Int!
+  totalRoyaltiesEarnedMon: BigInt!
+  totalChunksDelivered: BigInt!
+}
+
+type SeederStat @entity {
+  id: ID! # Seeder address
+  totalChunksServed: BigInt!
+  totalEarningsMon: BigInt!
+  uniqueModelsSeeded: Int!
+  lastActiveTimestamp: Int!
+}
+
+type NetworkOverview @entity {
+  id: ID! # "global"
+  totalModelsRegistered: Int!
+  totalActiveModels: Int!
+  totalPaymentsSettled: BigInt!
+  totalVolumeMon: BigInt!
+  totalUniqueCreators: Int!
+  totalUniqueSeeders: Int!
+  lastIndexedBlock: Int!
+}
