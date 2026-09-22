@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, AlertCircle, Zap, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Zap, ShieldCheck, FileQuestion } from 'lucide-react'
 import { useModel, useModelPayments } from '../hooks/use-models'
 import { fetchManifest } from '../services/ipfs'
 import type { ChunkManifest } from '../lib/types'
+import { allowMockFallbacks } from '../lib/app-mode'
 import { ModelHeader } from '../components/model/ModelHeader'
 import { FileInfoPanel } from '../components/model/FileInfoPanel'
 import { SeederPanel } from '../components/model/SeederPanel'
@@ -20,13 +21,15 @@ export const ModelDetail: React.FC = () => {
   const { data: payments = [] } = useModelPayments(id)
 
   const [manifest, setManifest] = useState<ChunkManifest | null>(null)
+  const [manifestError, setManifestError] = useState<string | null>(null)
 
-  // Fetch Manifest from IPFS or generate fallback
+  // Fetch Model Passport from IPFS with strict mode governance
   useEffect(() => {
     let isMounted = true
     if (!model) return
 
     const loadManifest = async () => {
+      setManifestError(null)
       const cid = model.metadataURI ? model.metadataURI.replace(/^ipfs:\/\//, '') : ''
 
       if (cid) {
@@ -37,11 +40,22 @@ export const ModelDetail: React.FC = () => {
             return
           }
         } catch (err) {
-          console.warn('Could not fetch manifest from IPFS, generating fallback from indexed metadata:', err)
+          console.warn('Could not fetch manifest from IPFS:', err)
         }
       }
 
-      // Generate robust fallback manifest based on model metadata so download flow remains fully functional
+      // Strict Mode Governance (Spec 25): In testnet/mainnet, do NOT generate synthetic manifests
+      if (!allowMockFallbacks()) {
+        if (isMounted) {
+          setManifest(null)
+          setManifestError(
+            'Model Passport is temporarily unavailable from IPFS gateways. Cryptographic verification cannot proceed until the passport is reachable.',
+          )
+        }
+        return
+      }
+
+      // Demo Mode only: generate synthetic manifest for offline demonstration
       if (isMounted) {
         const chunkCount = model.chunkCount || 1
         const chunkSize = 1048576 // 1MB
@@ -55,7 +69,7 @@ export const ModelDetail: React.FC = () => {
             hash: '',
             size: chunkSize,
           })),
-          modelCard: `# ${model.modelName || 'Model'}\n\nThis open-source model is distributed peer-to-peer on the Torrentia swarm on Monad.\n\n### Specifications\n- **Chunk Count**: ${chunkCount} chunks\n- **Partition Size**: 1 Megabyte per chunk\n- **Settlement Protocol**: Monad EVM Testnet (SplitPayment.sol)\n- **Creator Split**: ${Math.round(model.creatorShareBps / 100)}% Creator Royalty / ${100 - Math.round(model.creatorShareBps / 100)}% Seeder Incentive`,
+          modelCard: `# ${model.modelName || 'Model'}\n\nThis open-source model is distributed peer-to-peer on the Torrentia swarm on Monad.\n\n### Specifications\n- **Verified Pieces**: ${chunkCount} pieces\n- **Partition Size**: 1 Megabyte per piece\n- **Settlement Protocol**: Monad EVM Testnet (SplitPayment.sol)\n- **Creator Share**: ${Math.round(model.creatorShareBps / 100)}% Creator / ${100 - Math.round(model.creatorShareBps / 100)}% Peer`,
           createdAt: model.registeredAt,
         }
         setManifest(syntheticManifest)
@@ -106,9 +120,9 @@ export const ModelDetail: React.FC = () => {
               </code>
               . The model may not have been registered on Monad testnet or indexed yet.
             </p>
-            <Link to="/">
+            <Link to="/marketplace">
               <Button variant="primary" leftIcon={<ArrowLeft size={16} />}>
-                Return to Marketplace
+                Return to Explore
               </Button>
             </Link>
           </CardBody>
@@ -119,9 +133,9 @@ export const ModelDetail: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
-      {/* Back to Home Link */}
+      {/* Back to Explore Link */}
       <Link
-        to="/"
+        to="/marketplace"
         style={{
           display: 'inline-flex',
           alignItems: 'center',
@@ -129,17 +143,46 @@ export const ModelDetail: React.FC = () => {
           fontSize: 'var(--text-sm)',
           color: '#57534e',
           marginBottom: 'var(--space-6)',
+          textDecoration: 'none',
           transition: 'color var(--transition-fast)',
         }}
         onMouseEnter={(e) => (e.currentTarget.style.color = '#1c1917')}
         onMouseLeave={(e) => (e.currentTarget.style.color = '#57534e')}
       >
         <ArrowLeft size={16} />
-        <span>Back to Home</span>
+        <span>Back to Explore</span>
       </Link>
 
-      {/* Model Header */}
-      <ModelHeader model={model} style={{ marginBottom: 'var(--space-6)' }} />
+      {/* Model Header with Orthogonal Statuses */}
+      <ModelHeader
+        model={model}
+        manifest={manifest}
+        seederCount={model.seederCount}
+        isPaid={payments.length > 0}
+        style={{ marginBottom: 'var(--space-6)' }}
+      />
+
+      {/* Manifest Unavailable Warning Banner (Spec 25) */}
+      {manifestError && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            borderRadius: '14px',
+            padding: '1rem 1.25rem',
+            marginBottom: 'var(--space-6)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            color: '#b91c1c',
+          }}
+        >
+          <FileQuestion size={20} />
+          <div style={{ flex: 1, fontSize: '0.875rem', lineHeight: 1.4 }}>
+            <strong>Model Passport Unavailable:</strong> {manifestError}
+          </div>
+        </div>
+      )}
 
       {/* Main Two-Column Layout */}
       <div
@@ -152,13 +195,13 @@ export const ModelDetail: React.FC = () => {
       >
         {/* Left / Main Column: Download, Split Hero, Documentation & Payment History */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-          {/* Central Interactive Download Section (Contains SplitVisualization & LivePaymentFeed) */}
+          {/* Central Interactive Download Section */}
           <DownloadSection
             model={model}
             manifest={manifest}
           />
 
-          {/* Model Card / Documentation */}
+          {/* Model Passport / Architecture Documentation */}
           <ModelCardViewer
             content={manifest?.modelCard}
             modelName={model.modelName || 'Model Architecture'}
@@ -179,7 +222,7 @@ export const ModelDetail: React.FC = () => {
             manifest={manifest}
           />
 
-          {/* Live Swarm Seeders Panel */}
+          {/* Live Swarm Peers Panel */}
           <SeederPanel
             modelId={model.modelId}
             totalChunks={manifest?.chunks.length ?? model.chunkCount ?? 1}
@@ -206,10 +249,10 @@ export const ModelDetail: React.FC = () => {
               </h4>
             </div>
             <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', lineHeight: 1.5 }}>
-              On Ethereum L1, settling {manifest?.chunks.length || model.chunkCount} sequential chunk payments would take <strong>{(manifest?.chunks.length || model.chunkCount) * 12} seconds</strong> and freeze the download stream.
+              On Ethereum L1, settling {manifest?.chunks.length || model.chunkCount} sequential piece payments would take <strong>{(manifest?.chunks.length || model.chunkCount) * 12} seconds</strong> and freeze the download stream.
             </p>
             <p style={{ fontSize: 'var(--text-xs)', color: '#57534e', lineHeight: 1.5 }}>
-              On Monad, <strong>400ms block times</strong> and <strong>sub-cent gas fees</strong> allow atomic 70/30 creator/seeder settlement per chunk in real time with zero buffering.
+              On Monad, <strong>400ms block times</strong> and <strong>sub-cent gas fees</strong> allow atomic 70/30 creator/peer settlement per piece in real time with zero buffering.
             </p>
             <div
               style={{
