@@ -96,7 +96,7 @@ export const ShareSlider: React.FC<ShareSliderProps> = ({
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>
         <span>1% Creator (Max Seeder Incentive)</span>
-        <span>Default: 70% Creator / 30% Seeder</span>
+        <span>Suggested: 70% creator / 30% provider</span>
         <span>99% Creator</span>
       </div>
     </div>

@@ -25,33 +25,33 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   const steps = [
     {
       step: 1,
-      title: 'Chunking & Hashing',
-      desc: 'Splitting model file into 1MB chunks and computing SHA-256 hashes locally in browser.',
+      title: 'Preparing your model',
+      desc: 'Checking the file and preparing it for reliable delivery.',
       icon: <HardDrive size={18} />,
       info: chunkProgress.total > 0
-        ? `Processed ${chunkProgress.current} / ${chunkProgress.total} chunks (${Math.round((chunkProgress.current / chunkProgress.total) * 100)}%)`
+        ? `Prepared ${chunkProgress.current} / ${chunkProgress.total} pieces (${Math.round((chunkProgress.current / chunkProgress.total) * 100)}%)`
         : 'Waiting to start...',
     },
     {
       step: 2,
-      title: 'Pinning Manifest',
-      desc: 'Generating content-addressed ChunkManifest and pinning metadata to IPFS.',
+      title: 'Saving model information',
+      desc: 'Saving the information needed to find and verify your model.',
       icon: <FileCode size={18} />,
       info: ipfsCid ? `IPFS CID: ${ipfsCid}` : 'Manifest ready for pinning...',
     },
     {
       step: 3,
-      title: 'Registering On-Chain',
-      desc: 'Writing model ID, chunk price, and split ratio to ModelRegistry on Monad.',
+      title: 'Publishing model',
+      desc: 'Confirming your model, price, and earnings split on the network.',
       icon: <Share2 size={18} />,
       info: txHash ? `Transaction sent to Monad` : 'Awaiting wallet signature...',
     },
     {
       step: 4,
-      title: 'Ready to Seed',
-      desc: 'Model registered. Chunks stored in local browser IndexedDB; ready to serve peers in the swarm.',
+      title: 'Ready to share',
+      desc: 'Your model is ready. Keep this page open to help others download it.',
       icon: <Check size={18} />,
-      info: 'Seeder active and ready for P2P chunk requests.',
+      info: 'Your model is available to other people on the network.',
     },
   ]
 
