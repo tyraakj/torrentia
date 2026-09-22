@@ -48,7 +48,7 @@ ModelRegistry.ModelRegistered.handler(async ({ event, context }) => {
     id: modelId,
     creator,
     metadataURI: event.params.metadataURI,
-    pricePerChunk: event.params.chunkPrice,
+    chunkPrice: event.params.chunkPrice,
     chunkCount,
     totalSize,
     creatorShareBps: Number(event.params.creatorShareBps),
