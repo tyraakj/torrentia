@@ -13,6 +13,10 @@ export const ENVIO_GRAPHQL_URL = (
   String(import.meta.env.VITE_ENVIO_GRAPHQL_URL || '').trim()
 )
 
+const QUERY_CACHE_TTL_MS = 15_000
+const responseCache = new Map<string, { expiresAt: number; data: unknown }>()
+const inFlightQueries = new Map<string, Promise<unknown>>()
+
 /**
  * Checks if the Envio GraphQL endpoint is configured in the environment.
  */
@@ -37,36 +41,53 @@ export async function queryEnvio<T>(
     throw new Error('Envio GraphQL endpoint is not configured')
   }
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  const cacheKey = JSON.stringify([query, variables])
+  const cached = responseCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) return cached.data as T
 
+  const inFlight = inFlightQueries.get(cacheKey)
+  if (inFlight) return inFlight as Promise<T>
+
+  const request = (async () => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+    try {
+      const response = await fetch(ENVIO_GRAPHQL_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Envio HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const json = (await response.json()) as GraphQLResponse<T>
+      if (json.errors && json.errors.length > 0) {
+        throw new Error(`Envio GraphQL: ${json.errors[0].message}`)
+      }
+
+      if (!json.data) {
+        throw new Error('Envio GraphQL response did not contain data')
+      }
+
+      responseCache.set(cacheKey, { expiresAt: Date.now() + QUERY_CACHE_TTL_MS, data: json.data })
+      return json.data
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  })()
+
+  inFlightQueries.set(cacheKey, request)
   try {
-    const response = await fetch(ENVIO_GRAPHQL_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ query, variables }),
-      signal: controller.signal,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Envio HTTP ${response.status}: ${response.statusText}`)
-    }
-
-    const json = (await response.json()) as GraphQLResponse<T>
-    if (json.errors && json.errors.length > 0) {
-      throw new Error(`Envio GraphQL: ${json.errors[0].message}`)
-    }
-
-    if (!json.data) {
-      throw new Error('Envio GraphQL response did not contain data')
-    }
-
-    return json.data
+    return await request as T
   } finally {
-    clearTimeout(timeoutId)
+    inFlightQueries.delete(cacheKey)
   }
 }
 
@@ -85,7 +106,7 @@ export const GET_MARKETPLACE_MODELS_QUERY = /* GraphQL */ `
       id
       creator
       metadataURI
-      pricePerChunk
+      chunkPrice
       chunkCount
       totalSize
       creatorShareBps
@@ -99,15 +120,6 @@ export const GET_MARKETPLACE_MODELS_QUERY = /* GraphQL */ `
       totalSeederEarningsMon
       uniqueSeedersCount
     }
-    NetworkOverview_by_pk(id: "global") {
-      totalModelsRegistered
-      totalActiveModels
-      totalPaymentsSettled
-      totalVolumeMon
-      totalUniqueCreators
-      totalUniqueSeeders
-      lastIndexedBlock
-    }
   }
 `
 
@@ -117,7 +129,7 @@ export const GET_MODEL_DETAIL_QUERY = /* GraphQL */ `
       id
       creator
       metadataURI
-      pricePerChunk
+      chunkPrice
       chunkCount
       totalSize
       creatorShareBps
@@ -131,17 +143,6 @@ export const GET_MODEL_DETAIL_QUERY = /* GraphQL */ `
       totalSeederEarningsMon
       uniqueSeedersCount
       lastPaymentTimestamp
-      payments(limit: 50, order_by: { blockTimestamp: desc }) {
-        id
-        seeder
-        creator
-        seederAmount
-        creatorAmount
-        totalAmount
-        blockNumber
-        blockTimestamp
-        txHash
-      }
     }
   }
 `
@@ -196,7 +197,7 @@ export const GET_CREATOR_DASHBOARD_QUERY = /* GraphQL */ `
       id
       creator
       metadataURI
-      pricePerChunk
+      chunkPrice
       chunkCount
       totalSize
       creatorShareBps
@@ -221,7 +222,7 @@ export interface RawEnvioModel {
   id: string
   creator: string
   metadataURI: string
-  pricePerChunk: string | number
+  chunkPrice: string | number
   chunkCount: number
   totalSize?: string | number
   creatorShareBps: number
@@ -272,7 +273,7 @@ export interface RawEnvioCreatorStat {
  */
 export function transformEnvioModel(raw: RawEnvioModel): IndexedModel {
   const chunkCount = Number(raw.chunkCount) || 1
-  const priceWei = BigInt(raw.pricePerChunk || 0)
+  const priceWei = BigInt(raw.chunkPrice || 0)
   const paidChunks = Number(raw.totalPaidChunks || 0)
 
   // Derive model name and format from metadataURI or ID
