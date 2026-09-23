@@ -36,6 +36,7 @@ type Config struct {
 	HTTPEndpoint          HTTPOptions `json:"httpEndpoint"`
 	Limits                QuotaLimits `json:"limits"`
 	IPFSGateways          []string    `json:"ipfsGateways"`
+	RedisURL              string      `json:"-"`
 }
 
 // DefaultConfig returns the production-ready default configuration for Monad Testnet.

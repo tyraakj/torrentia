@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -16,7 +17,8 @@ import (
 )
 
 func shutdownWithCode(code int) {
-	os.Exit (code)
+	exitFn := os.Exit
+	exitFn(code)
 }
 
 func getDefaultConfigPath() string {
@@ -110,6 +112,11 @@ func runInit(args []string, defaultCfgPath string) {
 		cfg.HTTPEndpoint.Port = *port
 		cfg.HTTPEndpoint.PublicURL = fmt.Sprintf("http://127.0.0.1:%d", *port)
 	}
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		if parsed, err := strconv.Atoi(envPort); err == nil && parsed > 0 {
+			cfg.HTTPEndpoint.Port = parsed
+		}
+	}
 
 	if cfg.SeederAddress == "" {
 		fmt.Println("Notice: No wallet address specified. Run with '--address 0x...' to receive chunk payments on Monad.")
@@ -133,6 +140,11 @@ func loadOrFatal(cfgPath string) *seeder.Config {
 	if err != nil {
 		fmt.Printf("Error: could not load config from %s: %v\n", cfgPath, err)
 		fmt.Println("Run 'torrentia-seeder init' first to generate your configuration.")
+		shutdownWithCode(1)
+	}
+	cfg.RedisURL = os.Getenv("REDIS_URL")
+	if cfg.RedisURL == "" && (os.Getenv("TORRENTIA_REQUIRE_REDIS") == "1" || strings.EqualFold(os.Getenv("TORRENTIA_REQUIRE_REDIS"), "true")) {
+		fmt.Println("Error: REDIS_URL is required for deployed seeder mode")
 		shutdownWithCode(1)
 	}
 	return cfg
@@ -252,6 +264,11 @@ func runDaemon(args []string, defaultCfgPath string) {
 	if *port > 0 {
 		cfg.HTTPEndpoint.Port = *port
 		cfg.HTTPEndpoint.PublicURL = fmt.Sprintf("http://127.0.0.1:%d", *port)
+	}
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		if parsed, err := strconv.Atoi(envPort); err == nil && parsed > 0 {
+			cfg.HTTPEndpoint.Port = parsed
+		}
 	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
