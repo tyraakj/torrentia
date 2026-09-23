@@ -11,8 +11,8 @@ export const FaqSection: React.FC = () => {
 
   const faqs: FaqItemData[] = [
     {
-      q: 'How does browser-to-browser WebRTC chunk streaming work?',
-      a: 'Torrentia uses native WebRTC data channels to establish direct, encrypted peer-to-peer connections between browsers. Model weights are sliced into uniform 1MB chunks, partitioned into 16KB sub-slices, and streamed directly into browser IndexedDB with zero intermediate servers.',
+      q: 'How does decentralized WebRTC chunk streaming work?',
+      a: 'Torrentia uses native WebRTC data channels and distributed seeders to establish direct, encrypted peer connections. Model weights are sliced into uniform 1MB chunks, partitioned into 16KB sub-slices, and streamed directly into browser IndexedDB or local disk with zero intermediate servers.',
     },
     {
       q: 'Why is Torrentia built on Monad instead of Ethereum or an L2?',
@@ -32,7 +32,7 @@ export const FaqSection: React.FC = () => {
     },
     {
       q: 'Do seeders need to install software or run dedicated servers?',
-      a: 'No specialized software, terminal commands, or background daemons are needed. Chunks are stored safely inside your browser IndexedDB. Simply leaving the Torrentia marketplace tab open in Chrome, Brave, or Firefox turns you into an active, earning seeder.',
+      a: 'No complicated setup is required. Chunks are stored safely inside your browser IndexedDB, so simply keeping the Torrentia marketplace tab open turns you into an active, earning seeder. For 24/7 headless servers, an optional lightweight Go seeder daemon (torrentia-seeder) is also available.',
     },
   ]
 
@@ -61,20 +61,7 @@ export const FaqSection: React.FC = () => {
                 aria-expanded={isOpen}
               >
                 <span>{faq.q}</span>
-                <span
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    background: isOpen ? '#0f172a' : '#f1f5f9',
-                    color: isOpen ? '#ffffff' : '#0f172a',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    transition: 'all 0.2s ease',
-                  }}
-                >
+                <span className={`faq-toggle-icon ${isOpen ? 'is-open' : ''}`}>
                   {isOpen ? <Minus size={15} /> : <Plus size={15} />}
                 </span>
               </button>
