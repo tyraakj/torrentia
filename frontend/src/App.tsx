@@ -3,12 +3,13 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { config } from './lib/wagmi'
-import { Navbar } from './components/layout/Navbar'
 import { Landing } from './pages/Landing'
 import { ModelDetail } from './pages/ModelDetail'
 import { Upload } from './pages/Upload'
 import { Dashboard } from './pages/Dashboard'
 import { Marketplace } from './pages/Marketplace'
+
+import { AppLayout } from './components/layout/AppLayout'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,18 +32,14 @@ const AppShell: React.FC = () => {
   }
 
   return (
-    <div className="torrentia-app-shell">
-      <Navbar />
-
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Routes>
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/model/:id" element={<ModelDetail />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </main>
-    </div>
+    <AppLayout>
+      <Routes>
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/model/:id" element={<ModelDetail />} />
+        <Route path="/upload" element={<Upload />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </AppLayout>
   )
 }
 
