@@ -36,4 +36,5 @@ Thumbs.db
 # Internal specs and scratch assets
 /public/
 context/specs/
+context/progress-tracker.md
 docs/
