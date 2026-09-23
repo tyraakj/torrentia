@@ -1,5 +1,5 @@
 import React from 'react'
-import { Zap } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 export interface PaymentSplitBadgeProps {
   creatorShareBps: number
@@ -28,15 +28,15 @@ export const PaymentSplitBadge: React.FC<PaymentSplitBadgeProps> = ({
         gap: '0.35rem',
         padding: isSmall ? '0.15rem 0.45rem' : '0.25rem 0.6rem',
         borderRadius: 'var(--radius-full)',
-        background: 'hsla(230, 20%, 15%, 0.7)',
-        border: '1px solid var(--color-border-glass)',
+        background: 'rgba(28, 25, 23, 0.05)',
+        border: '1px solid rgba(28, 25, 23, 0.09)',
         fontSize: isSmall ? 'var(--text-xs)' : 'var(--text-sm)',
         fontFamily: 'var(--font-mono)',
         userSelect: 'none',
         ...style,
       }}
     >
-      {showIcon && <Zap size={isSmall ? 11 : 13} color="var(--color-accent-bright)" />}
+      {showIcon && <Sparkles size={isSmall ? 11 : 13} color="#6366f1" />}
       <span
         style={{
           color: 'var(--color-creator-share)',

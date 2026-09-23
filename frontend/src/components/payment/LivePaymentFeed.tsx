@@ -1,6 +1,6 @@
 import React from 'react'
 import { formatEther } from 'viem'
-import { CheckCircle, Zap } from 'lucide-react'
+import { CheckCircle, Radio } from 'lucide-react'
 import type { PaymentSplitEvent } from '../../lib/types'
 import { TransactionLink } from './TransactionLink'
 import { truncateAddress } from '../../lib/utils'
@@ -51,7 +51,7 @@ export const LivePaymentFeed: React.FC<LivePaymentFeedProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <Zap size={13} color="var(--color-accent-bright)" />
+          <Radio size={13} color="var(--color-accent-bright)" />
           <span>LIVE ON-CHAIN SPLIT STREAM</span>
         </div>
         <span>{payments.length} splits settled</span>
