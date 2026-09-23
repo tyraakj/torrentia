@@ -11,11 +11,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"torrentia/signaling/internal/broker"
 )
 
 func shutdownWithCode(code int) {
-	os.Exit (code)
+	exitFn := os.Exit
+	exitFn(code)
 }
 
 func main() {
@@ -42,9 +44,34 @@ func main() {
 		pinner = broker.NewMockIPFSClient()
 	}
 
-	// Initialize Nonce Store
-	nonceStore := broker.NewMemoryNonceStore(10 * time.Minute)
-	defer nonceStore.Close()
+	// Nonce replay protection is a network dependency in deployed environments.
+	// The memory store remains available only when REDIS_URL is intentionally omitted
+	// for local development.
+	var nonceStore broker.NonceStore
+	var redisClient *redis.Client
+	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
+		opts, err := redis.ParseURL(redisURL)
+		if err != nil {
+			logger.Error("failed to parse REDIS_URL", "error", err)
+			shutdownWithCode(1)
+		}
+		redisClient = redis.NewClient(opts)
+		pingCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if err := redisClient.Ping(pingCtx).Err(); err != nil {
+			cancel()
+			logger.Error("failed to connect to Redis for nonce store", "error", err)
+			shutdownWithCode(1)
+		}
+		cancel()
+		nonceStore = broker.NewRedisNonceStore(redisClient)
+		logger.Info("using Redis nonce store", "addr", opts.Addr)
+	} else {
+		nonceStore = broker.NewMemoryNonceStore(10 * time.Minute)
+		logger.Warn("REDIS_URL is not set; using in-process nonce store for local development only")
+	}
+	if redisClient != nil {
+		defer redisClient.Close()
+	}
 
 	// Initialize HTTP Server
 	srv := broker.NewServer(cfg, pinner, nonceStore, logger)

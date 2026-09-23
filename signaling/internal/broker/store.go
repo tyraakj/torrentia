@@ -1,11 +1,14 @@
 package broker
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -16,6 +19,35 @@ var (
 // NonceStore tracks consumed nonces per creator to prevent replay attacks.
 type NonceStore interface {
 	ConsumeNonce(creator string, nonce string, ttl time.Duration) error
+}
+
+// RedisNonceStore provides replay protection shared by every broker instance.
+// Redis SET NX is atomic, so two broker replicas cannot consume the same nonce.
+type RedisNonceStore struct {
+	client *redis.Client
+	prefix string
+}
+
+func NewRedisNonceStore(client *redis.Client) *RedisNonceStore {
+	return &RedisNonceStore{client: client, prefix: "torrentia:broker:nonce:"}
+}
+
+func (s *RedisNonceStore) ConsumeNonce(creator string, nonce string, ttl time.Duration) error {
+	cleanCreator := strings.ToLower(strings.TrimSpace(creator))
+	cleanNonce := strings.TrimSpace(nonce)
+	if cleanCreator == "" || cleanNonce == "" {
+		return errors.New("creator and nonce must not be empty")
+	}
+
+	key := fmt.Sprintf("%s%s:%s", s.prefix, cleanCreator, cleanNonce)
+	ok, err := s.client.SetNX(context.Background(), key, "1", ttl).Result()
+	if err != nil {
+		return fmt.Errorf("consume nonce in redis: %w", err)
+	}
+	if !ok {
+		return ErrNonceReused
+	}
+	return nil
 }
 
 type nonceEntry struct {
