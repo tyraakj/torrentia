@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // CatalogModel records metadata and held chunks for a seeded model.
@@ -46,7 +48,25 @@ func NewEngine(cfg *Config) (*Engine, error) {
 	}
 
 	store := NewStore(cfg.DataDir, cfg.Limits.MaxStorageBytes)
-	verifier := NewPaymentVerifier(cfg.MonadRPCURL, cfg.SplitPaymentContract, cfg.SeederAddress, cfg.ChainID)
+	var replayStore PaymentReplayStore
+	if cfg.RedisURL != "" {
+		opts, err := redis.ParseURL(cfg.RedisURL)
+		if err != nil {
+			return nil, fmt.Errorf("parse RedisURL: %w", err)
+		}
+		redisClient := redis.NewClient(opts)
+		pingCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		if err := redisClient.Ping(pingCtx).Err(); err != nil {
+			cancel()
+			_ = redisClient.Close()
+			return nil, fmt.Errorf("connect to Redis: %w", err)
+		}
+		cancel()
+		replayStore = NewRedisPaymentReplayStore(redisClient)
+	} else {
+		replayStore = &memoryPaymentReplayStore{entries: make(map[string]time.Time)}
+	}
+	verifier := NewPaymentVerifierWithReplayStore(cfg.MonadRPCURL, cfg.SplitPaymentContract, cfg.SeederAddress, cfg.ChainID, replayStore)
 
 	peerID := fmt.Sprintf("torrentia-cli-%s-%d", cfg.SeederAddress[:8], os.Getpid())
 	sigClient := NewSignalingClient(cfg.SignalingURL, peerID, cfg.SeederAddress)

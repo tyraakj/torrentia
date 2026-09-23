@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -65,12 +67,50 @@ type PaymentVerifier struct {
 	seederAddress   string
 	chainID         int64
 	client          *http.Client
-	mu              sync.Mutex
-	usedTxReceipts  map[string]uint32 // txHash -> chunkIndex replay guard
+	replayStore     PaymentReplayStore
+}
+
+// PaymentReplayStore is the settlement replay boundary. Production nodes use
+// Redis so multiple seeder containers share one atomic receipt claim.
+type PaymentReplayStore interface {
+	Claim(ctx context.Context, txHash string, ttl time.Duration) (bool, error)
+}
+
+type memoryPaymentReplayStore struct {
+	mu      sync.Mutex
+	entries map[string]time.Time
+}
+
+func (s *memoryPaymentReplayStore) Claim(_ context.Context, txHash string, ttl time.Duration) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := time.Now()
+	if expiresAt, ok := s.entries[txHash]; ok && now.Before(expiresAt) {
+		return false, nil
+	}
+	s.entries[txHash] = now.Add(ttl)
+	return true, nil
+}
+
+type redisPaymentReplayStore struct {
+	client *redis.Client
+	prefix string
+}
+
+func NewRedisPaymentReplayStore(client *redis.Client) PaymentReplayStore {
+	return &redisPaymentReplayStore{client: client, prefix: "torrentia:settlement:receipt:"}
+}
+
+func (s *redisPaymentReplayStore) Claim(ctx context.Context, txHash string, ttl time.Duration) (bool, error) {
+	return s.client.SetNX(ctx, s.prefix+strings.ToLower(strings.TrimSpace(txHash)), "1", ttl).Result()
 }
 
 // NewPaymentVerifier constructs a new payment verifier instance.
 func NewPaymentVerifier(rpcURL, contractAddress, seederAddress string, chainID int64) *PaymentVerifier {
+	return NewPaymentVerifierWithReplayStore(rpcURL, contractAddress, seederAddress, chainID, &memoryPaymentReplayStore{entries: make(map[string]time.Time)})
+}
+
+func NewPaymentVerifierWithReplayStore(rpcURL, contractAddress, seederAddress string, chainID int64, replayStore PaymentReplayStore) *PaymentVerifier {
 	return &PaymentVerifier{
 		rpcURL:          rpcURL,
 		contractAddress: strings.ToLower(contractAddress),
@@ -79,7 +119,7 @@ func NewPaymentVerifier(rpcURL, contractAddress, seederAddress string, chainID i
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-		usedTxReceipts: make(map[string]uint32),
+		replayStore: replayStore,
 	}
 }
 
@@ -89,13 +129,6 @@ func (v *PaymentVerifier) VerifyChunkPayment(ctx context.Context, modelID string
 	if cleanTx == "" {
 		return false, errors.New("empty transaction hash")
 	}
-
-	v.mu.Lock()
-	if _, exists := v.usedTxReceipts[cleanTx]; exists {
-		v.mu.Unlock()
-		return false, ErrPaymentAlreadyRedeemed
-	}
-	v.mu.Unlock()
 
 	// Fetch transaction receipt from Monad RPC
 	reqBody := jsonRPCRequest{
@@ -198,10 +231,15 @@ func (v *PaymentVerifier) VerifyChunkPayment(ctx context.Context, modelID string
 		return false, ErrLogNotFound
 	}
 
-	// Mark transaction hash as redeemed to prevent replay
-	v.mu.Lock()
-	v.usedTxReceipts[cleanTx] = chunkIndex
-	v.mu.Unlock()
+	// Claim only after complete validation. Redis SET NX makes this atomic across
+	// all seeder replicas and avoids consuming a receipt for an invalid request.
+	claimed, err := v.replayStore.Claim(ctx, cleanTx, 24*time.Hour)
+	if err != nil {
+		return false, fmt.Errorf("claim settlement receipt: %w", err)
+	}
+	if !claimed {
+		return false, ErrPaymentAlreadyRedeemed
+	}
 
 	return true, nil
 }
