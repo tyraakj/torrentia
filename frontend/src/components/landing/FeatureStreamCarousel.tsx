@@ -4,7 +4,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   Sparkles,
-  Zap,
+  Radio,
   Check,
   FileCode,
   CheckCircle2,
@@ -25,7 +25,7 @@ export const FeatureStreamCarousel: React.FC = () => {
     {
       id: 'webrtc',
       title: 'WebRTC peer channels',
-      desc: 'Browser-to-browser data channels stream weights in parallel slices with zero centralized relay servers.',
+      desc: 'Decentralized peer data channels stream weights in parallel slices with zero centralized relay servers.',
       visual: (
         <div className="stream-mock-pill">
           <div className="stream-mock-pill-dot" />
@@ -86,7 +86,7 @@ export const FeatureStreamCarousel: React.FC = () => {
           </div>
           <div className="stream-mock-highlight-wrap">
             <div className="stream-mock-tooltip-pill">
-              <Zap size={11} color="#f59e0b" />
+              <Sparkles size={11} color="#f59e0b" />
               <span>Auto-sign: 0.001 MON</span>
             </div>
             <div className="stream-mock-highlighted-text">
@@ -181,7 +181,7 @@ export const FeatureStreamCarousel: React.FC = () => {
       visual: (
         <div className="stream-mock-monad-card">
           <div className="monad-card-badge">
-            <Zap size={12} color="#6366f1" />
+            <Radio size={12} color="#6366f1" />
             <span>MONAD TESTNET</span>
           </div>
           <div className="monad-big-stat">
