@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Cpu, Activity, Zap } from 'lucide-react'
+import { Cpu, Activity, Coins } from 'lucide-react'
 import type { SwarmStats } from '../../services/api-client'
 
 interface StatsBarProps {
@@ -184,7 +184,7 @@ export const StatsBar: React.FC<StatsBarProps> = ({ stats, isLoading }) => {
             flexShrink: 0,
           }}
         >
-          <Zap size={22} />
+          <Coins size={22} />
         </div>
         <div>
           <div
