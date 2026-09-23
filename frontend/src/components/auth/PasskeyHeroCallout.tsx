@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useAccount } from 'wagmi'
-import { Fingerprint, ArrowRight, Zap } from 'lucide-react'
+import { Fingerprint, ArrowRight, Key } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { PasskeyAuthModal } from './PasskeyAuthModal'
 
@@ -86,7 +86,7 @@ export const PasskeyHeroCallout: React.FC = () => {
               cursor: 'pointer',
             }}
           >
-            <Zap size={15} />
+            <Key size={15} />
             <span>Connect with Passkey</span>
             <ArrowRight size={14} />
           </Button>

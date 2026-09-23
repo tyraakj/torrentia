@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles, TrendingUp, Users, HardDrive, ShieldCheck, Zap } from 'lucide-react'
+import { Sparkles, TrendingUp, Users, HardDrive, ShieldCheck } from 'lucide-react'
 import type { CreatorEarningsSummary } from '../../hooks/use-creator-data'
 
 export interface EarningsSummaryProps {
@@ -214,7 +214,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
           zIndex: 1,
         }}
       >
-        <Zap size={14} color="var(--color-accent-bright)" style={{ flexShrink: 0 }} />
+        <Sparkles size={14} color="var(--color-accent-bright)" style={{ flexShrink: 0 }} />
         <span>
           <strong>Zero Escrow Claiming:</strong> Every time a peer streams a chunk, Monad's <code>SplitPayment.sol</code> transfers native MON directly to your address in the same atomic block transaction.
         </span>
