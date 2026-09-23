@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, AlertCircle, Zap, ShieldCheck, FileQuestion } from 'lucide-react'
+import { ArrowLeft, AlertCircle, Radio, ShieldCheck, FileQuestion } from 'lucide-react'
 import { useModel, useModelPayments } from '../hooks/use-models'
 import { fetchManifest } from '../services/ipfs'
 import type { ChunkManifest } from '../lib/types'
@@ -243,7 +243,7 @@ export const ModelDetail: React.FC = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Zap size={16} color="var(--color-accent-bright)" />
+              <Radio size={16} color="#6366f1" />
               <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#1c1917' }}>
                 Why this network works well
               </h4>

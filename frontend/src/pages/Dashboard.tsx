@@ -7,7 +7,7 @@ import {
   Layers,
   Sparkles,
   ShieldCheck,
-  Zap,
+  Radio,
 } from 'lucide-react'
 import { useCreatorModels, useCreatorEarnings } from '../hooks/use-creator-data'
 import { EarningsSummary } from '../components/dashboard/EarningsSummary'
@@ -92,7 +92,7 @@ export const Dashboard: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                <Zap size={13} color="var(--color-accent)" />
+                <Radio size={13} color="var(--color-accent)" />
                 <span>Monad Testnet</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
