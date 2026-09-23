@@ -1,23 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Theme Canvas */
-  --color-bg-canvas: #faf8f5;
-  --color-bg-primary: #faf8f5;
-  --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f5f2eb;
+  /* Theme Canvas: Crisp Pure White & Gallery Surfaces */
+  --color-bg-canvas: #ffffff;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafaf8;
+  --color-bg-tertiary: #f5f6f8;
 
-  /* Clear Glassmorphism (Frosted Transparent Surface) */
-  --color-bg-glass: rgba(255, 255, 255, 0.75);
-  --color-bg-glass-card: rgba(255, 255, 255, 0.82);
-  --color-border-glass: rgba(255, 255, 255, 0.9);
-  --color-border-glass-subtle: rgba(28, 25, 23, 0.08);
-  --color-border-glass-hover: rgba(28, 25, 23, 0.22);
+  /* Clear Glassmorphism & Surfaces */
+  --color-bg-glass: rgba(255, 255, 255, 0.88);
+  --color-bg-glass-card: #ffffff;
+  --color-border-glass: rgba(28, 25, 23, 0.08);
+  --color-border-glass-subtle: rgba(28, 25, 23, 0.06);
+  --color-border-glass-hover: rgba(28, 25, 23, 0.18);
 
   /* Text Hierarchy (Deep Charcoal & Warm Stone) */
-  --color-text-primary: #1c1917;
+  --color-text-primary: #181615;
   --color-text-secondary: #57534e;
-  --color-text-muted: #78716c;
+  --color-text-muted: #8c857e;
 
   /* Accent & Brand */
   --color-accent: #6366f1;
@@ -121,16 +121,10 @@ input, textarea {
   font-family: inherit;
 }
 
-/* App Shell with Fixed Painted Landscape Background */
+/* App Shell with Clean Gallery Paper Background */
 .torrentia-app-shell {
   min-height: 100vh;
-  background-image: 
-    linear-gradient(to bottom, rgba(250, 248, 245, 0.82) 0%, rgba(245, 242, 235, 0.90) 100%),
-    url('/feature-card-bg.png');
-  background-position: center top;
-  background-size: cover;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
+  background-color: #FAFAF8;
   color: var(--color-text-primary);
   display: flex;
   flex-direction: column;
@@ -219,3 +213,84 @@ input, textarea {
   border-color: rgba(28, 25, 23, 0.18) !important;
   box-shadow: var(--shadow-card-hover) !important;
 }
+
+/* ==========================================================================
+   Wafer Desktop-App Framed Layout & Pure White Editorial Theme
+   ========================================================================== */
+
+.wafer-outer-viewport {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #FAFAF8;
+  position: relative;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.wafer-cloud-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 800px at 50% 0%, rgba(0, 56, 224, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.wafer-window-frame {
+  width: 100%;
+  max-width: 1440px;
+  min-height: 880px;
+  max-height: 92vh;
+  background: #FFFFFF;
+  border-radius: 24px;
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  box-shadow: 
+    0 20px 60px -15px rgba(28, 25, 23, 0.07),
+    0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.wafer-sage-canvas {
+  flex: 1;
+  background: #FFFFFF;
+  color: #181615;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Sleek Scrollbar for Canvas */
+.wafer-sage-canvas::-webkit-scrollbar {
+  width: 7px;
+}
+.wafer-sage-canvas::-webkit-scrollbar-track {
+  background: rgba(28, 25, 23, 0.02);
+}
+.wafer-sage-canvas::-webkit-scrollbar-thumb {
+  background: rgba(28, 25, 23, 0.15);
+  border-radius: 9999px;
+}
+.wafer-sage-canvas::-webkit-scrollbar-thumb:hover {
+  background: rgba(28, 25, 23, 0.28);
+}
+
+@media (max-width: 1024px) {
+  .wafer-outer-viewport {
+    padding: 0;
+    align-items: stretch;
+  }
+  .wafer-window-frame {
+    border-radius: 0;
+    min-height: 100vh;
+    max-height: none;
+    border: none;
+    box-shadow: none;
+  }
+}
+
