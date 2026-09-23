@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAccount, useDisconnect } from 'wagmi'
-import { Zap, Layers, UploadCloud, LayoutDashboard, LogOut, Key } from 'lucide-react'
+import { Layers, UploadCloud, LayoutDashboard, LogOut, Key } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { AddressDisplay } from '../ui/AddressDisplay'
 import { PasskeyAuthModal } from '../auth/PasskeyAuthModal'
@@ -40,31 +40,16 @@ export const Navbar: React.FC = () => {
           justifyContent: 'space-between',
         }}
       >
-        {/* Brand / Logo */}
+        {/* Brand Name Only (Logo icon removed) */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}>
           <Link
             to="/"
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.625rem',
               textDecoration: 'none',
             }}
           >
-            <div
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '9px',
-                background: 'linear-gradient(135deg, hsl(265, 90%, 65%), hsl(200, 85%, 60%))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 2px 10px hsla(265, 90%, 65%, 0.35)',
-              }}
-            >
-              <Zap size={18} color="#ffffff" />
-            </div>
             <span
               style={{
                 fontFamily: "'Apfel Grotezk', sans-serif",

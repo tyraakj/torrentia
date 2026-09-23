@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Zap, ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 
 export const LandingNavbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false)
@@ -24,11 +24,8 @@ export const LandingNavbar: React.FC = () => {
   return (
     <header className="landing-navbar-wrapper">
       <nav className={`landing-navbar-pill ${scrolled ? 'navbar-scrolled' : ''}`}>
-        {/* Logo / Brand */}
+        {/* Brand Name Only (Logo icon removed) */}
         <Link to="/" className="landing-nav-logo">
-          <div className="landing-nav-logo-icon">
-            <Zap size={16} color="#ffffff" />
-          </div>
           <span className="landing-nav-logo-text">TORRENTIA</span>
         </Link>
 
