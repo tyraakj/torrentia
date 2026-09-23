@@ -1,11 +1,57 @@
 services:
+  - type: keyvalue
+    name: torrentia-redis
+    plan: free
+    ipAllowList: []
+
   - type: web
     name: torrentia-signaling
     env: docker
-    dockerfilePath: signaling/Dockerfile
+    dockerfilePath: signaling/Dockerfile.signaling
     dockerContext: signaling
     plan: free
     healthCheckPath: /health
     envVars:
       - key: PORT
         value: 10000
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: torrentia-redis
+          property: connectionString
+      - key: AUTH_REQUIRED
+        value: true
+
+  - type: web
+    name: torrentia-upload-broker
+    env: docker
+    dockerfilePath: signaling/Dockerfile.broker
+    dockerContext: signaling
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: torrentia-redis
+          property: connectionString
+      - key: PINATA_JWT
+        sync: false
+
+  - type: web
+    name: torrentia-seeder
+    env: docker
+    dockerfilePath: signaling/Dockerfile.seeder
+    dockerContext: signaling
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: torrentia-redis
+          property: connectionString
+      - key: TORRENTIA_REQUIRE_REDIS
+        value: true

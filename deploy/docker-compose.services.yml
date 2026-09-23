@@ -1,0 +1,58 @@
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  signaling:
+    build:
+      context: ../signaling
+      dockerfile: Dockerfile.signaling
+    env_file: signaling.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      PORT: 8081
+    ports: ["8081:8081"]
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  broker:
+    build:
+      context: ../signaling
+      dockerfile: Dockerfile.broker
+    env_file: broker.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      PORT: 8082
+    ports: ["8082:8082"]
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  seeder:
+    build:
+      context: ../signaling
+      dockerfile: Dockerfile.seeder
+    env_file: seeder.env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      TORRENTIA_REQUIRE_REDIS: "true"
+      PORT: 9090
+    ports: ["9090:9090"]
+    volumes:
+      - seeder-data:/var/lib/torrentia-seeder
+      - ./seeder.json:/etc/torrentia/seeder.json:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis-data:
+  seeder-data:

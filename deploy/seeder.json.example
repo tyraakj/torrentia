@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "dataDir": "/var/lib/torrentia-seeder",
+  "seederAddress": "0x0000000000000000000000000000000000000000",
+  "signalingUrl": "ws://signaling:8081/ws",
+  "monadRpcUrl": "https://testnet-rpc.monad.xyz",
+  "chainId": 10143,
+  "splitPaymentContract": "0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa",
+  "modelRegistryContract": "0xe2cEDee4817B11716728aed3C3d7AD0438813340",
+  "httpEndpoint": {
+    "enabled": true,
+    "port": 9090,
+    "publicUrl": "http://localhost:9090"
+  },
+  "limits": {
+    "maxStorageBytes": 107374182400,
+    "maxUploadBandwidthBytesPerSec": 20971520,
+    "maxConcurrentPeers": 32
+  },
+  "ipfsGateways": ["https://gateway.pinata.cloud/ipfs/", "https://ipfs.io/ipfs/"]
+}
