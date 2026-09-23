@@ -22,9 +22,9 @@ export const SkylineFooter: React.FC = () => {
         <div className="footer-grid-row">
           {/* Col 1: Brand & Tagline (No logo icon) */}
           <div className="footer-brand-col">
-            <span className="footer-brand-title">Torrentia</span>
+            <span className="footer-brand-title font-apfel">TORRENTIA</span>
             <p className="footer-brand-desc">
-              The decentralized P2P AI model distribution network. Weights stream directly browser-to-browser with atomic creator &amp; seeder royalties on Monad.
+              The decentralized P2P AI model distribution network. Weights stream directly across peer swarms with atomic creator &amp; seeder royalties on Monad.
             </p>
           </div>
 
