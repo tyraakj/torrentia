@@ -1,6 +1,6 @@
 import React from 'react'
 import { formatEther } from 'viem'
-import { HardDrive, Layers, Coins, Cpu, Award, Zap } from 'lucide-react'
+import { HardDrive, Layers, Coins, Cpu, Award, Radio } from 'lucide-react'
 import type { ChunkManifest, IndexedModel } from '../../lib/types'
 import { formatFileSize } from '../../lib/utils'
 
@@ -50,7 +50,7 @@ export const FileInfoPanel: React.FC<FileInfoPanelProps> = ({ model, manifest, s
       subtext: `${(parseFloat(chunkPriceMon) * (creatorPercent / 100)).toFixed(6)} MON/piece`,
     },
     {
-      icon: <Zap size={15} color="var(--color-seeder-share)" />,
+      icon: <Radio size={15} color="var(--color-seeder-share)" />,
       label: 'Peer / Seeder Node Share',
       value: `${seederPercent}%`,
       subtext: `${(parseFloat(chunkPriceMon) * (seederPercent / 100)).toFixed(6)} MON/piece`,

@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   HardDrive,
   RefreshCw,
-  Zap,
   Radio,
   AlertTriangle,
   Flame,
@@ -237,7 +236,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
 
             {isDownloading && (
               <Badge variant="seeding" style={{ animation: 'pulseGlow 1.5s infinite' }}>
-                <Zap size={11} /> Streaming Swarm
+                <Radio size={11} /> Streaming Swarm
               </Badge>
             )}
             {downloadState.status === 'complete' && (
