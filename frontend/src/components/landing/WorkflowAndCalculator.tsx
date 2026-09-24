@@ -1,48 +1,233 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Terminal, Copy, Check, Server, Cpu, ShieldCheck } from 'lucide-react'
+
+type OsType = 'unix' | 'windows' | 'docker'
+
+interface OsConfig {
+  id: OsType
+  label: string
+  prompt: string
+  installCmd: string
+  runCmd: string
+  comment: string
+}
+
+const OS_CONFIGS: Record<OsType, OsConfig> = {
+  unix: {
+    id: 'unix',
+    label: 'macOS / Linux',
+    prompt: '$',
+    installCmd: 'curl -sSL https://torrentia.io/install.sh | sh',
+    runCmd: 'torrentia-seeder run --port 8081',
+    comment: '# Starts persistent background seeding node with automatic Monad split rewards',
+  },
+  windows: {
+    id: 'windows',
+    label: 'Windows (PowerShell)',
+    prompt: 'PS>',
+    installCmd: 'irm https://torrentia.io/install.ps1 | iex',
+    runCmd: '.\\torrentia-seeder.exe run --port 8081',
+    comment: '# Starts background seeding service on Monad',
+  },
+  docker: {
+    id: 'docker',
+    label: 'Docker',
+    prompt: '$',
+    installCmd: 'docker pull torrentia/seeder:latest',
+    runCmd: 'docker run -d --restart=always -p 8081:8081 torrentia/seeder:latest',
+    comment: '# Runs detached container with auto-restart on system boot',
+  },
+}
 
 export const WorkflowAndCalculator: React.FC = () => {
+  const [selectedOs, setSelectedOs] = useState<OsType>('unix')
+  const [copied, setCopied] = useState(false)
+
+  const currentOs = OS_CONFIGS[selectedOs]
+
+  const handleCopy = (text: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
   return (
-    <section className="workflow-section" id="workflow">
-      <div className="section-eyebrow">How It Works</div>
-      <h2 className="section-heading-large">
-        From weight tensors to earning seeders
-      </h2>
-      <p className="section-lead">
-        A seamless 4-step decentralized lifecycle that turns high-bandwidth distribution into automatic revenue.
-      </p>
+    <section className="workflow-editorial-section" id="workflow">
+      {/* Background Architectural Skyline Outline Sketch */}
+      <div className="workflow-skyline-bg" aria-hidden="true">
+        <svg
+          viewBox="0 0 1200 600"
+          className="skyline-sketch-svg"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Building Outlines (Delicate Pencil/Tan Architectural Sketch) */}
+          <path d="M 60 600 L 60 140 L 190 140 L 190 600" stroke="#DDD5C8" strokeWidth="1.5" />
+          <path d="M 90 140 L 90 90 L 160 90 L 160 140" stroke="#DDD5C8" strokeWidth="1.5" />
+          <path d="M 115 90 L 115 50 L 135 50 L 135 90" stroke="#DDD5C8" strokeWidth="1.5" />
+          <rect x="85" y="170" width="80" height="40" stroke="#E6DFD4" strokeWidth="1.2" rx="4" />
+          <rect x="85" y="230" width="80" height="40" stroke="#E6DFD4" strokeWidth="1.2" rx="4" />
+          <rect x="85" y="290" width="80" height="40" stroke="#E6DFD4" strokeWidth="1.2" rx="4" />
+          <rect x="85" y="350" width="80" height="40" stroke="#E6DFD4" strokeWidth="1.2" rx="4" />
+          <rect x="85" y="410" width="80" height="40" stroke="#E6DFD4" strokeWidth="1.2" rx="4" />
 
-      {/* 4-Step Process Cards */}
-      <div className="workflow-steps-grid">
-        <div className="workflow-step-card">
-          <div className="step-number-badge">01</div>
-          <h3 className="workflow-step-title">Upload &amp; Slice</h3>
-          <p className="workflow-step-desc">
-            Browser slices your model into 1MB blocks, calculates SHA-256 hashes, pins the manifest to IPFS, and registers metadata on Monad.
-          </p>
+          <path d="M 320 600 L 320 380 L 520 380 L 520 600" stroke="#DDD5C8" strokeWidth="1.5" />
+          <rect x="345" y="415" width="38" height="60" stroke="#E6DFD4" strokeWidth="1.2" rx="3" />
+          <rect x="395" y="415" width="38" height="60" stroke="#E6DFD4" strokeWidth="1.2" rx="3" />
+          <rect x="445" y="415" width="38" height="60" stroke="#E6DFD4" strokeWidth="1.2" rx="3" />
+
+          <path d="M 860 600 L 860 260 L 1120 260 L 1120 600" stroke="#DDD5C8" strokeWidth="1.5" />
+          <path d="M 920 260 L 920 210 L 1060 210 L 1060 260" stroke="#DDD5C8" strokeWidth="1.5" />
+          <line x1="885" y1="290" x2="1095" y2="290" stroke="#E6DFD4" strokeWidth="1.2" />
+          <line x1="885" y1="330" x2="1095" y2="330" stroke="#E6DFD4" strokeWidth="1.2" />
+          <line x1="885" y1="370" x2="1095" y2="370" stroke="#E6DFD4" strokeWidth="1.2" />
+          <line x1="885" y1="410" x2="1095" y2="410" stroke="#E6DFD4" strokeWidth="1.2" />
+        </svg>
+      </div>
+
+      <div className="workflow-content-container">
+        {/* Centered Editorial Title */}
+        <div className="section-eyebrow">How It Works</div>
+        <h2 className="workflow-editorial-heading">
+          Get started with Torrentia in three easy steps
+        </h2>
+
+        {/* 3 Cascading Stepped Staircase Cards */}
+        <div className="workflow-staircase-grid">
+          {/* Step 01 (Elevated Top-Left, Soft Stone Gray) */}
+          <div className="staircase-step-card step-card-01">
+            <div className="step-card-header">
+              <div className="step-circle-badge">01</div>
+            </div>
+            <div className="step-card-body">
+              <p className="step-card-text">
+                <strong>Publish via Web or CLI.</strong> Drag and drop your AI model in the web app or run <code>torrentia-seeder add</code> from the terminal. Your package is registered on Monad with a tamper-proof digital fingerprint.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 02 (Middle Stepped Lower, Light Blue-Gray) */}
+          <div className="staircase-step-card step-card-02">
+            <div className="step-card-header">
+              <div className="step-circle-badge">02</div>
+            </div>
+            <div className="step-card-body">
+              <p className="step-card-text">
+                <strong>Community &amp; CLI nodes share bandwidth.</strong> Downloaders fetch directly from nearby browser supporters and 24/7 headless CLI nodes, keeping downloads fast with zero cloud bills.
+              </p>
+            </div>
+          </div>
+
+          {/* Step 03 (Lowest Bottom-Right, Soft Sky Blue) */}
+          <div className="staircase-step-card step-card-03">
+            <div className="step-card-header">
+              <div className="step-circle-badge">03</div>
+            </div>
+            <div className="step-card-body">
+              <p className="step-card-text">
+                <strong>Instant pay-as-you-download earnings.</strong> Payments split automatically in 1 second on Monad: you choose your creator royalty (up to 99%), and community nodes earn for serving bandwidth.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="workflow-step-card">
-          <div className="step-number-badge">02</div>
-          <h3 className="workflow-step-title">Swarm Discovery</h3>
-          <p className="workflow-step-desc">
-            Downloaders connect to the lightweight Go signaling tracker over WebSocket to locate peers holding the desired chunks and exchange SDP offers.
-          </p>
-        </div>
+        {/* Developer & Node Operator CLI Section */}
+        <div className="workflow-cli-showcase">
+          <div className="workflow-cli-topbar">
+            <div className="cli-topbar-left">
+              <div className="cli-terminal-dots">
+                <span className="cli-dot dot-red" />
+                <span className="cli-dot dot-yellow" />
+                <span className="cli-dot dot-green" />
+              </div>
+              <span className="cli-window-title">
+                <Terminal size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
+                torrentia-seeder &mdash; Go CLI Daemon
+              </span>
+            </div>
+            <div className="cli-badge-pill">
+              <Server size={12} />
+              <span>Multi-Platform Go Daemon</span>
+            </div>
+          </div>
 
-        <div className="workflow-step-card">
-          <div className="step-number-badge">03</div>
-          <h3 className="workflow-step-title">402 Atomic Split</h3>
-          <p className="workflow-step-desc">
-            Payment is executed on Monad in 1 second. The smart contract atomically splits funds between the original creator and the serving seeder.
-          </p>
-        </div>
+          <div className="workflow-cli-body">
+            <div className="cli-intro-row">
+              <div className="cli-intro-text">
+                <strong>Prefer the command line?</strong> Run a persistent edge node 24/7 on your home workstation, VPS, or GPU cluster to seed models and earn automatic bandwidth rewards.
+              </div>
+            </div>
 
-        <div className="workflow-step-card">
-          <div className="step-number-badge">04</div>
-          <h3 className="workflow-step-title">Stream &amp; Reseed</h3>
-          <p className="workflow-step-desc">
-            Chunk data streams over WebRTC into IndexedDB. The downloader instantly joins the swarm as a seeder to earn MON for serving future peers.
-          </p>
+            {/* Platform Selector Tabs */}
+            <div className="cli-os-tabs">
+              {(Object.keys(OS_CONFIGS) as OsType[]).map((osKey) => {
+                const cfg = OS_CONFIGS[osKey]
+                const isActive = selectedOs === osKey
+                return (
+                  <button
+                    key={osKey}
+                    type="button"
+                    className={`cli-os-tab ${isActive ? 'active' : ''}`}
+                    onClick={() => setSelectedOs(osKey)}
+                  >
+                    {cfg.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="cli-code-block">
+              <div className="cli-code-line">
+                <div className="cli-line-content">
+                  <span className="cli-prompt">{currentOs.prompt}</span>
+                  <span className="cli-cmd">{currentOs.installCmd}</span>
+                </div>
+                <button
+                  type="button"
+                  className="cli-copy-btn"
+                  onClick={() => handleCopy(currentOs.installCmd)}
+                  title="Copy install command"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={13} color="#10B981" />
+                      <span style={{ color: '#10B981' }}>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={13} />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="cli-code-line secondary-cmd">
+                <div className="cli-line-content">
+                  <span className="cli-prompt">{currentOs.prompt}</span>
+                  <span className="cli-cmd">{currentOs.runCmd}</span>
+                </div>
+                <span className="cli-comment">{currentOs.comment}</span>
+              </div>
+            </div>
+
+            <div className="cli-features-footer">
+              <div className="cli-feature-tag">
+                <Cpu size={13} color="#60A5FA" />
+                <span>Headless 24/7 Background Seeding</span>
+              </div>
+              <div className="cli-feature-tag">
+                <ShieldCheck size={13} color="#34D399" />
+                <span>Automatic SHA-256 Hash Verification</span>
+              </div>
+              <div className="cli-feature-tag">
+                <Server size={13} color="#A78BFA" />
+                <span>Direct WebRTC Streaming to Browsers</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

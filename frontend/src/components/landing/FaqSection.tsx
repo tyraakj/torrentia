@@ -11,28 +11,28 @@ export const FaqSection: React.FC = () => {
 
   const faqs: FaqItemData[] = [
     {
-      q: 'How does decentralized WebRTC chunk streaming work?',
-      a: 'Torrentia uses native WebRTC data channels and distributed seeders to establish direct, encrypted peer connections. Model weights are sliced into uniform 1MB chunks, partitioned into 16KB sub-slices, and streamed directly into browser IndexedDB or local disk with zero intermediate servers.',
+      q: 'How does direct device sharing work?',
+      a: 'Instead of hosting AI models on expensive cloud servers, Torrentia enables downloaders to fetch files directly from active community devices nearby. Downloads transfer over secure, encrypted browser connections, cutting bandwidth bills to zero while keeping speeds fast.',
     },
     {
-      q: 'Why is Torrentia built on Monad instead of Ethereum or an L2?',
-      a: 'Monad provides 10,000 TPS, 1-second block finality, and ultra-efficient execution. In a streaming marketplace where 1MB chunk transfers trigger atomic payment splits in real-time, 1-second finality is critical to keep multi-peer weight streams running without payment lag.',
+      q: 'Why is Torrentia built on Monad?',
+      a: 'Monad delivers 10,000 transactions per second with 1-second block completion and negligible network fees. Because download payments split automatically in real time between the creator and the community members helping share the file, 1-second finality ensures downloads stream continuously without payment lag.',
     },
     {
-      q: 'How does the 402 payment gate work?',
-      a: 'When a downloader requests chunk #N, the serving peer issues a custom 402 challenge specifying the model price and seeder address. The downloader calls the SplitPayment contract on Monad, provides the transaction receipt as proof, and the seeder releases the weights.',
+      q: 'How does pay-as-you-download work?',
+      a: 'There are no monthly subscriptions or platform lock-in. You only pay for what you download. Downloaders stream chunks via lightweight off-chain vouchers that settle in batches directly on Monad, eliminating transaction spam while ensuring creators and community seeders receive rapid, verifiable compensation.',
     },
     {
-      q: 'Why is the chunk price uniform regardless of who seeds it?',
-      a: 'Uniform chunk pricing is a core architectural invariant. If seeders were allowed to undercut each other on price, the incentive to seed unpopular or large models would collapse into a race to the bottom. Uniform pricing guarantees predictable creator royalties and sustainable bandwidth compensation.',
+      q: 'Can creators set their own royalty split?',
+      a: 'Yes, absolutely. Creators have 100% freedom to set their preferred royalty split (up to 99%). The remainder goes directly to community members who host and share bandwidth. Creators are never forced into an arbitrary 70/30 or fixed platform cut.',
     },
     {
-      q: 'How does Torrentia prevent poisoned or corrupted model weights?',
-      a: 'Every model upload generates a ChunkManifest containing cryptographic SHA-256 hashes of every 1MB chunk, pinned immutably to IPFS. The downloader verifies each chunk client-side before committing it to storage. Corrupt, altered, or poisoned weights are rejected instantly.',
+      q: 'How does Torrentia ensure downloaded AI models are safe and authentic?',
+      a: 'Every model upload receives an immutable cryptographic digital fingerprint on Monad. As you download, your device automatically verifies every piece against the original signature. Any tampered or corrupt files are rejected instantly, guaranteeing 100% authentic models.',
     },
     {
-      q: 'Do seeders need to install software or run dedicated servers?',
-      a: 'No complicated setup is required. Chunks are stored safely inside your browser IndexedDB, so simply keeping the Torrentia marketplace tab open turns you into an active, earning seeder. For 24/7 headless servers, an optional lightweight Go seeder daemon (torrentia-seeder) is also available.',
+      q: 'Do community hosts need to install complicated software?',
+      a: 'No complicated setup is required. You can host models right in your browser simply by keeping a Torrentia tab open, earning bandwidth rewards automatically. For dedicated community servers, an optional lightweight background tool is also available.',
     },
   ]
 
@@ -42,19 +42,21 @@ export const FaqSection: React.FC = () => {
 
   return (
     <section className="faq-section" id="faqs">
-      <div className="section-eyebrow">Frequently Asked Questions</div>
-      <h2 className="section-heading-large">
-        Everything you need to know
-      </h2>
-      <p className="section-lead">
-        Key details on peer-to-peer streaming, Monad smart contract settlements, and security guarantees.
-      </p>
+      <div className="faq-header">
+        <div className="section-eyebrow">Frequently Asked Questions</div>
+        <h2 className="faq-heading">
+          Everything you need to know
+        </h2>
+        <p className="faq-lead">
+          Key architectural details on direct peer distribution, creator royalties, batched payments, and security guarantees.
+        </p>
+      </div>
 
       <div className="faq-accordion-container">
         {faqs.map((faq, index) => {
           const isOpen = openIndex === index
           return (
-            <div key={index} className="faq-item">
+            <div key={index} className={`faq-item ${isOpen ? 'is-active' : ''}`}>
               <button
                 className="faq-question-btn"
                 onClick={() => toggleFaq(index)}
