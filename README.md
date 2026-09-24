@@ -17,6 +17,17 @@ As demand grows, the network gains more delivery capacity instead of sending eve
 
 The suggested default split is **70% creator / 30% provider**. Creators can choose any 1%–99% split for each package.
 
+## System Architecture
+
+![Torrentia Cloud Architecture](assets/architecture.png)
+
+Torrentia pairs **WebRTC swarm data transfer** with **atomic on-chain payment splitting on Monad**:
+1. **Creator Flow**: Models are sliced into 1MB chunks, hashed (SHA-256), pinned to IPFS through the authenticated Upload Broker, and registered on `ModelRegistry.sol`.
+2. **Swarm Discovery**: Dedicated seeder daemons and browser seeders announce chunk availability to the Go Signaling Hub (backed by Redis 7 PubSub). Downloaders discover peers and establish direct P2P WebRTC data channels.
+3. **Atomic Payment Split**: Downloaders pay per chunk via `SplitPayment.sol`, which atomically splits and pushes native MON directly to creator and seeder wallets.
+4. **Ticket Verification**: Seeders verify on-chain transaction receipts via Monad JSON-RPC and execute an atomic Redis `SETNX` lock to prevent receipt reuse before streaming 64KB binary chunk slices.
+5. **Telemetry**: Envio HyperIndex streams event logs (`ModelRegistered`, `PaymentSplit`) directly from Monad RPC into a GraphQL analytics layer.
+
 ## Smart contracts
 
 Monad Testnet, chain ID `10143`:

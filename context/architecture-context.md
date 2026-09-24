@@ -1,33 +1,41 @@
 # Architecture Context
 
-## System Components
+## Cloud Architecture & System Topology
+
+![Torrentia Cloud Architecture](../assets/architecture.png)
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (React/TS)                      │
-│  Marketplace UI · Upload Flow · Download Flow · Split Viz       │
-│  wagmi/viem for wallet + contract calls                         │
-└──────────┬──────────────┬──────────────┬───────────────────────┘
-           │              │              │
-           ▼              ▼              ▼
-┌──────────────┐ ┌────────────────┐ ┌──────────────────────────┐
-│ Monad Chain  │ │ Go Signaling   │ │ Node/TS Indexer          │
-│              │ │ Server         │ │                          │
-│ Registry     │ │ WebRTC SDP     │ │ Listens to contract      │
-│ Contract     │ │ relay +        │ │ events, caches model     │
-│              │ │ Seeder tracker │ │ list + seeder status     │
-│ SplitPayment │ │                │ │                          │
-│ Contract     │ │ (No chain      │ │ Lightweight Postgres     │
-│              │ │  calls here)   │ │ or in-memory store       │
-└──────────────┘ └────────────────┘ └──────────────────────────┘
-                        │
-                        ▼
-              ┌──────────────────┐
-              │  WebRTC Data     │
-              │  Channels        │
-              │  (browser↔browser│
-              │   chunk transfer)│
-              └──────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                               FRONTEND (React 18 / TS)                           │
+│  Marketplace UI · Upload Flow · Download State Machine · Split Viz               │
+│  WebRTC DataChannel Engine · IndexedDB Chunks · Viem/Wagmi RPC                   │
+└────────────┬──────────────────────────┬─────────────────────────────┬────────────┘
+             │                          │                             │
+             │ POST /api/v1/upload      │ WSS /ws (SDP / ICE)         │ Tx payForChunk()
+             ▼                          ▼                             ▼
+┌─────────────────────────┐  ┌─────────────────────┐       ┌──────────────────────┐
+│ Go Upload Broker (:8082)│  │ Go Signaling (:8081)│       │ Monad Blockchain     │
+│ • EIP-712 Validator     │  │ • WebSocket Hub     │       │ • ModelRegistry.sol  │
+│ • Nonce Replay Store    │  │ • Read/Write Pumps  │       │ • SplitPayment.sol   │
+│ • Pinata Multipart Pin  │  │ • Swarm Tracker     │       └──────────┬───────────┘
+└────────────┬────────────┘  └──────────┬──────────┘                  │
+             │                          │                             │ Event Stream
+             ▼                          ▼                             ▼
+┌─────────────────────────┐  ┌─────────────────────┐       ┌──────────────────────┐
+│ Pinata IPFS Cloud       │  │ Redis 7 State/Cache │       │ Envio HyperIndex     │
+│ • Pinned Manifest JSON  │  │ • PubSub Relay      │       │ • Event Ingester     │
+│ • Raw Chunk Binaries    │  │ • Seeder Registry   │       │ • GraphQL Query API  │
+└─────────────────────────┘  │ • Receipt SETNX     │       └──────────────────────┘
+                             └──────────┬──────────┘
+                                        │
+                                        ▼
+                             ┌─────────────────────┐
+                             │ Dedicated Seeder    │
+                             │ • WebRTC Host       │
+                             │ • NVMe Chunk Store  │
+                             │ • On-Chain Verifier │
+                             │ • Fallback HTTP     │
+                             └─────────────────────┘
 ```
 
 ## Component Boundaries (Hard Rules)
