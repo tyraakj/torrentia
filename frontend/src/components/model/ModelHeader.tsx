@@ -1,5 +1,5 @@
 import React from 'react'
-import { Calendar, Sparkles, ShieldCheck } from 'lucide-react'
+import { Calendar, Zap, ShieldCheck } from 'lucide-react'
 import type { IndexedModel, ChunkManifest } from '../../lib/types'
 import { AddressDisplay } from '../ui/AddressDisplay'
 import { PaymentSplitBadge } from '../payment/PaymentSplitBadge'
@@ -107,8 +107,9 @@ export const ModelHeader: React.FC<ModelHeaderProps> = ({
       <div>
         <h1
           style={{
+            fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif",
             fontSize: 'var(--text-3xl)',
-            fontWeight: 800,
+            fontWeight: 700,
             letterSpacing: '-0.03em',
             lineHeight: 1.2,
             marginBottom: '0.25rem',
@@ -118,8 +119,8 @@ export const ModelHeader: React.FC<ModelHeaderProps> = ({
           {model.modelName || 'Unnamed Model'}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-          <Sparkles size={13} color="var(--color-accent-bright)" />
-              <span>AI models shared directly between people</span>
+          <Zap size={13} color="var(--color-accent-bright)" />
+          <span>AI models shared directly between people</span>
         </div>
       </div>
 

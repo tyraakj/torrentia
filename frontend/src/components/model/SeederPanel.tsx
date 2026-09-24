@@ -87,7 +87,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
             }}
           />
           <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, letterSpacing: '-0.01em' }}>
-            Available providers ({onlineCount})
+            Community Hosts ({onlineCount})
           </h3>
         </div>
 
@@ -95,7 +95,7 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
           type="button"
           onClick={() => void fetchSeeders()}
           disabled={isRefreshing}
-          title="Refresh providers"
+          title="Refresh hosts"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -155,10 +155,10 @@ export const SeederPanel: React.FC<SeederPanelProps> = ({
         >
           <AlertCircle size={24} color="var(--color-warning)" />
           <div style={{ fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>
-            No providers available right now
+            No community hosts online right now
           </div>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', maxWidth: '320px', lineHeight: 1.4 }}>
-            This model is not available for download right now. Leave this page open after downloading to help provide it to others and earn rewards.
+            This model currently has no active online hosts. Leave this page open or run the CLI seeder to host it and earn automatic rewards.
           </p>
         </div>
       ) : (
