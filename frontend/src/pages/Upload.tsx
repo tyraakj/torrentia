@@ -310,11 +310,11 @@ export const Upload: React.FC = () => {
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
       {/* Page Title & Breadcrumb */}
       <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
-          Publish Model to Swarm
+        <h1 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: 'var(--text-3xl)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
+          Publish AI Model
         </h1>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-          Five-step guided wizard to slice weights into verified pieces, pin the Model Passport, and configure atomic on-chain splits.
+          Prepare your model files, choose your custom creator royalty split (up to 99%), and register on Monad with zero cloud middlemen.
         </p>
       </div>
 
@@ -409,7 +409,7 @@ export const Upload: React.FC = () => {
                     Step 1: Select Model File
                   </h3>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    Provide weights in open standard formats (.gguf, .safetensors, .onnx). Executables and scripts are blocked.
+                    Select your model file in an open format (.gguf, .safetensors, .onnx). Executables and scripts are blocked for safety.
                   </p>
                 </div>
 
@@ -437,7 +437,7 @@ export const Upload: React.FC = () => {
                     Step 2: Prepare & Local Streaming
                   </h3>
                   <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    Slice weights into uniform 1 MB verified pieces and calculate cryptographic SHA-256 hashes in your browser.
+                    Prepare your model into uniform 1 MB pieces with cryptographic SHA-256 verification in your browser.
                   </p>
                 </div>
 
@@ -690,10 +690,10 @@ export const Upload: React.FC = () => {
                 >
                   <div style={{ fontWeight: 700, color: '#1c1917' }}>Your estimated earnings:</div>
                   <div style={{ color: '#44403c' }}>
-                    • <strong>Per piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and the provider receives <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
+                    • <strong>Per piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and community hosts receive <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
                   </div>
                   <div style={{ color: '#44403c' }}>
-                    • <strong>Full download ({estimatedChunks} pieces):</strong> You earn <strong>{creatorTotalEarn} MON</strong>; providers earn <strong>{seederTotalEarn} MON</strong>.
+                    • <strong>Full download ({estimatedChunks} pieces):</strong> You earn <strong>{creatorTotalEarn} MON</strong>; community hosts earn <strong>{seederTotalEarn} MON</strong>.
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Copy, Check, ChevronDown, Play, Sparkles } from 'lucide-react'
+import { Copy, Check, ChevronDown, Play } from 'lucide-react'
 import type { IndexedModel } from '../../lib/types'
 
 interface TerminalRunnerProps {
@@ -304,7 +304,6 @@ export const TerminalRunner: React.FC<TerminalRunnerProps> = ({ model }) => {
         >
           <Play size={15} fill="#ffffff" />
           <span>Stream Model Chunks Now</span>
-          <Sparkles size={14} color="#fef08a" />
         </button>
       </div>
     </div>

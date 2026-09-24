@@ -131,32 +131,50 @@ export const Marketplace: React.FC = () => {
 
       {/* Hero Header Typography */}
       <section style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.3rem 0.85rem',
+            borderRadius: '9999px',
+            background: 'rgba(0, 98, 255, 0.08)',
+            border: '1px solid rgba(0, 98, 255, 0.18)',
+            color: '#0062FF',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            marginBottom: '0.85rem',
+          }}
+        >
+          Community AI Catalog
+        </div>
         <h1
           style={{
-            fontFamily: "'Apfel Grotezk', sans-serif",
-            fontSize: 'clamp(2rem, 4vw, 2.75rem)',
-            fontWeight: 800,
+            fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif",
+            fontSize: 'clamp(2.2rem, 4vw, 3rem)',
+            fontWeight: 700,
             letterSpacing: '-0.03em',
             lineHeight: 1.15,
             color: '#181615',
-            margin: '0 0 0.85rem 0',
+            margin: '0 auto 0.85rem auto',
+            maxWidth: '780px',
           }}
         >
-          Welcome to Torrentia. Let’s stream
-          <br />
-          your serverless weights.
+          Discover &amp; download AI models directly
         </h1>
 
         <p
           style={{
-            fontSize: '1rem',
+            fontSize: '1.05rem',
             color: '#57534e',
-            maxWidth: '560px',
+            maxWidth: '620px',
             margin: '0 auto',
-            lineHeight: 1.5,
+            lineHeight: 1.55,
           }}
         >
-          Stream open-weight models across the decentralized peer swarm with atomic on-chain incentives on Monad.
+          Browse open-weight models shared across the community network. Zero cloud bills, instant pay-as-you-download streaming, and 100% verified safe.
         </p>
       </section>
 
