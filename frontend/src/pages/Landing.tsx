@@ -1,8 +1,8 @@
 import React from 'react'
 import { LandingNavbar } from '../components/landing/LandingNavbar'
 import { HeroSection } from '../components/landing/HeroSection'
+import { FeaturesSection } from '../components/landing/FeaturesSection'
 import { ComparisonSection } from '../components/landing/ComparisonSection'
-import { FeatureStreamCarousel } from '../components/landing/FeatureStreamCarousel'
 import { WorkflowAndCalculator } from '../components/landing/WorkflowAndCalculator'
 import { FaqSection } from '../components/landing/FaqSection'
 import { SkylineFooter } from '../components/landing/SkylineFooter'
@@ -17,11 +17,11 @@ export const Landing: React.FC = () => {
       {/* 2. Hero Section */}
       <HeroSection />
 
-      {/* 3. "AI Distribution has changed. Have you?" Comparison Grid */}
-      <ComparisonSection />
+      {/* 3. Core Capabilities Features Section (Interactive Vertical Tabs & Ice Showcase) */}
+      <FeaturesSection />
 
-      {/* 4. "Built different." Features Carousel */}
-      <FeatureStreamCarousel />
+      {/* 4. "Why AI Creators Choose Torrentia" Comparison Section (2 Editorial Cards) */}
+      <ComparisonSection />
 
       {/* 6. 4-Step Process & Interactive Split / Cloud Bandwidth Calculator */}
       <WorkflowAndCalculator />

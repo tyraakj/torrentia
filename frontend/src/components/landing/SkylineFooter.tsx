@@ -7,80 +7,43 @@ export const SkylineFooter: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault()
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   return (
-    <footer className="skyline-footer">
-      <div className="footer-container">
-        {/* Top 3-Column Section */}
-        <div className="footer-grid-row">
-          {/* Col 1: Brand & Tagline (No logo icon) */}
-          <div className="footer-brand-col">
-            <span className="footer-brand-title font-apfel">TORRENTIA</span>
-            <p className="footer-brand-desc">
-              The decentralized P2P AI model distribution network. Weights stream directly across peer swarms with atomic creator &amp; seeder royalties on Monad.
-            </p>
-          </div>
-
-          {/* Col 2: PRODUCT (Only routes & sections that exist in codebase) */}
-          <div className="footer-nav-col">
-            <span className="footer-col-header">PRODUCT</span>
-            <ul className="footer-links-list">
-              <li>
-                <Link to="/marketplace" className="footer-nav-link">Explore Swarm</Link>
-              </li>
-              <li>
-                <Link to="/upload" className="footer-nav-link">Upload Model</Link>
-              </li>
-              <li>
-                <Link to="/dashboard" className="footer-nav-link">Creator Dashboard</Link>
-              </li>
-              <li>
-                <a href="#features" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'features')}>Features</a>
-              </li>
-              <li>
-                <a href="#workflow" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'workflow')}>How It Works</a>
-              </li>
-              <li>
-                <a href="#faqs" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'faqs')}>FAQs</a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Col 3: DEVELOPERS & CODE (Only existing codebase links) */}
-          <div className="footer-nav-col">
-            <span className="footer-col-header">DEVELOPERS &amp; CODE</span>
-            <ul className="footer-links-list">
-              <li>
-                <a
-                  href="https://github.com/tyraakj/torrentia.git"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="footer-nav-link footer-ext-link"
-                >
-                  <span>GitHub Repository</span>
-                  <ArrowUpRight size={13} />
-                </a>
-              </li>
-            </ul>
-          </div>
+    <footer className="clean-editorial-footer">
+      <div className="clean-footer-inner">
+        {/* Brand & Mission Line */}
+        <div className="clean-footer-left">
+          <span className="clean-footer-logo font-apfel">TORRENTIA</span>
+          <span className="clean-footer-tagline">
+            Community-powered AI model distribution. Built for Monad.
+          </span>
         </div>
 
-        {/* Bottom Bar with Divider */}
-        <div className="footer-bottom-bar">
-          <div className="footer-copyright">
-            &copy; 2026 Torrentia Protocol. MIT Open Source.
-          </div>
-          <button onClick={scrollToTop} className="footer-back-to-top" title="Scroll to top">
+        {/* Essential Navigation Links & Top Button */}
+        <div className="clean-footer-right">
+          <Link to="/marketplace" className="clean-footer-link">
+            Browse Models
+          </Link>
+          <Link to="/upload" className="clean-footer-link">
+            Publish
+          </Link>
+          <a
+            href="https://github.com/tyraakj/torrentia.git"
+            target="_blank"
+            rel="noreferrer"
+            className="clean-footer-link ext-link"
+          >
+            <span>GitHub</span>
+            <ArrowUpRight size={13} />
+          </a>
+          <button onClick={scrollToTop} className="clean-footer-top-btn" title="Back to top">
             Back to top &uarr;
           </button>
         </div>
+      </div>
+
+      {/* Subtle Copyright Sub-row */}
+      <div className="clean-footer-bottom">
+        <span>&copy; {new Date().getFullYear()} Torrentia Protocol &bull; Zero Cloud Server Bills</span>
       </div>
     </footer>
   )
