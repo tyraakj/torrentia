@@ -18,7 +18,7 @@ const OS_CONFIGS: Record<OsType, OsConfig> = {
     label: 'macOS / Linux',
     prompt: '$',
     installCmd: 'curl -sSL https://torrentia.io/install.sh | sh',
-    runCmd: 'torrentia-seeder run --port 8081',
+    runCmd: 'torrentia-seeder run',
     comment: '# Starts persistent background seeding node with automatic Monad split rewards',
   },
   windows: {
@@ -26,7 +26,7 @@ const OS_CONFIGS: Record<OsType, OsConfig> = {
     label: 'Windows (PowerShell)',
     prompt: 'PS>',
     installCmd: 'irm https://torrentia.io/install.ps1 | iex',
-    runCmd: '.\\torrentia-seeder.exe run --port 8081',
+    runCmd: '.\\torrentia-seeder.exe run',
     comment: '# Starts background seeding service on Monad',
   },
   docker: {
@@ -34,7 +34,7 @@ const OS_CONFIGS: Record<OsType, OsConfig> = {
     label: 'Docker',
     prompt: '$',
     installCmd: 'docker pull torrentia/seeder:latest',
-    runCmd: 'docker run -d --restart=always -p 8081:8081 torrentia/seeder:latest',
+    runCmd: 'docker run -d --restart=always -p 9090:9090 -e SEEDER_ADDRESS=0x... torrentia/seeder:latest',
     comment: '# Runs detached container with auto-restart on system boot',
   },
 }

@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  torrentia-seeder:
+    image: torrentia/seeder:latest
+    build:
+      context: ./signaling
+      dockerfile: Dockerfile.seeder
+    container_name: torrentia-seeder
+    restart: always
+    ports:
+      - "9090:9090"
+    environment:
+      - SEEDER_ADDRESS=${SEEDER_ADDRESS:-0x50BD6d079EFc47afdf3FfE8a5387E7156b568B90}
+      - SIGNALING_URL=${SIGNALING_URL:-wss://signaling.torrentia.io/ws}
+      - MONAD_RPC_URL=${MONAD_RPC_URL:-https://testnet-rpc.monad.xyz}
+      - PORT=9090
+    volumes:
+      - torrentia_chunks:/var/lib/torrentia-seeder
+      - ./seeder-config:/etc/torrentia
+
+volumes:
+  torrentia_chunks:
+    name: torrentia_chunks_data
