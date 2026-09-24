@@ -32,13 +32,6 @@ export const LandingNavbar: React.FC = () => {
         {/* Center Links */}
         <div className="landing-nav-links">
           <a
-            href="#comparison"
-            className="landing-nav-link"
-            onClick={(e) => scrollToSection(e, 'comparison')}
-          >
-            Comparison
-          </a>
-          <a
             href="#features"
             className="landing-nav-link"
             onClick={(e) => scrollToSection(e, 'features')}

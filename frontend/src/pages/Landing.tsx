@@ -20,10 +20,10 @@ export const Landing: React.FC = () => {
       {/* 3. Core Capabilities Features Section (Interactive Vertical Tabs & Ice Showcase) */}
       <FeaturesSection />
 
-      {/* 4. "Why AI Creators Choose Torrentia" Comparison Section (2 Editorial Cards) */}
+      {/* 4. The Difference Comparison Section (2 Editorial Cards) */}
       <ComparisonSection />
 
-      {/* 6. 4-Step Process & Interactive Split / Cloud Bandwidth Calculator */}
+      {/* 5. 3-Step Process & Persistent CLI Node Showcase */}
       <WorkflowAndCalculator />
 
       {/* 7. Frequently Asked Questions Accordion */}
