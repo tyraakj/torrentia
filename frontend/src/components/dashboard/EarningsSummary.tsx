@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles, TrendingUp, Users, HardDrive, ShieldCheck } from 'lucide-react'
+import { Zap, TrendingUp, Users, HardDrive, ShieldCheck } from 'lucide-react'
 import type { CreatorEarningsSummary } from '../../hooks/use-creator-data'
 
 export interface EarningsSummaryProps {
@@ -51,7 +51,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
               border: '1px solid rgba(124, 58, 237, 0.25)',
             }}
           >
-            <Sparkles size={14} color="#7c3aed" />
+            <Zap size={14} color="#7c3aed" />
           </div>
           <span
             style={{
@@ -131,7 +131,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
         {/* Total Downloads */}
         <div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '0.2rem' }}>
-            Total Swarm Downloads
+            Total Downloads
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <TrendingUp size={24} color="var(--color-success)" />
@@ -147,14 +147,14 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
             </span>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-            Full model transfers across network
+            Direct downloads across community
           </div>
         </div>
 
         {/* Active Seeders */}
         <div>
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', marginBottom: '0.2rem' }}>
-            Active Bandwidth Seeders
+            Active Community Hosts
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Users size={24} color="var(--color-info)" />
@@ -170,7 +170,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
             </span>
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '0.2rem' }}>
-            Peers currently serving your weights
+            Browser peers &amp; CLI nodes sharing models
           </div>
         </div>
 
@@ -214,7 +214,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
           zIndex: 1,
         }}
       >
-        <Sparkles size={14} color="var(--color-accent-bright)" style={{ flexShrink: 0 }} />
+        <ShieldCheck size={14} color="var(--color-accent-bright)" style={{ flexShrink: 0 }} />
         <span>
           <strong>Zero Escrow Claiming:</strong> Every time a peer streams a chunk, Monad's <code>SplitPayment.sol</code> transfers native MON directly to your address in the same atomic block transaction.
         </span>

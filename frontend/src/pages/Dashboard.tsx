@@ -5,7 +5,7 @@ import {
   Wallet,
   UploadCloud,
   Layers,
-  Sparkles,
+  Zap,
   ShieldCheck,
   Radio,
 } from 'lucide-react'
@@ -65,7 +65,7 @@ export const Dashboard: React.FC = () => {
             </h1>
 
             <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-base)', maxWidth: '460px', lineHeight: 1.5 }}>
-              Connect your Monad testnet wallet to view your registered AI models, track real-time 70% royalties, and monitor bandwidth peers.
+              Connect your Monad testnet wallet to view your registered AI models, track real-time creator royalties, and monitor community downloads.
             </p>
 
             <Button
@@ -122,13 +122,13 @@ export const Dashboard: React.FC = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 'var(--space-2)' }}>
-            <Sparkles size={16} color="var(--color-accent-bright)" />
+            <Zap size={16} color="var(--color-accent-bright)" />
             <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-accent-bright)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Creator Hub
             </span>
           </div>
-          <h1 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
-            Creator & Swarm Dashboard
+          <h1 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: 'var(--text-3xl)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
+            Creator &amp; Community Earnings
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
             <span>Connected as:</span>
@@ -163,7 +163,7 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-          Indexed on Monad Swarm
+          Indexed on Monad Network
         </span>
       </div>
 
@@ -212,7 +212,7 @@ export const Dashboard: React.FC = () => {
             </h3>
 
             <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)', maxWidth: '420px', lineHeight: 1.5 }}>
-              You haven't uploaded any models to Torrentia yet. Upload your first model to partition its weights, set your creator royalty percentage, and start earning on every swarm transfer.
+              You haven't published any models on Torrentia yet. Upload your first model to set your custom creator royalty percentage and start earning automatically on every download.
             </p>
 
             <Link to="/upload">
