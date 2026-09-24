@@ -3,7 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
-  Sparkles,
+  Zap,
   Radio,
   Check,
   FileCode,
@@ -68,7 +68,7 @@ export const FeatureStreamCarousel: React.FC = () => {
             </div>
           </div>
           <div className="stream-mock-doc-footer">
-            <Sparkles size={12} color="#6366f1" />
+            <Zap size={12} color="#6366f1" />
             <span>Split settled in 0.8s on Monad</span>
           </div>
         </div>
@@ -86,7 +86,7 @@ export const FeatureStreamCarousel: React.FC = () => {
           </div>
           <div className="stream-mock-highlight-wrap">
             <div className="stream-mock-tooltip-pill">
-              <Sparkles size={11} color="#f59e0b" />
+              <Zap size={11} color="#f59e0b" />
               <span>Auto-sign: 0.001 MON</span>
             </div>
             <div className="stream-mock-highlighted-text">

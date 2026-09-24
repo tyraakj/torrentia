@@ -209,7 +209,7 @@ export function useDownloadStateMachine({
           currentChunk: currentPieceNum,
           totalChunks,
           activeTransport,
-          message: `Formulating atomic 70/30 split payment for Verified Piece #${currentPieceNum}...`,
+          message: `Formulating instant split payment for Verified Piece #${currentPieceNum}...`,
         }
       }
 
