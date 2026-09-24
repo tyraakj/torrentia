@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { formatEther } from 'viem'
-import { Sparkles, ArrowRight, Volume2, VolumeX, ShieldCheck, Cpu } from 'lucide-react'
+import { Zap, ArrowRight, Volume2, VolumeX, ShieldCheck, Cpu } from 'lucide-react'
 import { TransactionLink } from './TransactionLink'
 import { truncateAddress } from '../../lib/utils'
 
@@ -308,7 +308,7 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
-              <Sparkles size={13} style={{ flexShrink: 0 }} />
+              <Zap size={13} style={{ flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                 Creator ({creatorPercent}%)
               </span>

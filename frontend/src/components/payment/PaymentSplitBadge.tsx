@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sparkles } from 'lucide-react'
+import { Zap } from 'lucide-react'
 
 export interface PaymentSplitBadgeProps {
   creatorShareBps: number
@@ -21,7 +21,7 @@ export const PaymentSplitBadge: React.FC<PaymentSplitBadgeProps> = ({
 
   return (
     <div
-      title={`Atomic Monad Smart Contract Split: ${creatorPercent}% Creator Royalty, ${seederPercent}% Seeder Incentive`}
+      title={`Monad Split Settlement: ${creatorPercent}% Creator Royalty, ${seederPercent}% Host Incentive`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -36,7 +36,7 @@ export const PaymentSplitBadge: React.FC<PaymentSplitBadgeProps> = ({
         ...style,
       }}
     >
-      {showIcon && <Sparkles size={isSmall ? 11 : 13} color="#6366f1" />}
+      {showIcon && <Zap size={isSmall ? 11 : 13} color="#6366f1" />}
       <span
         style={{
           color: 'var(--color-creator-share)',
