@@ -7,7 +7,6 @@ import {
   X,
   AlertCircle,
   Loader2,
-  Sparkles,
   Wallet,
 } from 'lucide-react'
 import { Button } from '../ui/Button'
@@ -276,7 +275,7 @@ export const PasskeyAuthModal: React.FC<PasskeyAuthModalProps> = ({ isOpen, onCl
               gap: '0.75rem',
             }}
           >
-            <Sparkles size={18} color="hsl(265, 90%, 75%)" />
+            <ShieldCheck size={18} color="hsl(265, 90%, 75%)" />
             <p style={{ margin: 0, fontSize: '0.8125rem', color: 'hsl(0, 0%, 90%)', lineHeight: 1.4 }}>
               {hasSavedKey
                 ? 'Welcome back! Tap below to verify with your biometric passkey or device PIN.'
