@@ -1,7 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react'
-import { StarburstGraphic } from './StarburstGraphic'
+import { CheckCircle2, Circle, ArrowRight, ShieldCheck, Zap, Server } from 'lucide-react'
 
 interface SwarmHeroCardProps {
   onStepClick?: (stepIndex: number) => void
@@ -12,18 +11,18 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
 
   const steps = [
     {
-      title: 'Connect wallet or Mera passkey to Monad Testnet',
-      subtitle: 'Authenticated on Monad Testnet (Chain ID 10143)',
+      title: 'Connect wallet or passkey to Monad Testnet',
+      subtitle: 'Instant authentication on Monad Testnet',
       isCompleted: isConnected,
     },
     {
-      title: 'P2P Swarm signaling & WebRTC relay mesh',
-      subtitle: 'Connected to peer discovery tracker & candidate seeders',
+      title: 'Join the community sharing network',
+      subtitle: 'Direct browser peer connections & 24/7 CLI nodes',
       isCompleted: true,
     },
     {
-      title: 'Stream model weights with atomic 70/30 Monad settlement',
-      subtitle: 'Select any model below to stream weights peer-to-peer',
+      title: 'Download AI models with instant creator earnings',
+      subtitle: 'Creator-set royalty splits (up to 99%) settled in 1 second',
       isCompleted: false,
     },
   ]
@@ -34,41 +33,29 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
     <div
       style={{
         position: 'relative',
-        borderRadius: '20px',
-        background: '#ffffff',
+        borderRadius: '24px',
+        background: '#F7F5F0',
         border: '1px solid rgba(28, 25, 23, 0.08)',
         boxShadow: '0 8px 30px rgba(28, 25, 23, 0.04)',
         padding: '1.75rem 2rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '2rem',
+        gap: '2.5rem',
         overflow: 'hidden',
         marginBottom: '2rem',
       }}
     >
-      {/* Subtle Ambient Radial Glow */}
+      {/* Subtle Sky-Ice ambient corner highlight */}
       <div
         style={{
           position: 'absolute',
-          top: '-60px',
-          left: '10%',
+          top: '-40px',
+          right: '-40px',
           width: '260px',
-          height: '140px',
-          background: 'radial-gradient(ellipse, rgba(99, 102, 241, 0.06) 0%, transparent 70%)',
-          filter: 'blur(28px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '-60px',
-          right: '15%',
-          width: '280px',
-          height: '140px',
-          background: 'radial-gradient(ellipse, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
-          filter: 'blur(28px)',
+          height: '180px',
+          background: 'radial-gradient(circle, rgba(0, 98, 255, 0.08) 0%, transparent 70%)',
+          filter: 'blur(30px)',
           pointerEvents: 'none',
         }}
       />
@@ -84,17 +71,22 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
             marginBottom: '1.25rem',
           }}
         >
-          <span
-            style={{
-              fontSize: '0.8125rem',
-              fontWeight: 700,
-              color: '#8c857e',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Get Started
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#0062FF',
+                background: 'rgba(0, 98, 255, 0.08)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '9999px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Get Started
+            </span>
+          </div>
 
           <div
             style={{
@@ -113,8 +105,8 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
             <span>{completedCount}/3 Completed</span>
             <div
               style={{
-                width: '14px',
-                height: '14px',
+                width: '12px',
+                height: '12px',
                 borderRadius: '50%',
                 border: '2px solid rgba(16, 185, 129, 0.25)',
                 borderTopColor: '#10b981',
@@ -135,41 +127,172 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
                 alignItems: 'flex-start',
                 gap: '0.85rem',
                 cursor: idx === 2 ? 'pointer' : 'default',
+                padding: '0.4rem 0.5rem',
+                borderRadius: '12px',
+                transition: 'background 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (idx === 2) e.currentTarget.style.background = 'rgba(0, 98, 255, 0.05)'
+              }}
+              onMouseLeave={(e) => {
+                if (idx === 2) e.currentTarget.style.background = 'transparent'
               }}
             >
               <div style={{ marginTop: '2px', flexShrink: 0 }}>
                 {step.isCompleted ? (
-                  <CheckCircle2 size={17} color="#10b981" />
+                  <CheckCircle2 size={17} color="#059669" />
                 ) : (
-                  <Circle size={17} color="#d1d5db" />
+                  <Circle size={17} color="#A8A29E" />
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-                <span
-                  style={{
-                    fontSize: '0.875rem',
-                    fontWeight: step.isCompleted ? 600 : 500,
-                    color: step.isCompleted ? '#181615' : '#57534e',
-                  }}
-                >
-                  {idx + 1}. {step.title}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span
+                    style={{
+                      fontSize: '0.88rem',
+                      fontWeight: step.isCompleted ? 700 : 600,
+                      color: step.isCompleted ? '#181615' : '#44403C',
+                    }}
+                  >
+                    {idx + 1}. {step.title}
+                  </span>
+                  {idx === 2 && (
+                    <ArrowRight
+                      size={14}
+                      color="#0062FF"
+                      style={{ transition: 'transform 0.15s ease' }}
+                    />
+                  )}
+                </div>
+                <span style={{ fontSize: '0.76rem', color: '#78716C' }}>
+                  {step.subtitle}
                 </span>
-                {idx === 2 && (
-                  <ArrowRight
-                    size={14}
-                    color="#8c857e"
-                    style={{ transition: 'transform 0.15s ease' }}
-                  />
-                )}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right Column: Radiating Starburst Graphic */}
-      <div style={{ zIndex: 2 }}>
-        <StarburstGraphic />
+      {/* Right Column: Floating Feature Showcase Card */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.75rem',
+          minWidth: '240px',
+          zIndex: 2,
+        }}
+      >
+        <div
+          style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            padding: '0.85rem 1.15rem',
+            border: '1px solid rgba(28, 25, 23, 0.07)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.85rem',
+          }}
+        >
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'rgba(0, 98, 255, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#0062FF',
+              flexShrink: 0,
+            }}
+          >
+            <Zap size={16} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: '#78716C', textTransform: 'uppercase', fontWeight: 600 }}>
+              Direct Device P2P
+            </div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#181615' }}>
+              Zero Cloud Egress
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            padding: '0.85rem 1.15rem',
+            border: '1px solid rgba(28, 25, 23, 0.07)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.85rem',
+          }}
+        >
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'rgba(16, 185, 129, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#059669',
+              flexShrink: 0,
+            }}
+          >
+            <ShieldCheck size={16} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: '#78716C', textTransform: 'uppercase', fontWeight: 600 }}>
+              Creator Royalties
+            </div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#059669' }}>
+              Set Your Own (Up to 99%)
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            padding: '0.85rem 1.15rem',
+            border: '1px solid rgba(28, 25, 23, 0.07)',
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.85rem',
+          }}
+        >
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'rgba(124, 58, 237, 0.08)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#7C3AED',
+              flexShrink: 0,
+            }}
+          >
+            <Server size={16} />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: '#78716C', textTransform: 'uppercase', fontWeight: 600 }}>
+              Hosting Support
+            </div>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#181615' }}>
+              Browser &amp; 24/7 CLI Nodes
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

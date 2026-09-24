@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { ChevronDown, Code, Cpu, Sparkles, Layers, ShieldCheck } from 'lucide-react'
+import { ChevronDown, Code, Cpu, Zap, Layers, ShieldCheck } from 'lucide-react'
 import { TerminalRunner } from './TerminalRunner'
 import { formatFileSize, bpsToPercent } from '../../lib/utils'
 import { formatEther } from 'viem'
@@ -32,14 +32,14 @@ export const WaferModelCard: React.FC<WaferModelCardProps> = ({ model, defaultEx
   const tags = [
     { label: model.category || 'General AI', icon: <Code size={11} /> },
     { label: model.format || 'Safetensors', icon: <Layers size={11} /> },
-    { label: 'Atomic Split', icon: <Sparkles size={11} /> },
-    { label: '1 MB Chunks', icon: <Cpu size={11} /> },
+    { label: 'Instant Split', icon: <Zap size={11} /> },
+    { label: 'Direct Streaming', icon: <Cpu size={11} /> },
   ]
 
   const description =
     model.isDemo
-      ? 'A verified open-weight model with active seeders streaming across the peer swarm via WebRTC data channels.'
-      : 'Decentralized open model weights distributed via Torrentia P2P swarm with atomic on-chain incentives on Monad.'
+      ? 'A verified AI model shared directly by active community members. Instant pay-as-you-download streaming with zero cloud markup.'
+      : 'Decentralized open AI model distributed via the Torrentia community network with instant on-chain royalties on Monad.'
 
   return (
     <div style={{ marginBottom: '1.25rem' }}>
@@ -220,19 +220,19 @@ export const WaferModelCard: React.FC<WaferModelCardProps> = ({ model, defaultEx
 
           <div>
             <div style={{ fontSize: '0.75rem', color: '#8c857e', marginBottom: '0.2rem' }}>
-              Seeder Split
+              Royalty Split
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#059669', letterSpacing: '-0.02em' }}>
-              {creatorPercent}/{seederPercent}
+              {creatorPercent} / {seederPercent}
             </div>
           </div>
 
           <div>
             <div style={{ fontSize: '0.75rem', color: '#8c857e', marginBottom: '0.2rem' }}>
-              Active Swarm
+              Community Hosts
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#181615', letterSpacing: '-0.02em' }}>
-              {model.seederCount || 1} {model.seederCount === 1 ? 'Seeder' : 'Seeders'}
+              {model.seederCount || 1} {model.seederCount === 1 ? 'Host' : 'Hosts'}
             </div>
           </div>
         </div>
