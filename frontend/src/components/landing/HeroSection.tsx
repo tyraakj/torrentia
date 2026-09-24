@@ -11,16 +11,16 @@ export const HeroSection: React.FC = () => {
         <div className="hero-upper-content-split">
           <div className="hero-text-block">
             <h1 className="hero-headline">
-              Kill the server bill. Stream weights directly.
+              Zero server bills. Share AI models directly.
             </h1>
             <p className="hero-subtitle">
-              When models get popular, centralized servers throttle, crash, or send crushing egress bills. Torrentia distributes weights directly across a decentralized peer swarm: zero hosting infrastructure, zero server bills, and atomic on-chain splits on Monad.
+              When AI models go viral, cloud hosts send massive bandwidth bills or crash. Torrentia shares models directly across a community of connected devices: zero server bills, faster downloads, and automatic earnings every time someone downloads.
             </p>
           </div>
 
           <div className="hero-cta-group">
             <Link to="/marketplace" className="btn-hero-primary">
-              <span>Explore Swarm</span>
+              <span>Browse Models</span>
               <ArrowRight size={15} />
             </Link>
             <Link to="/upload" className="btn-hero-secondary">

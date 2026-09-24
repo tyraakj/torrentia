@@ -61,15 +61,8 @@ export const LandingNavbar: React.FC = () => {
           </a>
         </div>
 
-        {/* Right CTA Actions */}
+        {/* Right CTA Action */}
         <div className="landing-nav-actions">
-          <Link
-            to="/upload"
-            className="landing-nav-link"
-            style={{ fontWeight: 600, fontSize: '0.8125rem' }}
-          >
-            Upload Model
-          </Link>
           <Link to="/marketplace" className="btn-nav-primary">
             <span>Launch App</span>
             <ArrowUpRight size={14} style={{ marginLeft: '4px' }} />
