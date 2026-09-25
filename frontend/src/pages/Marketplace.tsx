@@ -48,6 +48,7 @@ export const Marketplace: React.FC = () => {
 
   return (
     <div
+      className="marketplace-page"
       style={{
         maxWidth: '1500px',
         margin: '0 auto',

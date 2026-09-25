@@ -55,6 +55,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
   return (
     <>
       <motion.aside
+        className="wafer-sidebar"
         animate={{ width: isCollapsed ? 68 : 230 }}
         transition={{ duration: 0.22, ease: [0.25, 1, 0.5, 1] }}
         style={{
@@ -102,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                     color: '#181615',
                   }}
                 >
-                  Torrentia
+                  <span className="sidebar-label">Torrentia</span>
                 </span>
               </Link>
             ) : (
@@ -196,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                   <span style={{ color: isActive ? '#ffffff' : '#57534e', display: 'flex' }}>
                     {link.icon}
                   </span>
-                  {!isCollapsed && <span>{link.label}</span>}
+                  {!isCollapsed && <span className="sidebar-label">{link.label}</span>}
                 </Link>
               )
             })}
@@ -213,7 +214,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                   padding: '0.75rem 0.5rem 0.25rem',
                 }}
               >
-                Network &amp; Activity
+                <span className="sidebar-label">Network &amp; Activity</span>
               </div>
             ) : (
               <div
@@ -263,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                   <span style={{ color: isActive ? '#ffffff' : '#57534e', display: 'flex' }}>
                     {link.icon}
                   </span>
-                  {!isCollapsed && <span>{link.label}</span>}
+                  {!isCollapsed && <span className="sidebar-label">{link.label}</span>}
                 </Link>
               )
             })}
@@ -295,7 +296,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <BookOpen size={16} />
-              {!isCollapsed && <span>Docs</span>}
+              {!isCollapsed && <span className="sidebar-label">Docs</span>}
             </div>
             {!isCollapsed && <ArrowUpRight size={14} color="rgba(28, 25, 23, 0.4)" />}
           </a>
@@ -317,7 +318,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span style={{ fontSize: '0.85rem' }}>💼</span>
-                <span>Balance</span>
+                <span className="sidebar-label">Balance</span>
               </div>
               <span style={{ fontWeight: 700, color: '#181615' }}>{formattedBalance}</span>
             </div>
@@ -441,7 +442,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                 }}
               >
                 <Key size={14} />
-                {!isCollapsed && <span>Connect</span>}
+                {!isCollapsed && <span className="sidebar-label">Connect</span>}
               </button>
             )}
           </div>

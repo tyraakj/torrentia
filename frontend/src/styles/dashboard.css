@@ -17,6 +17,79 @@
   }
 }
 
+@media (max-width: 767px) {
+  .dashboard-full-viewport {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .dashboard-connect-title,
+  .dashboard-title {
+    font-size: 1.65rem;
+  }
+
+  .dashboard-connect-hero {
+    margin-top: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .dashboard-connect-lead {
+    margin-bottom: 1.5rem;
+  }
+
+  .connect-option-card,
+  .dashboard-sky-stage {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .dashboard-header-row,
+  .models-section-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .dashboard-stage-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .stage-tabs-switch,
+  .stage-model-selector-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    align-self: stretch;
+    border-radius: 12px;
+  }
+
+  .stage-tabs-switch {
+    justify-content: flex-start;
+  }
+
+  .dashboard-table-card {
+    overflow-x: auto;
+  }
+
+  .dashboard-table-head,
+  .dashboard-table-row {
+    min-width: 430px;
+  }
+
+  .models-grid-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .publish-main-grid {
+    gap: 1rem;
+  }
+
+  .donut-chart-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
+
 /* ==========================================================================
    1. Disconnected Dual-Method Authentication Portal
    ========================================================================== */
@@ -1079,5 +1152,4 @@
     padding-bottom: 0.4rem;
   }
 }
-
 

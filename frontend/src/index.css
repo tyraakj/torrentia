@@ -266,6 +266,25 @@ input, textarea {
   flex-direction: column;
 }
 
+#app-content,
+#app-content > * {
+  min-width: 0;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
 /* Custom Sleek Scrollbar for Canvas */
 .wafer-sage-canvas::-webkit-scrollbar {
   width: 7px;
@@ -295,3 +314,59 @@ input, textarea {
   }
 }
 
+@media (max-width: 767px) {
+  .wafer-outer-viewport,
+  .wafer-window-frame,
+  .wafer-sage-canvas {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+
+  .wafer-window-frame {
+    overflow: visible;
+  }
+
+  .wafer-sidebar {
+    width: 68px !important;
+    min-width: 68px;
+    padding: 0.85rem 0.5rem !important;
+    overflow-x: hidden;
+  }
+
+  .wafer-sidebar .sidebar-label {
+    display: none !important;
+  }
+
+  .wafer-sidebar nav a {
+    justify-content: center !important;
+    padding-inline: 0 !important;
+  }
+
+  .wafer-sidebar > div:last-child > a,
+  .wafer-sidebar > div:last-child > div {
+    justify-content: center !important;
+  }
+
+  .wafer-sidebar > div:last-child > a > div {
+    justify-content: center;
+  }
+
+  #app-content {
+    width: calc(100vw - 68px);
+    max-width: calc(100vw - 68px);
+  }
+
+  .marketplace-page,
+  .model-detail-page {
+    padding: 1.25rem 0.75rem !important;
+  }
+
+  .marketplace-page > div {
+    max-width: 100% !important;
+  }
+
+  .model-detail-page h1 {
+    font-size: clamp(1.5rem, 7vw, 2rem) !important;
+    overflow-wrap: anywhere;
+  }
+}

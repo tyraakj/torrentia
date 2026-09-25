@@ -16,7 +16,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
         />
-        <main className="wafer-sage-canvas">
+        <main className="wafer-sage-canvas" id="app-content">
           {children}
         </main>
       </div>

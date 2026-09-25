@@ -86,7 +86,7 @@ export const ModelDetail: React.FC = () => {
   // Loading State
   if (isModelLoading) {
     return (
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
+      <div className="model-detail-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
         <Skeleton height="36px" width="160px" style={{ marginBottom: 'var(--space-6)' }} />
         <Skeleton height="140px" width="100%" style={{ marginBottom: 'var(--space-6)', borderRadius: 'var(--radius-lg)' }} />
         <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 'var(--space-6)' }}>
@@ -132,7 +132,7 @@ export const ModelDetail: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
+    <div className="model-detail-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
       {/* Back to Explore Link */}
       <Link
         to="/marketplace"
