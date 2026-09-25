@@ -1,4 +1,4 @@
-type Model @entity {
+type Model {
   id: ID! # Hex string of modelId (bytes32)
   creator: String! # Creator address
   metadataURI: String! # IPFS CID
@@ -23,7 +23,7 @@ type Model @entity {
   payments: [PaymentSplitEvent!]! @derivedFrom(field: "model")
 }
 
-type PaymentSplitEvent @entity {
+type PaymentSplitEvent {
   id: ID! # ${chainId}-${txHash}-${logIndex}
   model: Model!
   seeder: String! # Seeder recipient address
@@ -36,7 +36,7 @@ type PaymentSplitEvent @entity {
   txHash: String!
 }
 
-type CreatorStat @entity {
+type CreatorStat {
   id: ID! # Creator address
   totalModelsRegistered: Int!
   activeModelsCount: Int!
@@ -44,7 +44,7 @@ type CreatorStat @entity {
   totalChunksDelivered: BigInt!
 }
 
-type SeederStat @entity {
+type SeederStat {
   id: ID! # Seeder address
   totalChunksServed: BigInt!
   totalEarningsMon: BigInt!
@@ -52,7 +52,7 @@ type SeederStat @entity {
   lastActiveTimestamp: Int!
 }
 
-type NetworkOverview @entity {
+type NetworkOverview {
   id: ID! # "global"
   totalModelsRegistered: Int!
   totalActiveModels: Int!

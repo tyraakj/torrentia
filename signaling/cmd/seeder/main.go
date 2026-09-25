@@ -90,7 +90,7 @@ func runInit(args []string, defaultCfgPath string) {
 	configPath := fs.String("config", defaultCfgPath, "Path to write config file")
 	address := fs.String("address", "", "Public Ethereum/Monad wallet address to receive seeder payments")
 	dataDir := fs.String("data-dir", "", "Directory to store verified chunk files")
-	signaling := fs.String("signaling", "ws://localhost:8081/ws", "WebSocket URL of Torrentia signaling server")
+	signaling := fs.String("signaling", "wss://torrentia-signaling.onrender.com/ws", "WebSocket URL of Torrentia signaling server")
 	rpc := fs.String("rpc", "https://testnet-rpc.monad.xyz", "Monad JSON-RPC endpoint")
 	port := fs.Int("port", 9090, "HTTP chunk delivery server port")
 	_ = fs.Parse(args)

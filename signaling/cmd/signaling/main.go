@@ -186,6 +186,30 @@ func main() {
 		_ = json.NewEncoder(w).Encode(resp)
 	})
 
+	// Install script endpoint — serves the CLI installer so users can run:
+	//   curl -sSL https://torrentia-signaling.onrender.com/install.sh | sh
+	// When torrentia.io DNS is live, point it here and this URL auto-works.
+	mux.HandleFunc("/install.sh", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		// Redirect to the canonical GitHub raw script so we always serve the
+		// latest version without redeploying the signaling server.
+		http.Redirect(w, r,
+			"https://raw.githubusercontent.com/tyraakj/torrentia/main/scripts/install.sh",
+			http.StatusFound)
+	})
+
+	// Root redirect → GitHub for discoverability
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "https://github.com/tyraakj/torrentia", http.StatusFound)
+	})
+
 	// WebSocket signaling & tracker endpoint
 	mux.HandleFunc("/ws", hub.ServeWS)
 

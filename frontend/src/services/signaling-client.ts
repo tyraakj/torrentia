@@ -52,6 +52,25 @@ type EventMap = {
   error: (err: string) => void
 }
 
+export function normalizeSignalingUrl(rawUrl: string): string {
+  let url = rawUrl.trim()
+  if (!url) return url
+  if (url.startsWith('https://')) {
+    url = 'wss://' + url.slice('https://'.length)
+  } else if (url.startsWith('http://')) {
+    url = 'ws://' + url.slice('http://'.length)
+  }
+  if (!url.startsWith('ws://') && !url.startsWith('wss://')) {
+    const isHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:'
+    url = (isHttps ? 'wss://' : 'ws://') + url
+  }
+  url = url.replace(/\/+$/, '')
+  if (!url.endsWith('/ws')) {
+    url = `${url}/ws`
+  }
+  return url
+}
+
 export class SignalingClient {
   public readonly peerId: string
   public address: string
@@ -84,12 +103,13 @@ export class SignalingClient {
       ? crypto.randomUUID()
       : `peer-${Math.random().toString(36).substring(2, 11)}`
     this.address = address || '0x0000000000000000000000000000000000000000'
-    this.url =
+    const rawUrl =
       url ||
       (import.meta.env.VITE_SIGNALING_URL as string) ||
       (import.meta.env.PROD
         ? 'wss://torrentia-signaling.onrender.com/ws'
         : 'ws://localhost:8081/ws')
+    this.url = normalizeSignalingUrl(rawUrl)
   }
 
   public get currentStatus(): SignalingStatus {

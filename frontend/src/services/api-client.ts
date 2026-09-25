@@ -30,29 +30,38 @@ const MODEL_REGISTRY_DEPLOYMENT_BLOCK = BigInt(
 )
 
 async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
-  const latestBlock = await chainClient.getBlockNumber()
-  const rangeSize = 10_000n
-  const logs = []
+  try {
+    const latestBlock = await chainClient.getBlockNumber()
+    // Monad public testnet RPC limits eth_getLogs strictly to a max 100-block range
+    const rangeSize = 99n
+    const scanWindow = 500n
+    const windowStart = latestBlock > scanWindow ? latestBlock - scanWindow : 0n
+    const startScan = windowStart > MODEL_REGISTRY_DEPLOYMENT_BLOCK ? windowStart : MODEL_REGISTRY_DEPLOYMENT_BLOCK
+    const logs = []
 
-  for (
-    let fromBlock = MODEL_REGISTRY_DEPLOYMENT_BLOCK;
-    fromBlock <= latestBlock;
-    fromBlock += rangeSize
-  ) {
-    const toBlock = fromBlock + rangeSize - 1n < latestBlock
-      ? fromBlock + rangeSize - 1n
-      : latestBlock
+    for (
+      let fromBlock = startScan;
+      fromBlock <= latestBlock;
+      fromBlock += rangeSize
+    ) {
+      const toBlock = fromBlock + rangeSize - 1n < latestBlock
+        ? fromBlock + rangeSize - 1n
+        : latestBlock
 
-    const rangeLogs = await chainClient.getContractEvents({
-      address: MODEL_REGISTRY_ADDRESS,
-      abi: MODEL_REGISTRY_ABI,
-      eventName: 'ModelRegistered',
-      fromBlock,
-      toBlock,
-      args: creator ? { creator: creator as Address } : undefined,
-    })
-    logs.push(...rangeLogs)
-  }
+      try {
+        const rangeLogs = await chainClient.getContractEvents({
+          address: MODEL_REGISTRY_ADDRESS,
+          abi: MODEL_REGISTRY_ABI,
+          eventName: 'ModelRegistered',
+          fromBlock,
+          toBlock,
+          args: creator ? { creator: creator as Address } : undefined,
+        })
+        logs.push(...rangeLogs)
+      } catch {
+        break
+      }
+    }
 
   return logs.flatMap((log) => {
     const args = log.args
@@ -67,23 +76,28 @@ async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
       return []
     }
 
-    return {
-      modelId: args.modelId,
-      originalCreator: args.creator,
-      metadataURI: args.metadataURI,
-      chunkPrice: args.chunkPrice,
-      creatorShareBps: Number(args.creatorShareBps),
-      chunkCount: Number(args.chunkCount),
-      active: true,
-      seederCount: 0,
-      totalDownloads: 0,
-      registeredAt: 0,
-      modelName: 'On-chain registered model',
-      category: 'Vision',
-      format: 'ONNX',
-      totalSize: Number(args.chunkCount) * 1048576,
-    }
-  })
+      return [
+        {
+          modelId: args.modelId,
+          originalCreator: args.creator,
+          metadataURI: args.metadataURI,
+          chunkPrice: args.chunkPrice,
+          creatorShareBps: Number(args.creatorShareBps),
+          chunkCount: Number(args.chunkCount),
+          active: true,
+          seederCount: 0,
+          totalDownloads: 0,
+          registeredAt: 0,
+          modelName: 'On-chain registered model',
+          category: 'Vision',
+          format: 'ONNX',
+          totalSize: Number(args.chunkCount) * 1048576,
+        },
+      ]
+    })
+  } catch {
+    return []
+  }
 }
 
 export interface SwarmStats {

@@ -17,7 +17,7 @@ import type {
   PasskeyDiagnostics,
 } from '../../types/mera'
 
-const RP_NAME = 'Torrentia AI Model Marketplace'
+const RP_NAME = 'Torrentia'
 
 export class MeraAuthService {
   private static instance: MeraAuthService
