@@ -1,82 +1,65 @@
 # ==============================================================================
-# Torrentia Seeder CLI Daemon Installer for Windows (PowerShell)
-# Usage: irm https://torrentia.io/install.ps1 | iex
+# Torrentia Seeder CLI Daemon Installer (Windows PowerShell)
+#
+# LIVE (works now):
+#   irm https://torrentiaa.vercel.app/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/tyraakj/torrentia/main/scripts/install.ps1 | iex
+#
+# FUTURE (when torrentia.io DNS is live):
+#   irm https://torrentia.io/install.ps1 | iex
 # ==============================================================================
+$ErrorActionPreference = 'Stop'
 
-$ErrorActionPreference = "Stop"
+Write-Host "=================================================================="
+Write-Host " Installing Torrentia Persistent Seeder Daemon (torrentia-seeder)"
+Write-Host " Community-powered AI model distribution on Monad"
+Write-Host "=================================================================="
 
-Write-Host "==================================================================" -ForegroundColor Cyan
-Write-Host " Installing Torrentia Persistent Seeder Daemon (torrentia-seeder)" -ForegroundColor Cyan
-Write-Host " Community-powered AI model distribution on Monad" -ForegroundColor Cyan
-Write-Host "==================================================================" -ForegroundColor Cyan
+$arch = if ([System.Environment]::Is64BitOperatingSystem) { 'amd64' } else { 'arm64' }
+$installDir = "$env:USERPROFILE\.local\bin"
+if (-not (Test-Path $installDir)) { New-Item -ItemType Directory -Path $installDir -Force | Out-Null }
+$target = Join-Path $installDir 'torrentia-seeder.exe'
 
-$Arch = if ([Environment]::Is64BitOperatingSystem) { "amd64" } else { "386" }
-$InstallDir = Join-Path $HOME ".torrentia\bin"
-$BinaryName = "torrentia-seeder.exe"
-$TargetPath = Join-Path $InstallDir $BinaryName
+Write-Host "Target: $target (windows/$arch)"
 
-if (-not (Test-Path $InstallDir)) {
-    New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-}
-
-$Installed = $false
-
-# 1. Try Go install if Go toolchain exists
+$installed = $false
 if (Get-Command go -ErrorAction SilentlyContinue) {
-    Write-Host "Found Go compiler. Installing torrentia-seeder via go install..." -ForegroundColor Green
-    try {
-        $env:GOBIN = $InstallDir
-        go install github.com/tyraakj/torrentia/signaling/cmd/seeder@latest
-        if (Test-Path $TargetPath) {
-            $Installed = $true
-        }
-    } catch {
-        Write-Host "Go install failed, checking for binary download..." -ForegroundColor Yellow
+    Write-Host "Found Go compiler. Building from source..."
+    $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $repoRoot  = Split-Path -Parent $scriptDir
+    $signalingDir = Join-Path $repoRoot 'signaling'
+    if (Test-Path $signalingDir) {
+        try {
+            Push-Location $signalingDir
+            go build -o $target .\cmd\seeder
+            Pop-Location
+            $installed = $true
+            Write-Host "[OK] Built from source."
+        } catch { Pop-Location; Write-Warning "Source build failed: $_" }
     }
 }
 
-# 2. Download release binary if Go did not complete
-if (-not $Installed) {
-    $DownloadUrl = "https://github.com/tyraakj/torrentia/releases/latest/download/torrentia-seeder-windows-$Arch.exe"
-    Write-Host "Downloading $BinaryName from $DownloadUrl..." -ForegroundColor Green
+if (-not $installed) {
+    $downloadUrl = "https://github.com/tyraakj/torrentia/releases/latest/download/torrentia-seeder-windows-$arch.exe"
+    Write-Host "Downloading pre-compiled binary from $downloadUrl ..."
     try {
-        Invoke-WebRequest -Uri $DownloadUrl -OutFile $TargetPath -UseBasicParsing
-        $Installed = $true
+        Invoke-WebRequest -Uri $downloadUrl -OutFile $target -UseBasicParsing
+        $installed = $true
     } catch {
-        # Check if local precompiled binary exists in signaling directory
-        $LocalCandidate = Join-Path $PSScriptRoot "..\signaling\torrentia-seeder.exe"
-        if (-not (Test-Path $LocalCandidate)) {
-            $LocalCandidate = ".\signaling\torrentia-seeder.exe"
-        }
-        if (Test-Path $LocalCandidate) {
-            Copy-Item -Path $LocalCandidate -Destination $TargetPath -Force
-            $Installed = $true
-            Write-Host "Copied local binary to $TargetPath" -ForegroundColor Green
-        } else {
-            Write-Host "Notice: Release binary not published yet. Please build with Go or run Docker." -ForegroundColor Yellow
-        }
+        Write-Warning "Release asset not yet published. Build locally with:"
+        Write-Warning "  cd signaling && go build -o $target .\cmd\seeder"
     }
 }
 
-# 3. Add to User PATH if missing
-$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($UserPath -notlike "*$InstallDir*") {
-    Write-Host "Adding $InstallDir to User PATH..." -ForegroundColor Yellow
-    [Environment]::SetEnvironmentVariable("Path", "$UserPath;$InstallDir", "User")
-    $env:Path = "$env:Path;$InstallDir"
-}
-
-# 4. Auto-initialize configuration
-if (Test-Path $TargetPath) {
-    try {
-        & $TargetPath init
-    } catch {
-        # Non-fatal if already initialized
-    }
-
+if ($installed -and (Test-Path $target)) {
+    try { & $target init } catch { Write-Warning "Auto-init failed (run manually): $_" }
+    $env:PATH = "$installDir;$env:PATH"
     Write-Host ""
-    Write-Host "==================================================================" -ForegroundColor Green
-    Write-Host " [OK] torrentia-seeder.exe installed successfully to $TargetPath" -ForegroundColor Green
-    Write-Host " Run: torrentia-seeder run" -ForegroundColor Green
-    Write-Host "==================================================================" -ForegroundColor Green
+    Write-Host "=================================================================="
+    Write-Host " [OK] torrentia-seeder installed to $target"
+    Write-Host " Add $installDir to your system PATH, then run:"
+    Write-Host "   torrentia-seeder run"
+    Write-Host "=================================================================="
+} else {
+    Write-Error "Installation failed. See warnings above."
 }
