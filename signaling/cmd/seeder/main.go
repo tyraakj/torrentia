@@ -143,6 +143,9 @@ func loadOrFatal(cfgPath string) *seeder.Config {
 		shutdownWithCode(1)
 	}
 	cfg.RedisURL = os.Getenv("REDIS_URL")
+	if sigURL := os.Getenv("TORRENTIA_SIGNALING_URL"); sigURL != "" {
+		cfg.SignalingURL = sigURL
+	}
 	if cfg.RedisURL == "" && (os.Getenv("TORRENTIA_REQUIRE_REDIS") == "1" || strings.EqualFold(os.Getenv("TORRENTIA_REQUIRE_REDIS"), "true")) {
 		fmt.Println("Error: REDIS_URL is required for deployed seeder mode")
 		shutdownWithCode(1)

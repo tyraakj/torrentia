@@ -51,7 +51,7 @@ func DefaultConfig() *Config {
 		Version:               1,
 		DataDir:               dataDir,
 		SeederAddress:         "",
-		SignalingURL:          "ws://localhost:8081/ws",
+		SignalingURL:          "wss://torrentia-signaling.onrender.com/ws",
 		MonadRPCURL:           "https://testnet-rpc.monad.xyz",
 		ChainID:               10143,
 		SplitPaymentContract:  "0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa",
