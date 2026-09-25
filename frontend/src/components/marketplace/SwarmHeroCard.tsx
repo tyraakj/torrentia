@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAccount } from 'wagmi'
-import { CheckCircle2, Circle, ArrowRight, ShieldCheck, Zap, Server } from 'lucide-react'
+import { CheckCircle2, Circle, ArrowRight, ShieldCheck, Cpu, Server } from 'lucide-react'
 
 interface SwarmHeroCardProps {
   onStepClick?: (stepIndex: number) => void
@@ -208,7 +208,7 @@ export const SwarmHeroCard: React.FC<SwarmHeroCardProps> = ({ onStepClick }) => 
               flexShrink: 0,
             }}
           >
-            <Zap size={16} />
+            <Cpu size={16} />
           </div>
           <div>
             <div style={{ fontSize: '0.7rem', color: '#78716C', textTransform: 'uppercase', fontWeight: 600 }}>

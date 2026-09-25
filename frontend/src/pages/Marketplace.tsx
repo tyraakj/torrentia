@@ -316,7 +316,7 @@ export const Marketplace: React.FC = () => {
           >
             <AlertCircle size={36} color="#ef4444" style={{ margin: '0 auto 1rem' }} />
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#181615', marginBottom: '0.5rem' }}>
-              Failed to load model swarms
+              Failed to load models
             </h3>
             <p style={{ color: '#57534e', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               {error?.message || 'Could not connect to indexer or load model catalog.'}
@@ -378,7 +378,7 @@ export const Marketplace: React.FC = () => {
             <p style={{ color: '#57534e', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
               {searchValue || selectedCategory !== 'All'
                 ? 'Try adjusting your search query or category filters.'
-                : 'Be the first to publish an open-source model to the Torrentia swarm.'}
+                : 'Be the first to publish an open-source model to Torrentia.'}
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
               {(searchValue || selectedCategory !== 'All') && (

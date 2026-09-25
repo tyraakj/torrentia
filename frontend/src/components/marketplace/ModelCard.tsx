@@ -175,7 +175,7 @@ export const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
           {/* Size & Pieces */}
           <div>
             <div style={{ fontSize: '10px', color: '#78716c', textTransform: 'uppercase', fontWeight: 600, marginBottom: '2px' }}>
-              Swarm Size
+              Model Size
             </div>
             <div style={{ fontWeight: 600, fontSize: 'var(--text-xs)', color: '#44403c', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <HardDrive size={12} color="#78716c" />

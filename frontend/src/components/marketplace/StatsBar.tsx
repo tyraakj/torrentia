@@ -99,7 +99,7 @@ export const StatsBar: React.FC<StatsBarProps> = ({ stats, isLoading }) => {
               letterSpacing: '0.05em',
             }}
           >
-            Models In Swarm
+            Models In Network
           </div>
         </div>
       </div>

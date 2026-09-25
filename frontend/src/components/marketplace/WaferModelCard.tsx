@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
-import { ChevronDown, Code, Cpu, Zap, Layers, ShieldCheck } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronDown, Code, Cpu, CheckCircle2, Layers, ShieldCheck } from 'lucide-react'
 import { TerminalRunner } from './TerminalRunner'
 import { formatFileSize, bpsToPercent } from '../../lib/utils'
 import { formatEther } from 'viem'
@@ -32,7 +32,7 @@ export const WaferModelCard: React.FC<WaferModelCardProps> = ({ model, defaultEx
   const tags = [
     { label: model.category || 'General AI', icon: <Code size={11} /> },
     { label: model.format || 'Safetensors', icon: <Layers size={11} /> },
-    { label: 'Instant Split', icon: <Zap size={11} /> },
+    { label: 'Instant Split', icon: <CheckCircle2 size={11} color="#0062FF" /> },
     { label: 'Direct Streaming', icon: <Cpu size={11} /> },
   ]
 
