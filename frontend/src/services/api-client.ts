@@ -34,9 +34,17 @@ async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
     const latestBlock = await chainClient.getBlockNumber()
     // Monad public testnet RPC limits eth_getLogs strictly to a max 100-block range
     const rangeSize = 99n
-    // Scan from deployment so models remain discoverable in new browsers even
-    // when the optional indexer is delayed or unavailable.
-    const startScan = MODEL_REGISTRY_DEPLOYMENT_BLOCK
+    // Keep the no-indexer fallback bounded so a new browser does not block on
+    // a multi-million-block sequential RPC scan. The indexer remains the path
+    // for complete historical discovery.
+    const configuredScanBlocks = BigInt(
+      import.meta.env.VITE_MODEL_REGISTRY_SCAN_BLOCKS || '500',
+    )
+    const scanBlocks = configuredScanBlocks > 0n ? configuredScanBlocks : 500n
+    const windowStart = latestBlock > scanBlocks ? latestBlock - scanBlocks : 0n
+    const startScan = windowStart > MODEL_REGISTRY_DEPLOYMENT_BLOCK
+      ? windowStart
+      : MODEL_REGISTRY_DEPLOYMENT_BLOCK
     const logs = []
 
     for (
