@@ -89,7 +89,19 @@ export async function getChunk(
     const request = store.get(key)
     request.onsuccess = () => {
       const result = request.result as StoredChunk | undefined
-      resolve(result ? result.data : null)
+      if (result) {
+        resolve(result.data)
+        return
+      }
+
+      // Fallback: check if stored under any walletKey for this modelId
+      const modelIndex = store.index('modelId')
+      const modelReq = modelIndex.getAll(modelId)
+      modelReq.onsuccess = () => {
+        const matches = (modelReq.result as StoredChunk[]).filter((r) => r.index === index)
+        resolve(matches.length > 0 ? matches[0].data : null)
+      }
+      modelReq.onerror = () => resolve(null)
     }
     request.onerror = () => reject(request.error)
   })
@@ -111,7 +123,20 @@ export async function getHeldChunks(modelId: string, walletAddress?: string): Pr
     request.onsuccess = () => {
       const records = request.result as StoredChunk[]
       const indices = records.map((r) => r.index).sort((a, b) => a - b)
-      resolve(indices)
+      if (indices.length > 0) {
+        resolve(indices)
+        return
+      }
+
+      // Fallback: check if any chunks exist for this modelId regardless of walletKey
+      const modelIndex = store.index('modelId')
+      const modelReq = modelIndex.getAll(modelId)
+      modelReq.onsuccess = () => {
+        const allRecords = modelReq.result as StoredChunk[]
+        const allIndices = Array.from(new Set(allRecords.map((r) => r.index))).sort((a, b) => a - b)
+        resolve(allIndices)
+      }
+      modelReq.onerror = () => resolve([])
     }
     request.onerror = () => reject(request.error)
   })

@@ -5,13 +5,21 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import { useAccount, usePublicClient, useWalletClient } from 'wagmi'
+import { useAccount, useConfig, usePublicClient, useWalletClient } from 'wagmi'
+import { getWalletClient } from 'wagmi/actions'
 import type { ChunkManifest, DownloadState } from '../lib/types'
 import { Downloader, downloadBlob, type PaymentProvider } from '../services/downloader'
 import { getHeldChunks } from '../services/chunk-store'
 import { Seeder, type PaymentVerifier } from '../services/seeder'
 import { SignalingClient, type SignalingStatus } from '../services/signaling-client'
+import { createPublicClient, createWalletClient, custom, http } from 'viem'
+import { monadTestnet } from '../lib/wagmi'
 import { createOnChainPaymentProvider, createOnChainPaymentVerifier } from '../services/payment'
+
+const fallbackPublicClient = createPublicClient({
+  chain: monadTestnet,
+  transport: http(),
+})
 
 // Module-level singleton signaling client instance to avoid multiple socket connections
 let globalSignalingClient: SignalingClient | null = null
@@ -110,7 +118,8 @@ export function useSeeding(
   verifier?: PaymentVerifier
 ) {
   const { client, status: signalingStatus } = useSignaling(seederAddress)
-  const publicClient = usePublicClient({ chainId: 10143 })
+  const wagmiPublicClient = usePublicClient()
+  const publicClient = wagmiPublicClient || fallbackPublicClient
   const onChainVerifier = useMemo(
     () => (publicClient ? createOnChainPaymentVerifier(publicClient) : undefined),
     [publicClient],
@@ -240,10 +249,15 @@ export function useDownload(
   creatorAddress?: string,
   creatorShareBps?: number
 ) {
-  const { address } = useAccount()
+  const { address, isConnected, chainId: walletChainId } = useAccount()
+  const config = useConfig()
   const { client } = useSignaling(address)
-  const publicClient = usePublicClient({ chainId: 10143 })
-  const { data: walletClient } = useWalletClient({ chainId: 10143 })
+  const wagmiPublicClient = usePublicClient()
+  const publicClient = wagmiPublicClient || fallbackPublicClient
+  // Read the active connector client without a chain filter. The explicit chain
+  // check below gives the user the correct network action, while this avoids
+  // Wagmi returning an empty client during connector/network state updates.
+  const { data: walletClient } = useWalletClient()
   const onChainPaymentProvider = useMemo(
     () => (walletClient && publicClient ? createOnChainPaymentProvider(walletClient, publicClient) : undefined),
     [walletClient, publicClient],
@@ -262,9 +276,46 @@ export function useDownload(
     setDownloadedBlob(null)
     setDownloadState(createInitialDownloadState(modelId, manifest))
 
-    const effectivePaymentProvider = paymentProvider || onChainPaymentProvider
+    let effectivePaymentProvider = paymentProvider || onChainPaymentProvider
+
+    if (!effectivePaymentProvider && isConnected) {
+      try {
+        const wc = await getWalletClient(config, { chainId: monadTestnet.id })
+        if (wc && publicClient) {
+          effectivePaymentProvider = createOnChainPaymentProvider(wc, publicClient)
+        }
+      } catch (wcErr) {
+        console.warn('Dynamic getWalletClient resolution error:', wcErr)
+      }
+    }
+
+    if (!effectivePaymentProvider && typeof window !== 'undefined' && (window as unknown as { ethereum?: unknown }).ethereum && address) {
+      try {
+        const customWc = createWalletClient({
+          account: address as `0x${string}`,
+          chain: monadTestnet,
+          transport: custom((window as unknown as { ethereum: { request: (args: unknown) => Promise<unknown> } }).ethereum),
+        })
+        effectivePaymentProvider = createOnChainPaymentProvider(customWc, publicClient)
+      } catch (ethErr) {
+        console.warn('Fallback window.ethereum wallet client error:', ethErr)
+      }
+    }
+
+    if (!isConnected || !address) {
+      const error = 'Connect a wallet before starting a paid download'
+      setDownloadState((current) => ({ ...current, status: 'error', error }))
+      setIsDownloading(false)
+      return null
+    }
+    if (walletChainId && walletChainId !== monadTestnet.id) {
+      const error = `Please switch your wallet to Monad Testnet (Chain ID 10143). Currently connected to chain ${walletChainId}.`
+      setDownloadState((current) => ({ ...current, status: 'error', error }))
+      setIsDownloading(false)
+      return null
+    }
     if (!effectivePaymentProvider) {
-      const error = 'Connect a Monad wallet before starting a paid download'
+      const error = 'Wallet signer unavailable on Monad Testnet. Please reconnect your wallet or refresh the page.'
       setDownloadState((current) => ({ ...current, status: 'error', error }))
       setIsDownloading(false)
       return null
@@ -297,7 +348,7 @@ export function useDownload(
     const result = await downloader.start()
     setIsDownloading(false)
     return result
-  }, [modelId, manifest, isDownloading, client, paymentProvider, onChainPaymentProvider, creatorAddress, creatorShareBps, address])
+  }, [modelId, manifest, isDownloading, client, paymentProvider, onChainPaymentProvider, creatorAddress, creatorShareBps, address, isConnected, walletChainId, config, publicClient])
 
   const cancelDownload = useCallback(() => {
     if (downloaderRef.current) {

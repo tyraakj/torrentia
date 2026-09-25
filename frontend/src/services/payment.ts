@@ -7,6 +7,7 @@ import {
 } from 'viem'
 import { SPLIT_PAYMENT_ABI } from '../lib/abis/SplitPaymentABI'
 import { SPLIT_PAYMENT_ADDRESS } from '../lib/contracts'
+import { monadTestnet } from '../lib/wagmi'
 import type { PaymentProvider } from './downloader'
 import type { PaymentVerifier } from './seeder'
 
@@ -19,8 +20,16 @@ export function createOnChainPaymentProvider(
 ): PaymentProvider {
   return {
     async makePayment(modelId, _chunkIndex, chunkPrice, seederAddress) {
-      if (!walletClient.account) {
-        throw new Error('Connect a wallet before downloading')
+      let account = walletClient.account
+      if (!account) {
+        const addresses = await walletClient.getAddresses()
+        if (addresses.length > 0) {
+          account = addresses[0] as unknown as typeof walletClient.account
+        }
+      }
+
+      if (!account) {
+        throw new Error('No active account found in connected wallet. Please reconnect your wallet.')
       }
 
       const hash = await walletClient.writeContract({
@@ -29,8 +38,8 @@ export function createOnChainPaymentProvider(
         functionName: 'payForChunk',
         args: [asBytes32(modelId), seederAddress as Address],
         value: BigInt(chunkPrice),
-        account: walletClient.account,
-        chain: undefined,
+        account,
+        chain: monadTestnet,
       })
 
       const receipt = await publicClient.waitForTransactionReceipt({ hash })

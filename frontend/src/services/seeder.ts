@@ -57,7 +57,12 @@ export class Seeder {
     if (this.isSeedingActive) return
     this.isSeedingActive = true
 
-    // 1. Announce initial chunks held in IndexedDB
+    // 1. Ensure signaling connection is active
+    if (!this.signaling.isConnected) {
+      this.signaling.connect()
+    }
+
+    // 2. Announce initial chunks held in IndexedDB
     await this.reannounce()
 
     // 2. Re-announce chunks whenever this peer re-registers with the server.

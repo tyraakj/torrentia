@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useMemo } from 'react'
-import { useAccount, useChainId, useSwitchChain, useBalance } from 'wagmi'
+import { useAccount, useSwitchChain, useBalance } from 'wagmi'
 import { formatEther } from 'viem'
 import type {
   DownloadStateMachineState,
@@ -55,15 +55,14 @@ export function useDownloadStateMachine({
   handlePrimaryAction: () => void
   canDownload: boolean
 } {
-  const { isConnected, address } = useAccount()
-  const chainId = useChainId()
+  const { isConnected, address, chainId: walletChainId } = useAccount()
   const { switchChain } = useSwitchChain()
   const { data: balanceData } = useBalance({
     address,
     chainId: monadTestnet.id,
   })
 
-  const isWrongChain = isConnected && chainId !== monadTestnet.id
+  const isWrongChain = isConnected && walletChainId !== undefined && walletChainId !== monadTestnet.id
   const totalCostWei = model.chunkPrice * BigInt(totalChunks > 0 ? totalChunks : 1)
   const userBalanceWei = balanceData?.value ?? 0n
   const isInsufficientBalance = isConnected && !isWrongChain && userBalanceWei < totalCostWei
@@ -263,13 +262,20 @@ export function useDownloadStateMachine({
         let actionLabel = 'Retry Download'
         let actionFn = onRetry
 
-        if (errText.toLowerCase().includes('wallet') || errText.toLowerCase().includes('connect')) {
+        const normalizedError = errText.toLowerCase()
+        if (normalizedError.includes('switch to') || normalizedError.includes('chain id') || isWrongChain) {
+          actionLabel = 'Switch to Monad Testnet'
+          actionFn = () => switchChain({ chainId: monadTestnet.id })
+        } else if (!isConnected && (normalizedError.includes('wallet') || normalizedError.includes('connect'))) {
           actionLabel = 'Connect Wallet'
           actionFn = onConnectWallet
+        } else if (normalizedError.includes('signer unavailable') || normalizedError.includes('initialize transaction signer')) {
+          actionLabel = 'Retry Download'
+          actionFn = onRetry
         } else if (errText.toLowerCase().includes('storage') || errText.toLowerCase().includes('quota')) {
           actionLabel = 'Clear Local Storage'
           actionFn = () => {
-            if (typeof window !== 'undefined') window.indexedDB?.deleteDatabase('torrentia_chunks')
+            if (typeof window !== 'undefined') window.indexedDB?.deleteDatabase('torrentia_chunks_db')
             onRetry()
           }
         }

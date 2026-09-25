@@ -2,5 +2,6 @@
   "chainId": 10143,
   "deployedAt": "1789812782",
   "modelRegistry": "0xe2cEDee4817B11716728aed3C3d7AD0438813340",
-  "splitPayment": "0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa"
+  "splitPayment": "0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa",
+  "splitPaymentV2": "0xe2aD791258862F628af1b8B5104532F3BceE5ECe"
 }

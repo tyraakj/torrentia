@@ -1,6 +1,6 @@
 import { createConnector } from 'wagmi'
 import type { Address } from 'viem'
-import { getAddress, hexToString, isHex, toHex } from 'viem'
+import { createWalletClient, getAddress, hexToString, http, isHex, toHex } from 'viem'
 import { MeraAuthService } from '../services/auth/mera-auth'
 import { monadTestnet } from './wagmi'
 
@@ -170,6 +170,19 @@ export function meraPasskey() {
       }
       config.emitter.emit('change', { chainId })
       return monadTestnet
+    },
+
+    async getClient({ chainId: _chainId }: { chainId?: number } = {}) {
+      const auth = MeraAuthService.getInstance()
+      const account = auth.getActiveAccount()
+      if (!account) {
+        throw new Error('No active Mera passkey session.')
+      }
+      return createWalletClient({
+        account,
+        chain: monadTestnet,
+        transport: http(monadTestnet.rpcUrls.default.http[0]),
+      })
     },
 
     async getProvider() {

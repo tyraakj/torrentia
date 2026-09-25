@@ -38,15 +38,15 @@ async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
     // a multi-million-block sequential RPC scan. The indexer remains the path
     // for complete historical discovery.
     const configuredScanBlocks = BigInt(
-      import.meta.env.VITE_MODEL_REGISTRY_SCAN_BLOCKS || '500',
+      import.meta.env.VITE_MODEL_REGISTRY_SCAN_BLOCKS || '5000',
     )
-    const scanBlocks = configuredScanBlocks > 0n ? configuredScanBlocks : 500n
+    const scanBlocks = configuredScanBlocks > 0n ? configuredScanBlocks : 5000n
     const windowStart = latestBlock > scanBlocks ? latestBlock - scanBlocks : 0n
     const startScan = windowStart > MODEL_REGISTRY_DEPLOYMENT_BLOCK
       ? windowStart
       : MODEL_REGISTRY_DEPLOYMENT_BLOCK
-    const logs = []
 
+    const ranges: { fromBlock: bigint; toBlock: bigint }[] = []
     for (
       let fromBlock = startScan;
       fromBlock <= latestBlock;
@@ -55,21 +55,29 @@ async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
       const toBlock = fromBlock + rangeSize - 1n < latestBlock
         ? fromBlock + rangeSize - 1n
         : latestBlock
-
-      try {
-        const rangeLogs = await chainClient.getContractEvents({
-          address: MODEL_REGISTRY_ADDRESS,
-          abi: MODEL_REGISTRY_ABI,
-          eventName: 'ModelRegistered',
-          fromBlock,
-          toBlock,
-          args: creator ? { creator: creator as Address } : undefined,
-        })
-        logs.push(...rangeLogs)
-      } catch {
-        break
-      }
+      ranges.push({ fromBlock, toBlock })
     }
+
+    const allResults = []
+    const batchSize = 10
+    for (let i = 0; i < ranges.length; i += batchSize) {
+      const batch = ranges.slice(i, i + batchSize)
+      const batchResults = await Promise.allSettled(
+        batch.map(({ fromBlock, toBlock }) =>
+          chainClient.getContractEvents({
+            address: MODEL_REGISTRY_ADDRESS,
+            abi: MODEL_REGISTRY_ABI,
+            eventName: 'ModelRegistered',
+            fromBlock,
+            toBlock,
+            args: creator ? { creator: creator as Address } : undefined,
+          })
+        )
+      )
+      allResults.push(...batchResults)
+    }
+
+    const logs = allResults.flatMap((res) => (res.status === 'fulfilled' ? res.value : []))
 
   return logs.flatMap((log) => {
     const args = log.args

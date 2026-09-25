@@ -109,6 +109,7 @@ export class SignalingClient {
     error: new Set(),
     registered: new Set(),
   }
+  private pendingOutgoingQueue: unknown[] = []
 
   constructor(url?: string, address?: string) {
     this.peerId = typeof crypto !== 'undefined' && crypto.randomUUID
@@ -283,7 +284,10 @@ export class SignalingClient {
     const httpBase = this.url.replace(/^ws/, 'http').replace(/\/ws$/, '')
     const challengeResponse = await fetch(`${httpBase}/v1/auth/challenge`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
       body: JSON.stringify({ address }),
     })
     if (!challengeResponse.ok) {
@@ -294,7 +298,10 @@ export class SignalingClient {
 
     const sessionResponse = await fetch(`${httpBase}/v1/auth/session`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
       body: JSON.stringify({ address, signature }),
     })
     if (!sessionResponse.ok) {
@@ -342,6 +349,15 @@ export class SignalingClient {
       this.setStatus('connected')
       this.sendRegister()
       this.startHeartbeat()
+
+      // Flush queued messages (e.g. initial announces, offers)
+      const socket = this.ws
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        while (this.pendingOutgoingQueue.length > 0) {
+          const msg = this.pendingOutgoingQueue.shift()
+          socket.send(JSON.stringify(msg))
+        }
+      }
     }
 
     this.ws.onmessage = (event: MessageEvent<string>) => {
@@ -363,6 +379,7 @@ export class SignalingClient {
 
   public disconnect(): void {
     this.isExplicitlyClosed = true
+    this.pendingOutgoingQueue = []
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
@@ -497,6 +514,8 @@ export class SignalingClient {
   private sendRaw(data: unknown): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data))
+    } else {
+      this.pendingOutgoingQueue.push(data)
     }
   }
 

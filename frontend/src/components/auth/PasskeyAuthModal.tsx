@@ -89,7 +89,16 @@ export const PasskeyAuthModal: React.FC<PasskeyAuthModalProps> = ({ isOpen, onCl
       { connector },
       {
         onSuccess: () => onClose(),
-        onError: (err) => setError(err.message || 'Failed to connect wallet.'),
+        onError: (err) => {
+          if (
+            err.name === 'ConnectorAlreadyConnectedError' ||
+            err.message?.toLowerCase().includes('already connected')
+          ) {
+            onClose()
+            return
+          }
+          setError(err.message || 'Failed to connect wallet.')
+        },
       },
     )
   }
