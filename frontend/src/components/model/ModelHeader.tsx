@@ -1,5 +1,4 @@
-import React from 'react'
-import { Calendar, Zap, ShieldCheck } from 'lucide-react'
+import { Calendar, Layers, ShieldCheck } from 'lucide-react'
 import type { IndexedModel, ChunkManifest } from '../../lib/types'
 import { AddressDisplay } from '../ui/AddressDisplay'
 import { PaymentSplitBadge } from '../payment/PaymentSplitBadge'
@@ -119,7 +118,7 @@ export const ModelHeader: React.FC<ModelHeaderProps> = ({
           {model.modelName || 'Unnamed Model'}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)' }}>
-          <Zap size={13} color="var(--color-accent-bright)" />
+          <Layers size={13} color="#0062FF" />
           <span>AI models shared directly between people</span>
         </div>
       </div>

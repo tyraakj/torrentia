@@ -13,7 +13,7 @@ const PRESETS = [
   { label: '85% Creator (Recommended)', bps: 8500 },
   { label: '70% Balanced Split', bps: 7000 },
   { label: '95% High Margin', bps: 9500 },
-  { label: '50/50 Swarm Partnership', bps: 5000 },
+  { label: '50/50 Community Partnership', bps: 5000 },
 ]
 
 export const ShareSlider: React.FC<ShareSliderProps> = ({
@@ -161,7 +161,7 @@ export const ShareSlider: React.FC<ShareSliderProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#059669', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
               <Server size={13} />
-              <span>Swarm Seeder Hosts</span>
+              <span>Community Seeder Hosts</span>
             </div>
             <span style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: '1.5rem', fontWeight: 800, color: '#059669', lineHeight: 1 }}>
               {seederPercent}%
@@ -234,7 +234,7 @@ export const ShareSlider: React.FC<ShareSliderProps> = ({
               padding: '0 0.5rem',
             }}
           >
-            {seederPercent >= 20 ? `${seederPercent}% Swarm Hosts` : `${seederPercent}%`}
+            {seederPercent >= 20 ? `${seederPercent}% Community Nodes` : `${seederPercent}%`}
           </div>
         </div>
 

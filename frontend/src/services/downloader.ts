@@ -161,10 +161,25 @@ export class Downloader {
         return await this.reassemble()
       }
 
-      // 2. Query tracker for active seeders
-      const seeders = await this.signaling.querySeeders(this.modelId)
+      // 2. Query tracker for active seeders.
+      // Retry with backoff to cover the race between the creator's browser
+      // completing startSeeding() and the signaling server's Redis entry
+      // becoming visible (typical propagation: <2s on a cold Render instance).
+      const SEEDER_POLL_DELAYS_MS = [2000, 4000, 8000, 16000, 20000]
+      let seeders: SeederRecord[] = []
+      for (let attempt = 0; attempt <= SEEDER_POLL_DELAYS_MS.length; attempt++) {
+        seeders = await this.signaling.querySeeders(this.modelId)
+        if (seeders.length > 0) break
+        if (attempt < SEEDER_POLL_DELAYS_MS.length) {
+          this.updateState({
+            status: 'discovering',
+            error: `Waiting for seeder to announce… (attempt ${attempt + 1}/${SEEDER_POLL_DELAYS_MS.length})`,
+          })
+          await new Promise((r) => setTimeout(r, SEEDER_POLL_DELAYS_MS[attempt]))
+        }
+      }
       if (seeders.length === 0) {
-        throw new Error('No active seeders found for this model in the swarm')
+        throw new Error('No active seeders found for this model. The creator may need to keep their browser tab open, or run the CLI seeder daemon.')
       }
 
       // 3. Sequentially download missing chunks

@@ -27,7 +27,7 @@ export interface UseDownloadStateMachineProps {
   activeTransport?: ActiveTransportType
   currentChunkIndex: number
   totalChunks: number
-  isSeederOnline: boolean
+  isSeederOnline?: boolean
   onStartDownload: () => Promise<void>
   onConnectWallet: () => void
   onExportLocalFile: () => void
@@ -70,7 +70,7 @@ export function useDownloadStateMachine({
 
   // Map low-level downloader status to the 10-state machine
   const computedState = useMemo<DownloadStateMachineState>(() => {
-    if (downloadStatus === 'error' || downloadError) {
+    if (downloadStatus === 'error') {
       return 'error'
     }
 
@@ -163,7 +163,7 @@ export function useDownloadStateMachine({
             message: `Insufficient MON balance (${formatEther(userBalanceWei)} MON available, ${formatEther(totalCostWei)} MON required)`,
             recoveryAction: {
               label: onOpenCrossChainFunding
-                ? '⚡ Pay from Any Chain (USDC / ETH)'
+                ? 'Pay from Any Chain (USDC / ETH)'
                 : 'Open Monad Faucet',
               action:
                 onOpenCrossChainFunding ||
@@ -181,25 +181,12 @@ export function useDownloadStateMachine({
       }
 
       case 'discovering_peers': {
-        if (!isSeederOnline) {
-          return {
-            state: 'discovering_peers',
-            currentChunk: currentPieceNum,
-            totalChunks,
-            activeTransport: 'none',
-            message: 'No active peer currently has this model available in swarm',
-            recoveryAction: {
-              label: 'Retry Discovery',
-              action: onRetry,
-            },
-          }
-        }
         return {
           state: 'discovering_peers',
           currentChunk: currentPieceNum,
           totalChunks,
           activeTransport: 'none',
-          message: 'Discovering active swarm seeders via Go WebSocket tracker...',
+          message: downloadError || 'Discovering active network seeders via Go WebSocket tracker...',
         }
       }
 
@@ -310,7 +297,7 @@ export function useDownloadStateMachine({
           message:
             heldChunkCount > 0
               ? `${heldChunkCount}/${totalChunks} pieces held in Local Model Storage. Ready to resume.`
-              : 'Ready to connect to Monad swarm and stream verified pieces.',
+              : 'Ready to connect to Monad network and stream verified pieces.',
         }
       }
     }

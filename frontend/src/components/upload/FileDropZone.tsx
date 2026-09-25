@@ -223,7 +223,7 @@ export const FileDropZone: React.FC<FileDropZoneProps> = ({
         }}
       >
         <ShieldCheck size={14} color="#059669" />
-        <span>Model weights stay in the peer swarm; only the small model passport (~2 KB) is pinned to IPFS.</span>
+        <span>Model weights stay in the community network; only the small model passport (~2 KB) is pinned to IPFS.</span>
       </div>
     </div>
   )

@@ -57,7 +57,7 @@ export const FileInfoPanel: React.FC<FileInfoPanelProps> = ({ model, manifest, s
     },
     {
       icon: <Cpu size={15} color="var(--color-accent)" />,
-      label: 'Full Swarm Cost',
+      label: 'Full Transfer Cost',
       value: `${parseFloat(totalCostMon).toFixed(6)} MON`,
       subtext: `For complete model passport`,
     },

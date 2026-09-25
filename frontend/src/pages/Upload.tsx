@@ -20,7 +20,6 @@ import {
   TrendingUp,
   MousePointer2,
   Coins,
-  Zap,
 } from 'lucide-react'
 import { Card, CardBody } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -294,6 +293,13 @@ export const Upload: React.FC = () => {
         category: file.name.toLowerCase().includes('lora') ? 'LoRA' : 'Vision',
         format: file.name.endsWith('.safetensors') ? 'Safetensors' : file.name.endsWith('.gguf') ? 'GGUF' : 'ONNX',
       })
+
+      // Auto-start seeding from this browser so the model is immediately downloadable
+      try {
+        await startSeeding()
+      } catch (seedErr) {
+        console.warn('Auto-start seeding error:', seedErr)
+      }
 
       setIsRegistering(false)
     } catch (err: unknown) {
@@ -698,7 +704,7 @@ export const Upload: React.FC = () => {
                       </span>
                     </div>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#059669', background: '#ECFDF5', padding: '0.2rem 0.55rem', borderRadius: '9999px', fontWeight: 700 }}>
-                      <Zap size={12} />
+                      <Check size={12} strokeWidth={2.5} />
                       <span>Instant Monad Settlement</span>
                     </div>
                   </div>
@@ -800,7 +806,7 @@ export const Upload: React.FC = () => {
                         <tr>
                           <th>Scope</th>
                           <th>Creator Cut ({creatorPercent}%)</th>
-                          <th>Swarm Seeders ({seederPercent}%)</th>
+                          <th>Community Nodes ({seederPercent}%)</th>
                           <th>Intermediary Take</th>
                         </tr>
                       </thead>
@@ -834,7 +840,7 @@ export const Upload: React.FC = () => {
                   </div>
 
                   <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.45 }}>
-                    Monad smart contract <code style={{ fontFamily: "'JetBrains Mono', monospace", background: '#E2E8F0', padding: '0.1rem 0.35rem', borderRadius: '4px', color: '#1E293B' }}>TorrentRegistry.sol</code> autonomously settles each piece's payment upon Merkle root verification.
+                    Monad smart contract <code style={{ fontFamily: "'JetBrains Mono', monospace", background: '#E2E8F0', padding: '0.1rem 0.35rem', borderRadius: '4px', color: '#1E293B' }}>ModelRegistry.sol</code> autonomously settles each piece's payment directly to creator and node EOAs with 0 platform fee.
                   </div>
                 </div>
 
@@ -886,10 +892,24 @@ export const Upload: React.FC = () => {
                         Publish model
                       </span>
                     </div>
-                    {txHash && (
+                    {txHash ? (
                       <Badge variant="active">
                         <CheckCircle2 size={12} /> Confirmed on Monad
                       </Badge>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: '0.6875rem',
+                          fontWeight: 700,
+                          color: '#059669',
+                          background: '#ECFDF5',
+                          padding: '0.15rem 0.5rem',
+                          borderRadius: '9999px',
+                          border: '1px solid #A7F3D0',
+                        }}
+                      >
+                        0% Platform Fee
+                      </span>
                     )}
                   </div>
 
@@ -897,15 +917,42 @@ export const Upload: React.FC = () => {
                     Publishes your model details, price, and earnings split to the network.
                   </p>
 
+                  {/* Gas & Fee Explanation Box */}
+                  <div
+                    style={{
+                      background: '#F0F9FF',
+                      border: '1px solid #BAE6FD',
+                      borderRadius: '10px',
+                      padding: '0.65rem 0.85rem',
+                      fontSize: '0.75rem',
+                      color: '#0369A1',
+                      lineHeight: 1.45,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.5rem',
+                    }}
+                  >
+                    <ShieldCheck size={15} style={{ marginTop: '1px', flexShrink: 0, color: '#0284C7' }} />
+                    <div>
+                      <strong>Why do you pay on publishing?</strong> Torrentia charges <strong>0 MON platform fees</strong> (listing is 100% free). The only cost is a small <strong>Monad network gas fee</strong> (fractions of a cent) paid directly to validators to write your creator wallet, custom royalty split, and IPFS passport permanently onto the blockchain. This guarantees your ownership and payout rules cannot be altered or censored by anyone.
+                    </div>
+                  </div>
+
                   {!txHash ? (
-                    <Button
-                      variant="primary"
-                      onClick={handleRegisterOnChain}
-                      isLoading={isRegistering}
-                      disabled={isRegistering || !isConnected}
-                    >
-                      {!isConnected ? 'Connect account to publish' : 'Publish model'}
-                    </Button>
+                    <div>
+                      <Button
+                        variant="primary"
+                        onClick={handleRegisterOnChain}
+                        isLoading={isRegistering}
+                        disabled={isRegistering || !isConnected}
+                        style={{ width: '100%' }}
+                      >
+                        {!isConnected ? 'Connect account to publish' : 'Publish model on Monad'}
+                      </Button>
+                      <div style={{ textAlign: 'center', fontSize: '0.6875rem', color: '#78716C', marginTop: '0.4rem' }}>
+                        0 MON platform fee &bull; Only standard Monad network gas required
+                      </div>
+                    </div>
                   ) : (
                     <div style={{ fontSize: 'var(--text-xs)', color: '#059669', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span>Transaction confirmed:</span>
@@ -922,7 +969,7 @@ export const Upload: React.FC = () => {
                   )}
                 </div>
 
-                {/* Action Card B: Swarm Seeding */}
+                {/* Action Card B: Community Seeding */}
                 <div
                   style={{
                     background: 'rgba(255, 255, 255, 0.9)',

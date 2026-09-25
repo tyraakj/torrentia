@@ -123,6 +123,13 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     setTimeout(() => setCopiedCli(false), 2000)
   }
 
+  // Auto-start seeding from this browser if the complete model is held locally (e.g. creator or past downloader)
+  useEffect(() => {
+    if (isFullyDownloadedLocally && !isSeeding) {
+      void startSeeding().then(() => refreshHeldChunks()).catch(() => {})
+    }
+  }, [isFullyDownloadedLocally, isSeeding, startSeeding, refreshHeldChunks])
+
   // Initialize deterministic 10-state machine
   const { stateDetails, handlePrimaryAction } = useDownloadStateMachine({
     model,
@@ -133,7 +140,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
     activeTransport: downloadState.activeTransport,
     currentChunkIndex: downloadState.currentChunkIndex,
     totalChunks,
-    isSeederOnline: model.seederCount > 0,
+    isSeederOnline: true,
     onStartDownload: async () => {
       await startDownload()
     },
@@ -186,7 +193,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <DownloadCloud size={20} color="var(--color-accent-bright)" />
             <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700 }}>
-              P2P Swarm Download & Transfer
+              P2P Direct Download & Transfer
             </h2>
           </div>
 
@@ -236,7 +243,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
 
             {isDownloading && (
               <Badge variant="seeding" style={{ animation: 'pulseGlow 1.5s infinite' }}>
-                <Radio size={11} /> Streaming Swarm
+                <Radio size={11} /> Streaming Network
               </Badge>
             )}
             {downloadState.status === 'complete' && (
@@ -343,7 +350,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                       }}
                       leftIcon={<Flame size={15} color="var(--color-warning)" />}
                     >
-                      Seed Model to Swarm (+30% MON)
+                      Seed Model to Network (+30% MON)
                     </Button>
                   )}
                 </div>
@@ -364,7 +371,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                     : !isConnected
                     ? `Connect Wallet to Download (${parseFloat(totalCostMon).toFixed(6)} MON)`
                     : manifest
-                    ? `Download from Swarm (${parseFloat(totalCostMon).toFixed(6)} MON)`
+                    ? `Download Model (${parseFloat(totalCostMon).toFixed(6)} MON)`
                     : 'Validating Model Passport...'}
                 </Button>
 
@@ -374,12 +381,13 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                   onClick={() => setIsCrossChainFundingOpen(true)}
                   style={{
                     width: '100%',
-                    borderColor: 'hsla(265, 90%, 65%, 0.35)',
-                    color: 'var(--color-accent-bright)',
-                    background: 'hsla(265, 90%, 65%, 0.05)',
+                    borderColor: 'rgba(0, 98, 255, 0.3)',
+                    color: '#0062FF',
+                    background: 'rgba(0, 98, 255, 0.04)',
+                    fontWeight: 600,
                   }}
                 >
-                  ⚡ Pay from Base, Arbitrum, or Solana (Aurora Intents)
+                  Pay from Base, Arbitrum, or Solana (Aurora Intents)
                 </Button>
 
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
@@ -527,7 +535,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
                     cursor: 'pointer',
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: copiedCli ? '#10b981' : '#7c3aed',
+                    color: copiedCli ? '#10b981' : '#0062FF',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
@@ -593,7 +601,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
       <SplitVisualization
         creatorShareBps={model.creatorShareBps}
         creatorAddress={model.originalCreator}
-        seederAddress={latestPayment?.seeder || '0x4382...seeder-peer'}
+        seederAddress={latestPayment?.seeder || ''}
         chunkPriceWei={model.chunkPrice}
         txHash={latestPayment?.txHash}
         chunkIndex={downloadState.currentChunkIndex}
