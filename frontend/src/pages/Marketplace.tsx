@@ -49,9 +49,9 @@ export const Marketplace: React.FC = () => {
   return (
     <div
       style={{
-        maxWidth: '1100px',
+        maxWidth: '1500px',
         margin: '0 auto',
-        padding: '2.5rem 2rem 4rem',
+        padding: '2.5rem 3rem 4rem',
         width: '100%',
         boxSizing: 'border-box',
       }}

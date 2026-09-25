@@ -54,7 +54,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
           justifyContent: 'space-between',
           padding: isCollapsed ? '1.25rem 0.5rem' : '1.25rem 1rem',
           flexShrink: 0,
-          position: 'relative',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          boxSizing: 'border-box',
           zIndex: 10,
           userSelect: 'none',
         }}
@@ -272,23 +275,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                     <Key size={14} color="#ffffff" />
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <div style={{ width: '100%' }}>
                     <PasskeyNavbarBadge address={address} />
-                    <button
-                      onClick={() => disconnect()}
-                      title="Disconnect"
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'rgba(28, 25, 23, 0.45)',
-                        cursor: 'pointer',
-                        padding: '4px',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(28, 25, 23, 0.45)')}
-                    >
-                      <LogOut size={14} />
-                    </button>
                   </div>
                 )
               ) : (

@@ -31,9 +31,6 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
   const metadata = auth.getSavedMetadata()
 
   const formattedAddress = `${address.slice(0, 6)}...${address.slice(-4)}`
-  const formattedBalance = balanceData ? formatEther(balanceData.value) : '0'
-  const monBalance = balanceData ? parseFloat(formattedBalance).toFixed(2) : '0.00'
-  const isLowBalance = balanceData ? parseFloat(formattedBalance) < 10 : true
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,97 +56,74 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.625rem',
-            padding: '0.375rem 0.75rem',
-            borderRadius: '9999px',
-            background: 'hsl(230, 20%, 11%)',
-            border: '1px solid hsla(265, 80%, 65%, 0.3)',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2), 0 0 15px hsla(265, 90%, 65%, 0.15)',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+            padding: '0.4rem 0.65rem',
+            borderRadius: '10px',
+            background: '#FFFFFF',
+            border: '1px solid rgba(28, 25, 23, 0.1)',
+            boxShadow: '0 1px 3px rgba(28, 25, 23, 0.04)',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
+            transition: 'all 0.15s ease',
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           {/* Biometric Active Indicator */}
-          <div
-            style={{
-              position: 'relative',
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, hsl(265, 90%, 65%), hsl(200, 85%, 60%))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Fingerprint size={14} color="#ffffff" />
-            <span
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+            <div
               style={{
-                position: 'absolute',
-                bottom: '-1px',
-                right: '-1px',
-                width: '7px',
-                height: '7px',
+                position: 'relative',
+                width: '24px',
+                height: '24px',
                 borderRadius: '50%',
-                background: '#22c55e',
-                border: '1px solid hsl(230, 20%, 11%)',
-              }}
-            />
-          </div>
-
-          {/* Balance & Address */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem' }}>
-            <span style={{ fontWeight: 700, color: '#ffffff' }}>
-              {monBalance} <span style={{ fontSize: '0.6875rem', color: 'hsl(265, 90%, 75%)' }}>MON</span>
-            </span>
-            <span style={{ color: 'hsl(230, 15%, 55%)' }}>•</span>
-            <span style={{ fontFamily: 'monospace', color: 'hsl(0, 0%, 90%)', fontWeight: 500 }}>
-              {formattedAddress}
-            </span>
-          </div>
-
-          {/* Faucet Pill if Low Balance */}
-          {isLowBalance && (
-            <a
-              href="https://testnet.monad.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              style={{
+                background: 'linear-gradient(135deg, #10B981, #0062FF)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '3px',
-                padding: '0.125rem 0.5rem',
-                borderRadius: '9999px',
-                background: 'hsla(40, 90%, 55%, 0.15)',
-                border: '1px solid hsla(40, 90%, 55%, 0.3)',
-                color: 'hsl(40, 95%, 65%)',
-                fontSize: '0.6875rem',
-                fontWeight: 600,
-                textDecoration: 'none',
+                justifyContent: 'center',
+                flexShrink: 0,
               }}
-              title="Request testnet MON for streaming payments"
             >
-              <Droplets size={10} />
-              Faucet
-            </a>
-          )}
+              <Fingerprint size={14} color="#ffffff" />
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: '-1px',
+                  right: '-1px',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: '#10B981',
+                  border: '1px solid #FFFFFF',
+                }}
+              />
+            </div>
 
-          <ChevronDown size={14} color="hsl(230, 15%, 65%)" />
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, textAlign: 'left' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#181615', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {metadata?.displayName || 'Passkey Account'}
+              </span>
+              <span style={{ fontFamily: 'var(--font-mono)', color: '#78716C', fontSize: '0.6875rem', lineHeight: 1.2 }}>
+                {formattedAddress}
+              </span>
+            </div>
+          </div>
+
+          <ChevronDown size={14} color="#78716C" style={{ flexShrink: 0 }} />
         </div>
 
-        {/* Dropdown Menu */}
+        {/* Dropdown Menu - Opens Upwards from Sidebar */}
         {dropdownOpen && (
           <div
             style={{
               position: 'absolute',
-              top: 'calc(100% + 8px)',
-              right: 0,
+              bottom: 'calc(100% + 8px)',
+              left: 0,
               width: '260px',
-              background: 'hsl(230, 22%, 12%)',
+              background: '#FFFFFF',
               borderRadius: '16px',
-              border: '1px solid hsla(265, 80%, 65%, 0.25)',
-              boxShadow: '0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px hsla(265, 90%, 65%, 0.1)',
+              border: '1px solid rgba(28, 25, 23, 0.1)',
+              boxShadow: '0 16px 40px rgba(28, 25, 23, 0.14)',
               padding: '0.625rem',
               zIndex: 150,
               display: 'flex',
@@ -161,17 +135,22 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
             <div
               style={{
                 padding: '0.5rem 0.625rem',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+                borderBottom: '1px solid rgba(28, 25, 23, 0.06)',
                 marginBottom: '4px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShieldCheck size={14} color="#22c55e" />
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffffff' }}>
-                  {metadata?.displayName || 'Passkey Account'}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <ShieldCheck size={14} color="#10B981" />
+                  <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#181615' }}>
+                    {metadata?.displayName || 'Passkey Account'}
+                  </span>
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10B981', fontFamily: 'var(--font-mono)' }}>
+                  {balanceData ? parseFloat(formatEther(balanceData.value)).toFixed(2) : '0.00'} MON
                 </span>
               </div>
-              <span style={{ fontSize: '0.6875rem', color: 'hsl(230, 15%, 55%)' }}>
+              <span style={{ fontSize: '0.6875rem', color: '#78716C' }}>
                 Hardware-backed • WebAuthn PRF
               </span>
             </div>
@@ -188,14 +167,17 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
                 borderRadius: '8px',
                 border: 'none',
                 background: 'transparent',
-                color: 'hsl(0, 0%, 90%)',
+                color: '#181615',
                 fontSize: '0.8125rem',
                 cursor: 'pointer',
                 textAlign: 'left',
                 width: '100%',
+                transition: 'background 0.12s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(28, 25, 23, 0.05)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              {copied ? <Check size={14} color="#4ade80" /> : <Copy size={14} />}
+              {copied ? <Check size={14} color="#10B981" /> : <Copy size={14} />}
               <span>{copied ? 'Address Copied' : 'Copy Address'}</span>
             </button>
 
@@ -210,10 +192,13 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
                 gap: '0.5rem',
                 padding: '0.5rem 0.625rem',
                 borderRadius: '8px',
-                color: 'hsl(0, 0%, 90%)',
+                color: '#181615',
                 fontSize: '0.8125rem',
                 textDecoration: 'none',
+                transition: 'background 0.12s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(28, 25, 23, 0.05)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <ExternalLink size={14} />
               <span>View on Monadscan</span>
@@ -234,13 +219,16 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
                 borderRadius: '8px',
                 border: 'none',
                 background: 'transparent',
-                color: 'hsl(265, 90%, 75%)',
+                color: '#0062FF',
                 fontSize: '0.8125rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 textAlign: 'left',
                 width: '100%',
+                transition: 'background 0.12s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0, 98, 255, 0.06)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Key size={14} />
               <span>Export Seed / Private Key</span>
@@ -257,16 +245,19 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
                 gap: '0.5rem',
                 padding: '0.5rem 0.625rem',
                 borderRadius: '8px',
-                color: 'hsl(40, 95%, 65%)',
+                color: '#B45309',
                 fontSize: '0.8125rem',
                 textDecoration: 'none',
+                transition: 'background 0.12s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(217, 119, 6, 0.08)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Droplets size={14} />
               <span>Monad Testnet Faucet</span>
             </a>
 
-            <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.06)', margin: '4px 0' }} />
+            <div style={{ height: '1px', background: 'rgba(28, 25, 23, 0.06)', margin: '4px 0' }} />
 
             {/* Disconnect */}
             <button
@@ -284,12 +275,15 @@ export const PasskeyNavbarBadge: React.FC<PasskeyNavbarBadgeProps> = ({ address 
                 borderRadius: '8px',
                 border: 'none',
                 background: 'transparent',
-                color: '#f87171',
+                color: '#EF4444',
                 fontSize: '0.8125rem',
                 cursor: 'pointer',
                 textAlign: 'left',
                 width: '100%',
+                transition: 'background 0.12s ease',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <LogOut size={14} />
               <span>Disconnect Passkey</span>
