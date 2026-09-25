@@ -90,6 +90,8 @@ export class SignalingClient {
   private maxReconnectDelay = 30000
   private isExplicitlyClosed = false
   private authToken: string | null = null
+  private authAddress: string | null = null
+  private authPromise: Promise<void> | null = null
   private pendingQueries = new Map<string, (seeders: SeederRecord[]) => void>()
 
   private listeners: {
@@ -239,6 +241,28 @@ export class SignalingClient {
     signMessage: (message: string) => Promise<string>,
   ): Promise<void> {
     const normalizedAddress = address.toLowerCase()
+
+    if (this.authToken && this.authAddress === normalizedAddress) {
+      return
+    }
+    if (this.authPromise && this.authAddress === normalizedAddress) {
+      return this.authPromise
+    }
+
+    this.authAddress = normalizedAddress
+    this.authPromise = this.authenticateWallet(address, normalizedAddress, signMessage)
+    try {
+      await this.authPromise
+    } finally {
+      this.authPromise = null
+    }
+  }
+
+  private async authenticateWallet(
+    address: string,
+    normalizedAddress: string,
+    signMessage: (message: string) => Promise<string>,
+  ): Promise<void> {
     const storageKey = `torrentia_signaling_session:${normalizedAddress}`
     let cached: CachedSignalingSession | null = null
 
@@ -283,6 +307,7 @@ export class SignalingClient {
       expiresAt: number
     }
     this.authToken = session.token
+    this.authAddress = normalizedAddress
     this.peerId = session.peerId
     this.address = address
     try {
