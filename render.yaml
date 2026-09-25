@@ -39,6 +39,8 @@ services:
           property: connectionString
       - key: PINATA_JWT
         sync: false
+      - key: ALLOWED_ORIGINS
+        value: "https://torrentiaa.vercel.app,https://torrentia.io,http://localhost:5173"
 
   - type: web
     name: torrentia-seeder
