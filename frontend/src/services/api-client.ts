@@ -34,9 +34,9 @@ async function fetchOnChainModels(creator?: string): Promise<IndexedModel[]> {
     const latestBlock = await chainClient.getBlockNumber()
     // Monad public testnet RPC limits eth_getLogs strictly to a max 100-block range
     const rangeSize = 99n
-    const scanWindow = 500n
-    const windowStart = latestBlock > scanWindow ? latestBlock - scanWindow : 0n
-    const startScan = windowStart > MODEL_REGISTRY_DEPLOYMENT_BLOCK ? windowStart : MODEL_REGISTRY_DEPLOYMENT_BLOCK
+    // Scan from deployment so models remain discoverable in new browsers even
+    // when the optional indexer is delayed or unavailable.
+    const startScan = MODEL_REGISTRY_DEPLOYMENT_BLOCK
     const logs = []
 
     for (

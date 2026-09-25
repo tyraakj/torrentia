@@ -87,6 +87,17 @@ export class PeerConnection {
       ],
     }
 
+    const turnUrl = String(import.meta.env.VITE_TURN_URL || '').trim()
+    const turnUsername = String(import.meta.env.VITE_TURN_USERNAME || '').trim()
+    const turnCredential = String(import.meta.env.VITE_TURN_CREDENTIAL || '').trim()
+    if (turnUrl && turnUsername && turnCredential) {
+      rtcConfig.iceServers?.push({
+        urls: turnUrl.split(',').map((url) => url.trim()),
+        username: turnUsername,
+        credential: turnCredential,
+      })
+    }
+
     this.pc = new RTCPeerConnection(rtcConfig)
     this.setupPeerConnectionEvents()
 

@@ -8,6 +8,12 @@ import type { SeederRecord } from '../lib/types'
 
 export type SignalingStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 
+interface CachedSignalingSession {
+  token: string
+  peerId: string
+  expiresAt: number
+}
+
 export interface SignalingOfferMessage {
   type: 'offer'
   from: string
@@ -73,7 +79,7 @@ export function normalizeSignalingUrl(rawUrl: string): string {
 }
 
 export class SignalingClient {
-  public readonly peerId: string
+  public peerId: string
   public address: string
   private url: string
   private ws: WebSocket | null = null
@@ -83,6 +89,7 @@ export class SignalingClient {
   private reconnectAttempts = 0
   private maxReconnectDelay = 30000
   private isExplicitlyClosed = false
+  private authToken: string | null = null
   private pendingQueries = new Map<string, (seeders: SeederRecord[]) => void>()
 
   private listeners: {
@@ -210,9 +217,78 @@ export class SignalingClient {
   }
 
   public setAddress(addr: string): void {
+    if (this.authToken && this.address.toLowerCase() !== addr.toLowerCase()) {
+      // A token is bound to the wallet address. Force the shared socket to be
+      // replaced before the next wallet session is authenticated.
+      this.authToken = null
+      this.disconnect()
+    }
     this.address = addr
-    if (this.status === 'connected') {
+    if (this.status === 'connected' && !this.authToken) {
       this.sendRegister()
+    }
+  }
+
+  /**
+   * Authenticate this browser with the wallet-backed signaling session API.
+   * The token is passed as a WebSocket query parameter because browsers cannot
+   * set arbitrary headers on the native WebSocket constructor.
+   */
+  public async authenticate(
+    address: string,
+    signMessage: (message: string) => Promise<string>,
+  ): Promise<void> {
+    const normalizedAddress = address.toLowerCase()
+    const storageKey = `torrentia_signaling_session:${normalizedAddress}`
+    let cached: CachedSignalingSession | null = null
+
+    try {
+      const raw = sessionStorage.getItem(storageKey)
+      if (raw) cached = JSON.parse(raw) as CachedSignalingSession
+    } catch {
+      cached = null
+    }
+
+    if (cached && cached.expiresAt > Date.now() / 1000 + 60) {
+      this.authToken = cached.token
+      this.peerId = cached.peerId
+      this.address = address
+      return
+    }
+
+    const httpBase = this.url.replace(/^ws/, 'http').replace(/\/ws$/, '')
+    const challengeResponse = await fetch(`${httpBase}/v1/auth/challenge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address }),
+    })
+    if (!challengeResponse.ok) {
+      throw new Error(`Signaling auth challenge failed (${challengeResponse.status})`)
+    }
+    const challenge = (await challengeResponse.json()) as { message: string }
+    const signature = await signMessage(challenge.message)
+
+    const sessionResponse = await fetch(`${httpBase}/v1/auth/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address, signature }),
+    })
+    if (!sessionResponse.ok) {
+      throw new Error(`Signaling session authentication failed (${sessionResponse.status})`)
+    }
+
+    const session = (await sessionResponse.json()) as {
+      token: string
+      peerId: string
+      expiresAt: number
+    }
+    this.authToken = session.token
+    this.peerId = session.peerId
+    this.address = address
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(session))
+    } catch {
+      // Storage can be unavailable in privacy mode; the in-memory token remains valid.
     }
   }
 
@@ -225,7 +301,10 @@ export class SignalingClient {
     this.setStatus('connecting')
 
     try {
-      this.ws = new WebSocket(this.url)
+      const wsUrl = this.authToken
+        ? `${this.url}?token=${encodeURIComponent(this.authToken)}`
+        : this.url
+      this.ws = new WebSocket(wsUrl)
     } catch (err) {
       this.setStatus('error')
       this.emit('error', err instanceof Error ? err.message : String(err))

@@ -45,13 +45,38 @@ export function getGlobalSignalingClient(address?: string): SignalingClient {
  */
 export function useSignaling(address?: string) {
   const client = getGlobalSignalingClient(address)
+  const { data: walletClient } = useWalletClient({ chainId: 10143 })
 
   useEffect(() => {
-    if (address && client.address !== address) {
-      client.setAddress(address)
+    let cancelled = false
+
+    const connect = async () => {
+      if (address && walletClient) {
+        try {
+          await client.authenticate(address, async (message) => {
+            return walletClient.signMessage({ message })
+          })
+          if (!cancelled) client.connect()
+        } catch (error) {
+          if (!cancelled) {
+            client.disconnect()
+            console.warn('Signaling authentication failed:', error)
+          }
+        }
+      } else if (!address && !import.meta.env.PROD) {
+        // Local development can run with AUTH_REQUIRED=false. In production,
+        // wait for the wallet-backed session instead of opening an anonymous
+        // socket that can race the authenticated shared client.
+        client.setAddress('0x0000000000000000000000000000000000000000')
+        client.connect()
+      }
     }
-    client.connect()
-  }, [client, address])
+
+    void connect()
+    return () => {
+      cancelled = true
+    }
+  }, [client, address, walletClient])
 
   const status = useSyncExternalStore<SignalingStatus>(
     (onStoreChange) => client.on('status', onStoreChange),

@@ -245,12 +245,6 @@ func (h *Hub) HandleMessage(p *Peer, raw []byte) error {
 
 	switch base.Type {
 	case "register":
-		// Disallow unauthenticated registration if peer is already authenticated via token
-		if p.ID() != "" {
-			h.sendError(p, "authenticated peer cannot re-register identity")
-			return errors.New("peer already authenticated")
-		}
-
 		var reg RegisterMessage
 		if err := json.Unmarshal(raw, &reg); err != nil || reg.PeerID == "" {
 			h.sendError(p, "invalid register payload: peerId is required")
@@ -258,11 +252,16 @@ func (h *Hub) HandleMessage(p *Peer, raw []byte) error {
 		}
 
 		oldID := p.ID()
-		h.mu.Lock()
 		if oldID != "" && oldID != reg.PeerID {
-			delete(h.peers, oldID)
+			h.sendError(p, "peer cannot change identity on an existing connection")
+			return errors.New("peer identity change rejected")
+		}
+		// A wallet switch keeps the same browser peer ID. Remove old
+		// announcements before accepting the new address.
+		if oldID != "" {
 			h.tracker.RemovePeer(oldID)
 		}
+		h.mu.Lock()
 
 		// If another connection already held this peerId, kick the old one
 		if existing, ok := h.peers[reg.PeerID]; ok && existing != p {
