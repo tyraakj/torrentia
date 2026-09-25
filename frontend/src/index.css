@@ -20,21 +20,21 @@
   --color-text-muted: #8c857e;
 
   /* Accent & Brand */
-  --color-accent: #6366f1;
-  --color-accent-bright: #4f46e5;
-  --color-accent-dim: #818cf8;
-  --color-accent-glow: rgba(99, 102, 241, 0.18);
+  --color-accent: #0062FF;
+  --color-accent-bright: #0052D9;
+  --color-accent-dim: #3B82F6;
+  --color-accent-glow: rgba(0, 98, 255, 0.18);
   --gradient-accent: linear-gradient(135deg, #1c1917, #38332f);
-  --gradient-brand: linear-gradient(135deg, #6366f1, #10b981);
+  --gradient-brand: linear-gradient(135deg, #0062FF, #10b981);
 
   /* Semantic */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  --color-info: #3b82f6;
+  --color-info: #0062FF;
 
-  /* Payment Split Visualization (Creator 70% Violet / Seeder 30% Emerald) */
-  --color-creator-share: #6366f1;
+  /* Payment Split Visualization (Creator 70% Royal Blue / Seeder 30% Emerald) */
+  --color-creator-share: #0062FF;
   --color-seeder-share: #10b981;
 
   /* Typography */

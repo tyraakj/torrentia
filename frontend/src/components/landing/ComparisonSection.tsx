@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Bell, ShieldCheck, Zap } from 'lucide-react'
+import { Bell, ShieldCheck, CheckCircle2, Clock } from 'lucide-react'
 
 export const ComparisonSection: React.FC = () => {
   const [activeTooltip, setActiveTooltip] = useState(true)
@@ -29,7 +29,7 @@ export const ComparisonSection: React.FC = () => {
             {/* Floating Metric Badge (Top Left) */}
             <div className="floating-metric-pill">
               <div className="metric-pill-header">
-                <Zap size={13} className="metric-pill-icon" />
+                <CheckCircle2 size={13} className="metric-pill-icon" />
                 <span>Cloud Bandwidth Bills</span>
               </div>
               <div className="metric-pill-body">
@@ -228,7 +228,7 @@ export const ComparisonSection: React.FC = () => {
             {/* Floating Card (Bottom Left): Instant 1-Second Payouts */}
             <div className="floating-trust-badge">
               <div className="laurel-wreath-wrap">
-                <Zap size={22} color="#0062FF" />
+                <Clock size={22} color="#0062FF" />
               </div>
               <div className="trust-badge-texts">
                 <span className="trust-badge-number">1-Second</span>

@@ -3,7 +3,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
-  Zap,
   Radio,
   Check,
   FileCode,
@@ -68,7 +67,7 @@ export const FeatureStreamCarousel: React.FC = () => {
             </div>
           </div>
           <div className="stream-mock-doc-footer">
-            <Zap size={12} color="#6366f1" />
+            <Check size={12} color="#0062FF" strokeWidth={2.5} />
             <span>Split settled in 0.8s on Monad</span>
           </div>
         </div>
@@ -86,7 +85,7 @@ export const FeatureStreamCarousel: React.FC = () => {
           </div>
           <div className="stream-mock-highlight-wrap">
             <div className="stream-mock-tooltip-pill">
-              <Zap size={11} color="#f59e0b" />
+              <Check size={11} color="#059669" strokeWidth={2.5} />
               <span>Auto-sign: 0.001 MON</span>
             </div>
             <div className="stream-mock-highlighted-text">
@@ -130,8 +129,8 @@ export const FeatureStreamCarousel: React.FC = () => {
     },
     {
       id: 'reseed',
-      title: 'Auto-reseed swarm',
-      desc: 'Downloaders automatically become active seeders, continuously multiplying swarm bandwidth as models gain popularity.',
+      title: 'Auto-reseed network',
+      desc: 'Downloaders automatically become active seeders, continuously multiplying network bandwidth as models gain popularity.',
       visual: (
         <div className="stream-mock-squircle-wrap">
           <div className="stream-mock-squircle">

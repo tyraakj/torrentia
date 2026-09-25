@@ -23,9 +23,9 @@ export const PuzzleFeatureSection: React.FC = () => {
 
         {/* Right Column: Architectural Explanation */}
         <div className="puzzle-feature-content">
-          <div className="section-eyebrow">The Chunked Swarm Architecture</div>
+          <div className="section-eyebrow">The Distributed Piece Architecture</div>
           <h2 className="section-heading-large" style={{ textAlign: 'left', marginBottom: '1rem' }}>
-            Every model is a puzzle. The swarm puts it together.
+            Every model is a puzzle. The network puts it together.
           </h2>
           <p style={{ fontSize: '1.0625rem', lineHeight: 1.6, color: 'var(--puzzle-text-secondary)', marginBottom: '1.5rem' }}>
             Multi-gigabyte neural network weights no longer bottleneck through a single centralized host.
@@ -63,7 +63,7 @@ export const PuzzleFeatureSection: React.FC = () => {
               </div>
               <div>
                 <h4 style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--puzzle-text-primary)', marginBottom: '0.25rem' }}>
-                  Multi-Source Parallel Swarm
+                  Multi-Source Parallel Network
                 </h4>
                 <p style={{ fontSize: '0.875rem', color: 'var(--puzzle-text-secondary)', lineHeight: 1.5 }}>
                   Download chunk #1 from London, chunk #2 from Singapore, and chunk #3 from San Francisco at the same time.
