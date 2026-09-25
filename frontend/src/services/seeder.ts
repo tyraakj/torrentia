@@ -60,7 +60,19 @@ export class Seeder {
     // 1. Announce initial chunks held in IndexedDB
     await this.reannounce()
 
-    // 2. Listen for incoming WebRTC offers targeted to this seeder
+    // 2. Re-announce chunks whenever this peer re-registers with the server.
+    //    This covers two scenarios:
+    //    a) Wallet switch in the same tab: setAddress() sends a new 'register' message which
+    //       clears the old chunk announce from the tracker. Re-announcing restores visibility.
+    //    b) WebSocket reconnection after a network drop.
+    const unsubRegistered = this.signaling.on('registered', () => {
+      if (this.isSeedingActive) {
+        void this.reannounce().catch(() => {})
+      }
+    })
+    this.unsubscribers.push(unsubRegistered)
+
+    // 3. Listen for incoming WebRTC offers targeted to this seeder
     const unsubOffer = this.signaling.on('offer', async (from, sdp) => {
       await this.handleIncomingOffer(from, sdp)
     })

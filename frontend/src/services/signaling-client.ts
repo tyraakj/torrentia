@@ -50,6 +50,7 @@ type EventMap = {
   iceCandidate: (from: string, candidate: RTCIceCandidateInit) => void
   status: (status: SignalingStatus) => void
   error: (err: string) => void
+  registered: () => void
 }
 
 export function normalizeSignalingUrl(rawUrl: string): string {
@@ -90,12 +91,14 @@ export class SignalingClient {
     iceCandidate: Set<EventMap['iceCandidate']>
     status: Set<EventMap['status']>
     error: Set<EventMap['error']>
+    registered: Set<EventMap['registered']>
   } = {
     offer: new Set(),
     answer: new Set(),
     iceCandidate: new Set(),
     status: new Set(),
     error: new Set(),
+    registered: new Set(),
   }
 
   constructor(url?: string, address?: string) {
@@ -147,6 +150,11 @@ export class SignalingClient {
         this.listeners.error.add(fn)
         return () => { this.listeners.error.delete(fn) }
       }
+      case 'registered': {
+        const fn = handler as EventMap['registered']
+        this.listeners.registered.add(fn)
+        return () => { this.listeners.registered.delete(fn) }
+      }
       default:
         return () => {}
     }
@@ -182,6 +190,11 @@ export class SignalingClient {
         for (const fn of this.listeners.error) {
           const [err] = args as Parameters<EventMap['error']>
           fn(err)
+        }
+        break
+      case 'registered':
+        for (const fn of this.listeners.registered) {
+          fn()
         }
         break
       default:
@@ -358,6 +371,9 @@ export class SignalingClient {
       const msg = JSON.parse(raw)
       switch (msg.type) {
         case 'registered':
+          // Server has acknowledged our registration — notify subscribers so
+          // seeders can re-announce their chunks (covers wallet switch + reconnect).
+          this.emit('registered')
           break
 
         case 'announced':
