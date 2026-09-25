@@ -17,6 +17,10 @@ import {
   Flame,
   Radio,
   ExternalLink,
+  TrendingUp,
+  MousePointer2,
+  Coins,
+  Zap,
 } from 'lucide-react'
 import { Card, CardBody } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -115,6 +119,7 @@ export const Upload: React.FC = () => {
   const creatorPercent = Math.round(creatorShareBps / 100)
   const seederPercent = 100 - creatorPercent
   const priceNum = parseFloat(chunkPriceMon || '0')
+  const totalPriceMon = (priceNum * estimatedChunks).toFixed(6)
   const creatorEarnPerPiece = (priceNum * (creatorPercent / 100)).toFixed(6)
   const seederEarnPerPiece = (priceNum * (seederPercent / 100)).toFixed(6)
   const totalRevenue = (priceNum * estimatedChunks).toFixed(4)
@@ -307,14 +312,18 @@ export const Upload: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: 'var(--space-8)', width: '100%' }}>
+    <div className="dashboard-full-viewport">
       {/* Page Title & Breadcrumb */}
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: 'var(--text-3xl)', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
+      <div style={{ marginBottom: '1.75rem' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.65rem', borderRadius: '9999px', background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#0062FF', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+          <Radio size={13} />
+          <span>Model Registration • Monad Testnet</span>
+        </div>
+        <h1 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: '2.15rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#181615', marginBottom: '0.25rem' }}>
           Publish AI Model
         </h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>
-          Prepare your model files, choose your custom creator royalty split (up to 99%), and register on Monad with zero cloud middlemen.
+        <p style={{ color: '#57534E', fontSize: '0.9375rem', maxWidth: '680px' }}>
+          Slice your weights into uniform 1 MB puzzle pieces, set your custom creator royalty percentage (up to 99%), and register on Monad with zero cloud middlemen.
         </p>
       </div>
 
@@ -323,8 +332,8 @@ export const Upload: React.FC = () => {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: 'var(--space-2)',
-          marginBottom: 'var(--space-8)',
+          gap: '0.75rem',
+          marginBottom: '2rem',
         }}
       >
         {[
@@ -340,29 +349,42 @@ export const Upload: React.FC = () => {
             <div
               key={s.num}
               style={{
-                padding: '0.625rem 0.75rem',
+                padding: '0.65rem 0.85rem',
                 borderRadius: '12px',
-                background: isCurrent
-                  ? 'rgba(124, 58, 237, 0.1)'
-                  : isDone
-                  ? 'rgba(16, 185, 129, 0.08)'
-                  : 'rgba(28, 25, 23, 0.03)',
-                border: isCurrent
-                  ? '1px solid #7c3aed'
-                  : isDone
-                  ? '1px solid rgba(16, 185, 129, 0.25)'
-                  : '1px solid rgba(28, 25, 23, 0.08)',
-                color: isCurrent ? '#7c3aed' : isDone ? '#059669' : '#78716c',
-                fontWeight: isCurrent ? 700 : 600,
-                fontSize: '0.75rem',
+                background: isCurrent ? '#EFF6FF' : isDone ? '#ECFDF5' : '#FFFFFF',
+                border: isCurrent ? '1.5px solid #0062FF' : isDone ? '1px solid #A7F3D0' : '1px solid rgba(28, 25, 23, 0.1)',
+                color: isCurrent ? '#0062FF' : isDone ? '#059669' : '#78716C',
+                fontWeight: isCurrent ? 800 : 600,
+                fontSize: '0.8125rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease',
+                gap: '8px',
+                boxShadow: isCurrent ? '0 2px 8px rgba(0, 98, 255, 0.1)' : '0 1px 3px rgba(0,0,0,0.02)',
+                transition: 'all 0.15s ease',
+                cursor: 'pointer',
               }}
+              onClick={() => setActiveStep(s.num)}
             >
-              {isDone ? <Check size={13} /> : <span>{s.num}.</span>}
-              <span>{s.label.split('. ')[1]}</span>
+              <span
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  background: isCurrent ? '#0062FF' : isDone ? '#10B981' : '#F5F5F4',
+                  color: isCurrent || isDone ? '#FFFFFF' : '#78716C',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {isDone ? <Check size={12} color="#FFFFFF" /> : s.num}
+              </span>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {s.label.split('. ')[1]}
+              </span>
             </div>
           )
         })}
@@ -389,15 +411,8 @@ export const Upload: React.FC = () => {
         </div>
       )}
 
-      {/* Main Grid: Wizard Form on Left (1.6fr), Sticky Summary on Right (1fr) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1.6fr) minmax(320px, 1fr)',
-          gap: 'var(--space-8)',
-          alignItems: 'start',
-        }}
-      >
+      {/* Main Grid: Wizard Form on Left, Sticky Sky-Ice Summary on Right */}
+      <div className="publish-main-grid">
         {/* WIZARD CARD */}
         <Card>
           <CardBody style={{ padding: 'var(--space-6)', display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -645,65 +660,196 @@ export const Upload: React.FC = () => {
 
             {/* STEP 4: SET ECONOMICS & ROYALTY SPLIT */}
             {activeStep === 4 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                {/* Step Header */}
                 <div>
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Step 4: Set price and earnings
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.2rem 0.6rem', borderRadius: '9999px', background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#0062FF', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.5rem' }}>
+                    <Coins size={12} />
+                    <span>Step 4 of 5 • Monetization Engine</span>
+                  </div>
+                  <h3 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#181615', marginBottom: '0.35rem' }}>
+                    Set Model Pricing & Creator Royalty
                   </h3>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
-                    Choose the price per piece and how earnings are shared with people who provide your model.
+                  <p style={{ fontSize: '0.875rem', color: '#57534E', lineHeight: 1.5, margin: 0 }}>
+                    Specify the streaming price per 1 MB piece and configure autonomous smart-contract royalty distribution on Monad.
                   </p>
                 </div>
 
-                <div>
-                  <label style={{ fontSize: '11px', fontWeight: 600, color: '#44403c', display: 'block', marginBottom: '4px' }}>
-                    Price per piece (MON)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.00001"
-                    min="0"
-                    value={chunkPriceMon}
-                    onChange={(e) => setChunkPriceMon(e.target.value)}
-                    placeholder="0.0001"
-                  />
+                {/* Section 1: Piece-by-Piece Pricing Card */}
+                <div
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1.5px solid rgba(28, 25, 23, 0.08)',
+                    borderRadius: '18px',
+                    padding: '1.4rem',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.02)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.85rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div>
+                      <label style={{ fontSize: '0.875rem', fontWeight: 800, color: '#181615', display: 'block' }}>
+                        Price per 1 MB Piece
+                      </label>
+                      <span style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                        Streaming micro-escrow debited per verified Merkle piece during download
+                      </span>
+                    </div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: '#059669', background: '#ECFDF5', padding: '0.2rem 0.55rem', borderRadius: '9999px', fontWeight: 700 }}>
+                      <Zap size={12} />
+                      <span>Instant Monad Settlement</span>
+                    </div>
+                  </div>
+
+                  {/* Styled Large Input Box */}
+                  <div className="pricing-input-container">
+                    <input
+                      type="number"
+                      step="0.00001"
+                      min="0"
+                      value={chunkPriceMon}
+                      onChange={(e) => setChunkPriceMon(e.target.value)}
+                      placeholder="0.0001"
+                      className="pricing-input-field"
+                    />
+                    <div className="pricing-currency-badge">
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0062FF' }} />
+                      <span>MON / piece</span>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Buttons */}
+                  <div>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#78716C', marginBottom: '0.35rem' }}>
+                      Suggested Pricing Presets:
+                    </div>
+                    <div className="pricing-presets-row">
+                      {[
+                        { label: '0.00005 MON (Micro)', val: '0.00005' },
+                        { label: '0.0001 MON (Recommended)', val: '0.0001' },
+                        { label: '0.0005 MON (Pro Model)', val: '0.0005' },
+                        { label: '0.001 MON (Enterprise)', val: '0.001' },
+                        { label: 'Free (0 MON)', val: '0' },
+                      ].map((preset) => {
+                        const isActive = chunkPriceMon === preset.val
+                        return (
+                          <button
+                            key={preset.val}
+                            type="button"
+                            className={`pricing-preset-btn ${isActive ? 'active' : ''}`}
+                            onClick={() => setChunkPriceMon(preset.val)}
+                          >
+                            {preset.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Real-Time Total Model Calculation Preview */}
+                  <div
+                    style={{
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '0.5rem',
+                      fontSize: '0.8125rem',
+                    }}
+                  >
+                    <span style={{ color: '#475569' }}>
+                      Total buyer cost for full model ({estimatedChunks} pieces • {file ? formatFileSize(file.size) : 'approx. 3 MB'}):
+                    </span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#181615', fontSize: '0.9375rem' }}>
+                      {totalPriceMon} MON
+                    </span>
+                  </div>
                 </div>
 
+                {/* Section 2: On-Chain Royalty Distribution Engine */}
                 <ShareSlider
                   valueBps={creatorShareBps}
                   onChange={(bps) => setCreatorShareBps(bps)}
+                  chunkPriceMon={chunkPriceMon}
+                  estimatedChunks={estimatedChunks}
                 />
 
-                {/* Plain Language Economics Card (Spec 25) */}
-                <div
-                  style={{
-                    background: 'rgba(28, 25, 23, 0.03)',
-                    borderRadius: '12px',
-                    padding: '1rem',
-                    border: '1px solid rgba(28, 25, 23, 0.08)',
-                    fontSize: '0.8125rem',
-                    lineHeight: 1.5,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                  }}
-                >
-                  <div style={{ fontWeight: 700, color: '#1c1917' }}>Your estimated earnings:</div>
-                  <div style={{ color: '#44403c' }}>
-                    • <strong>Per piece:</strong> You receive <strong>{creatorEarnPerPiece} MON</strong> ({creatorPercent}%) and community hosts receive <strong>{seederEarnPerPiece} MON</strong> ({seederPercent}%).
+                {/* Section 3: Autonomous Settlement Ledger (Replaces the ugly grey bullet box) */}
+                <div className="settlement-ledger-card">
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <ShieldCheck size={18} color="#0062FF" />
+                      <span style={{ fontWeight: 800, fontSize: '0.875rem', color: '#181615' }}>
+                        Autonomous Settlement Breakdown
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '0.2rem 0.55rem', borderRadius: '9999px', border: '1px solid #A7F3D0' }}>
+                      Direct P2P • 0% Protocol Fee
+                    </span>
                   </div>
-                  <div style={{ color: '#44403c' }}>
-                    • <strong>Full download ({estimatedChunks} pieces):</strong> You earn <strong>{creatorTotalEarn} MON</strong>; community hosts earn <strong>{seederTotalEarn} MON</strong>.
+
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="settlement-table">
+                      <thead>
+                        <tr>
+                          <th>Scope</th>
+                          <th>Creator Cut ({creatorPercent}%)</th>
+                          <th>Swarm Seeders ({seederPercent}%)</th>
+                          <th>Intermediary Take</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style={{ fontWeight: 600 }}>Per 1 MB Piece</td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: '#0062FF' }}>
+                            +{creatorEarnPerPiece} MON
+                          </td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: '#059669' }}>
+                            +{seederEarnPerPiece} MON
+                          </td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", color: '#94A3B8' }}>
+                            0.000000 MON (0%)
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style={{ fontWeight: 600 }}>Full Download ({estimatedChunks} MB)</td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#0062FF' }}>
+                            +{creatorTotalEarn} MON
+                          </td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, color: '#059669' }}>
+                            +{seederTotalEarn} MON
+                          </td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", color: '#94A3B8' }}>
+                            0.000000 MON (0%)
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ fontSize: '0.75rem', color: '#64748B', lineHeight: 1.45 }}>
+                    Monad smart contract <code style={{ fontFamily: "'JetBrains Mono', monospace", background: '#E2E8F0', padding: '0.1rem 0.35rem', borderRadius: '4px', color: '#1E293B' }}>TorrentRegistry.sol</code> autonomously settles each piece's payment upon Merkle root verification.
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* Section 4: Action Footer */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.5rem' }}>
                   <Button variant="ghost" onClick={() => setActiveStep(3)} leftIcon={<ArrowLeft size={16} />}>
-                    Back
+                    Back to Model Passport
                   </Button>
 
-                  <Button variant="primary" onClick={() => setActiveStep(5)} rightIcon={<ArrowRight size={16} />}>
-                    Continue to publish
+                  <Button
+                    variant="primary"
+                    onClick={() => setActiveStep(5)}
+                    rightIcon={<ArrowRight size={16} />}
+                  >
+                    Continue to Publish & Seed
                   </Button>
                 </div>
               </div>
@@ -735,7 +881,7 @@ export const Upload: React.FC = () => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Share2 size={18} color="#7c3aed" />
+                      <Share2 size={18} color="#0062FF" />
                       <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
                         Publish model
                       </span>
@@ -767,7 +913,7 @@ export const Upload: React.FC = () => {
                         href={getMonadscanTxUrl(txHash)}
                         target="_blank"
                         rel="noreferrer"
-                        style={{ color: '#7c3aed', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                        style={{ color: '#0062FF', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
                       >
                         {txHash.slice(0, 14)}...{txHash.slice(-8)}
                         <ExternalLink size={12} />
@@ -847,11 +993,11 @@ export const Upload: React.FC = () => {
                     }}
                   >
                     <strong>🎉 Model Published!</strong> View your live model on the{' '}
-                    <Link to={`/model/${registeredModelId}`} style={{ color: '#7c3aed', fontWeight: 700 }}>
+                    <Link to={`/model/${registeredModelId}`} style={{ color: '#0062FF', fontWeight: 700 }}>
                       Model Detail page
                     </Link>{' '}
                     or check your creator stats in the{' '}
-                    <Link to="/dashboard" style={{ color: '#7c3aed', fontWeight: 700 }}>
+                    <Link to="/dashboard" style={{ color: '#0062FF', fontWeight: 700 }}>
                       Creator Dashboard
                     </Link>
                     .
@@ -868,70 +1014,203 @@ export const Upload: React.FC = () => {
           </CardBody>
         </Card>
 
-        {/* PERSISTENT RIGHT-HAND SUMMARY PANEL (Spec 25) */}
+        {/* PERSISTENT SKY-ICE SUMMARY SHOWCASE (Matches FeaturesSection) */}
         <div
-          className="glass"
           style={{
             position: 'sticky',
-            top: '84px',
-            borderRadius: '20px',
-            padding: 'var(--space-6)',
+            top: '24px',
+            borderRadius: '24px',
+            padding: '1.75rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: 'var(--space-4)',
-            background: 'rgba(255, 255, 255, 0.85)',
-            border: '1px solid rgba(28, 25, 23, 0.1)',
-            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.04)',
+            gap: '1.25rem',
+            background: 'linear-gradient(180deg, #F0F9FF 0%, #E0F2FE 100%)',
+            border: '1px solid rgba(186, 230, 253, 0.9)',
+            boxShadow: '0 16px 40px rgba(0, 98, 255, 0.06)',
+            boxSizing: 'border-box',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileCode size={18} color="#7c3aed" />
-            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, margin: 0 }}>
-              Model summary
-            </h3>
+          {/* Header row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FileCode size={18} color="#0062FF" />
+              <h3 style={{ fontFamily: "'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif", fontSize: '1.05rem', fontWeight: 800, margin: 0, color: '#181615' }}>
+                Model Economics
+              </h3>
+            </div>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '3px',
+                fontSize: '0.7rem',
+                fontWeight: 700,
+                background: '#ECFDF5',
+                color: '#059669',
+                padding: '0.15rem 0.5rem',
+                borderRadius: '9999px',
+                border: '1px solid #A7F3D0',
+              }}
+            >
+              <ShieldCheck size={11} />
+              <span>Monad Finality</span>
+            </span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.8125rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Model Name</span>
-              <span style={{ fontWeight: 600, color: '#1c1917' }}>{modelName || '—'}</span>
+          {/* Interactive Dynamic Donut Chart Card */}
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '18px',
+              padding: '1.25rem 1.4rem',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.04)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#78716C' }}>
+                Configured Royalty Split
+              </span>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.7rem', background: '#EFF6FF', color: '#0062FF', padding: '0.15rem 0.45rem', borderRadius: '9999px', fontWeight: 700 }}>
+                <MousePointer2 size={10} />
+                <span>You (Creator)</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Total Size</span>
-              <span style={{ fontWeight: 600, color: '#1c1917' }}>{file ? formatFileSize(file.size) : '—'}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <div style={{ position: 'relative', width: '76px', height: '76px', flexShrink: 0 }}>
+                <svg width="76" height="76" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="32" stroke="#E2E8F0" strokeWidth="9" fill="none" />
+                  {/* Creator Stroke */}
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="#0062FF"
+                    strokeWidth="9"
+                    strokeDasharray="201.06"
+                    strokeDashoffset={(201.06 * (100 - creatorPercent)) / 100}
+                    strokeLinecap="round"
+                    fill="none"
+                    transform="rotate(-90 40 40)"
+                    style={{ transition: 'stroke-dashoffset 0.3s ease' }}
+                  />
+                  {/* Community Host Stroke */}
+                  <circle
+                    cx="40"
+                    cy="40"
+                    r="32"
+                    stroke="#10B981"
+                    strokeWidth="9"
+                    strokeDasharray="201.06"
+                    strokeDashoffset={(201.06 * (100 - seederPercent)) / 100}
+                    strokeLinecap="round"
+                    fill="none"
+                    transform={`rotate(${-90 + (creatorPercent / 100) * 360} 40 40)`}
+                    style={{ transition: 'stroke-dashoffset 0.3s ease, transform 0.3s ease' }}
+                  />
+                  <text
+                    x="40"
+                    y="45"
+                    textAnchor="middle"
+                    fontFamily="'JetBrains Mono', monospace"
+                    fontSize="13"
+                    fontWeight="800"
+                    fill="#0062FF"
+                  >
+                    {creatorPercent}%
+                  </text>
+                </svg>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#57534E' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0062FF' }} />
+                    <span>Creator</span>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#0062FF' }}>
+                    {creatorPercent}%
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#57534E' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981' }} />
+                    <span>Community Hosts</span>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#10B981' }}>
+                    {seederPercent}%
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8125rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#57534E' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#CBD5E1' }} />
+                    <span>Cloud Middlemen</span>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#64748B' }}>
+                    0%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Model Spec Table */}
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '18px',
+              padding: '1.1rem 1.35rem',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.04)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.65rem',
+              fontSize: '0.8125rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716C' }}>Model File</span>
+              <span style={{ fontWeight: 600, color: '#181615', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {modelName || (file ? file.name : '—')}
+              </span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Pieces</span>
-              <span style={{ fontWeight: 600, color: '#1c1917' }}>{estimatedChunks > 0 ? `${estimatedChunks} pieces (1 MB ea)` : '—'}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716C' }}>File Size</span>
+              <span style={{ fontWeight: 600, color: '#181615' }}>{file ? formatFileSize(file.size) : '—'}</span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Piece Price</span>
-              <span style={{ fontWeight: 600, color: 'var(--color-accent-bright)', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716C' }}>Puzzle Pieces</span>
+              <span style={{ fontWeight: 600, color: '#181615' }}>
+                {estimatedChunks > 0 ? `${estimatedChunks} chunks (1 MB ea)` : '—'}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716C' }}>Piece Price</span>
+              <span style={{ fontWeight: 700, color: '#0062FF', fontFamily: 'var(--font-mono)' }}>
                 {chunkPriceMon ? `${chunkPriceMon} MON` : '—'}
               </span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Earnings split</span>
-              <span style={{ fontWeight: 600, color: '#1c1917' }}>
-                {creatorPercent}% creator / {seederPercent}% provider
-              </span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Est. Total Revenue</span>
-              <span style={{ fontWeight: 700, color: '#059669', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '6px' }}>
+              <span style={{ color: '#78716C' }}>Est. Total Revenue</span>
+              <span style={{ fontWeight: 800, color: '#059669', fontFamily: 'var(--font-mono)', fontSize: '0.875rem' }}>
                 {totalRevenue} MON
               </span>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(28, 25, 23, 0.06)', paddingBottom: '6px' }}>
-              <span style={{ color: '#78716c' }}>Creator Account</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#78716C' }}>Creator EOA</span>
               {isConnected && address ? (
-                <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#181615' }}>
                   {address.slice(0, 6)}...{address.slice(-4)}
                 </span>
               ) : (
@@ -946,28 +1225,26 @@ export const Upload: React.FC = () => {
                 </Button>
               )}
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: '#78716c' }}>Model information</span>
-              <span style={{ fontWeight: 600, color: ipfsCid ? '#059669' : '#78716c', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-                {ipfsCid ? `${ipfsCid.slice(0, 10)}...${ipfsCid.slice(-6)}` : 'Pending Step 3'}
-              </span>
-            </div>
           </div>
 
+          {/* Zero Egress Callout Banner */}
           <div
             style={{
-              padding: '10px',
-              borderRadius: '10px',
-              background: 'rgba(124, 58, 237, 0.05)',
-              border: '1px solid rgba(124, 58, 237, 0.15)',
-              fontSize: '11px',
-              color: '#57534e',
-              lineHeight: 1.4,
+              padding: '0.85rem 1rem',
+              borderRadius: '14px',
+              background: '#FFFFFF',
+              border: '1px solid rgba(0, 98, 255, 0.15)',
+              boxShadow: '0 4px 14px rgba(0, 98, 255, 0.05)',
+              fontSize: '0.75rem',
+              color: '#475569',
+              lineHeight: 1.45,
             }}
           >
-            <ShieldCheck size={14} color="#7c3aed" style={{ display: 'inline', marginRight: '4px', verticalAlign: '-2px' }} />
-            <strong>Your files stay yours:</strong> Model information is saved for discovery; the model itself is shared directly between people.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#0062FF', marginBottom: '2px' }}>
+              <TrendingUp size={13} />
+              <span>Zero Cloud Egress Guarantee</span>
+            </div>
+            Weights stream directly across community WebRTC mesh. You pay $0 in AWS S3 or Hugging Face cloud hosting fees.
           </div>
         </div>
       </div>
