@@ -1,5 +1,4 @@
-import React from 'react'
-import { Zap } from 'lucide-react'
+import { Layers } from 'lucide-react'
 
 export interface PaymentSplitBadgeProps {
   creatorShareBps: number
@@ -36,7 +35,7 @@ export const PaymentSplitBadge: React.FC<PaymentSplitBadgeProps> = ({
         ...style,
       }}
     >
-      {showIcon && <Zap size={isSmall ? 11 : 13} color="#6366f1" />}
+      {showIcon && <Layers size={isSmall ? 11 : 13} color="var(--color-creator-share)" />}
       <span
         style={{
           color: 'var(--color-creator-share)',

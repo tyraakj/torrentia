@@ -7,6 +7,9 @@ export const MODEL_REGISTRY_ADDRESS = (String(import.meta.env.VITE_MODEL_REGISTR
 export const SPLIT_PAYMENT_ADDRESS = (String(import.meta.env.VITE_SPLIT_PAYMENT_ADDRESS ||
   '0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa').trim()) as `0x${string}`
 
+export const SPLIT_PAYMENT_V2_ADDRESS = (String(import.meta.env.VITE_SPLIT_PAYMENT_V2_ADDRESS ||
+  '0xe2aD791258862F628af1b8B5104532F3BceE5ECe').trim()) as `0x${string}`
+
 export const MONADSCAN_BASE_URL = 'https://testnet.monadscan.com' as const
 
 /**

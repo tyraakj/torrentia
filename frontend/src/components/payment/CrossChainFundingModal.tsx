@@ -8,6 +8,7 @@ import {
   type IntentStatusUpdate,
 } from '../../services/aurora/intents-client'
 import { formatEther } from 'viem'
+import { Layers, Check, X, ArrowRight } from 'lucide-react'
 
 interface CrossChainFundingModalProps {
   isOpen: boolean
@@ -89,8 +90,9 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        backgroundColor: 'rgba(28, 25, 23, 0.45)',
         backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -105,99 +107,122 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
         style={{
           width: '100%',
           maxWidth: '520px',
-          backgroundColor: 'hsl(230, 20%, 11%)',
-          border: '1px solid hsla(265, 90%, 65%, 0.3)',
-          borderRadius: '16px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px hsla(265, 90%, 65%, 0.15)',
+          backgroundColor: '#FFFFFF',
+          border: '1px solid rgba(28, 25, 23, 0.08)',
+          borderRadius: '20px',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.04)',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          color: 'hsl(0, 0%, 95%)',
-          fontFamily: "'Inter', sans-serif",
+          color: '#181615',
+          fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+          animation: 'fadeIn 0.2s ease',
         }}
       >
         {/* Header */}
         <div
           style={{
-            padding: '20px 24px',
-            borderBottom: '1px solid hsla(0, 0%, 100%, 0.08)',
+            padding: '1.25rem 1.5rem',
+            borderBottom: '1px solid rgba(28, 25, 23, 0.06)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            background: 'linear-gradient(180deg, hsla(265, 90%, 65%, 0.08) 0%, transparent 100%)',
+            background: 'linear-gradient(180deg, rgba(0, 98, 255, 0.04) 0%, transparent 100%)',
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.25rem' }}>⚡</span>
-              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 600 }}>
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '8px',
+                  background: 'rgba(0, 98, 255, 0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Layers size={16} color="#0062FF" />
+              </div>
+              <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#181615' }}>
                 1-Click Cross-Chain Funding
               </h2>
             </div>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'hsl(230, 15%, 65%)' }}>
-              Powered by <strong style={{ color: 'hsl(265, 90%, 65%)' }}>Aurora / NEAR Intents</strong> • Instant Solver Settlement
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.78125rem', color: '#78716C' }}>
+              Powered by <strong style={{ color: '#0062FF' }}>Aurora / NEAR Intents</strong> &bull; Instant Solver Settlement
             </p>
           </div>
           {!isExecuting && (
             <button
               onClick={onClose}
               style={{
-                background: 'none',
+                background: '#F5F5F4',
                 border: 'none',
-                color: 'hsl(230, 15%, 65%)',
-                fontSize: '1.5rem',
+                color: '#78716C',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer',
-                lineHeight: 1,
+                transition: 'background 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#E7E5E4'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#F5F5F4'
               }}
             >
-              ×
+              <X size={16} />
             </button>
           )}
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '1.5rem' }}>
           {statusUpdate?.status === 'SETTLED' ? (
-            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
               <div
                 style={{
                   width: '56px',
                   height: '56px',
                   borderRadius: '50%',
-                  backgroundColor: 'rgba(20, 241, 149, 0.15)',
-                  color: 'hsl(155, 75%, 55%)',
-                  fontSize: '1.75rem',
+                  backgroundColor: '#ECFDF5',
+                  color: '#059669',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 16px auto',
-                  border: '1px solid hsl(155, 75%, 55%)',
+                  border: '1px solid #A7F3D0',
                 }}
               >
-                ✓
+                <Check size={28} strokeWidth={2.5} />
               </div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: 'hsl(0, 0%, 95%)' }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 700, color: '#181615' }}>
                 Funding Complete!
               </h3>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: 'hsl(230, 15%, 65%)' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem', color: '#57534E' }}>
                 Credited <strong>{parseFloat(formatEther(statusUpdate.creditedMonWei)).toFixed(4)} MON</strong> on Monad Testnet.
               </p>
-              <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'hsl(155, 75%, 55%)' }}>
+              <p style={{ margin: '8px 0 0 0', fontSize: '0.8125rem', color: '#059669', fontWeight: 600 }}>
                 Resuming model download streaming...
               </p>
             </div>
           ) : isExecuting ? (
             /* Animated Progress Stepper */
-            <div style={{ padding: '16px 0' }}>
+            <div style={{ padding: '1rem 0' }}>
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <div
                   style={{
                     display: 'inline-block',
-                    padding: '8px 16px',
+                    padding: '6px 14px',
                     borderRadius: '20px',
-                    backgroundColor: 'hsla(265, 90%, 65%, 0.15)',
-                    color: 'hsl(265, 90%, 65%)',
-                    fontSize: '0.85rem',
+                    backgroundColor: 'rgba(0, 98, 255, 0.08)',
+                    color: '#0062FF',
+                    fontSize: '0.8125rem',
                     fontWeight: 600,
                     marginBottom: '12px',
                   }}
@@ -206,7 +231,7 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
                     ? 'Step 1/2: Authorizing Intent on ' + quote.fromChain.name
                     : 'Step 2/2: Solver Routing to Monad'}
                 </div>
-                <h4 style={{ margin: 0, fontSize: '1.05rem' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#181615' }}>
                   {statusUpdate?.status === 'SIGNING_INTENT'
                     ? 'Signing zero-gas intent voucher...'
                     : 'Solvers executing deposit & routing on Monad...'}
@@ -217,16 +242,17 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
               <div
                 style={{
                   height: '6px',
-                  backgroundColor: 'hsla(0, 0%, 100%, 0.08)',
+                  backgroundColor: '#F5F5F4',
                   borderRadius: '3px',
                   overflow: 'hidden',
                   position: 'relative',
+                  border: '1px solid rgba(28, 25, 23, 0.06)',
                 }}
               >
                 <div
                   style={{
                     height: '100%',
-                    backgroundColor: 'hsl(265, 90%, 65%)',
+                    backgroundColor: '#0062FF',
                     width: statusUpdate?.status === 'SIGNING_INTENT' ? '45%' : '85%',
                     transition: 'width 0.4s ease-out',
                   }}
@@ -237,10 +263,10 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
                 <div
                   style={{
                     marginTop: '20px',
-                    fontSize: '0.8rem',
-                    color: 'hsl(230, 15%, 65%)',
+                    fontSize: '0.75rem',
+                    color: '#78716C',
                     textAlign: 'center',
-                    fontFamily: 'monospace',
+                    fontFamily: 'var(--font-mono)',
                   }}
                 >
                   Origin Tx: {statusUpdate.txHashOrigin.slice(0, 10)}...{statusUpdate.txHashOrigin.slice(-8)}
@@ -251,34 +277,63 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
             /* Configuration view */
             <>
               {/* Origin Chain Selector */}
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: 'hsl(230, 15%, 65%)', marginBottom: '8px' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#57534E', marginBottom: '8px' }}>
                   Select Origin Chain
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
                   {SUPPORTED_ORIGIN_CHAINS.map((chain) => {
                     const isSelected = chain.id === selectedChainId
+                    const logoDevToken = import.meta.env.VITE_LOGO_DEV_TOKEN || 'pk_BZOhereATUe11DHE7ILvBg'
                     return (
                       <button
                         key={chain.id}
                         type="button"
                         onClick={() => setSelectedChainId(chain.id)}
                         style={{
-                          backgroundColor: isSelected ? 'hsla(265, 90%, 65%, 0.2)' : 'hsl(230, 18%, 15%)',
-                          border: isSelected ? '1px solid hsl(265, 90%, 65%)' : '1px solid hsla(0, 0%, 100%, 0.08)',
-                          borderRadius: '8px',
+                          backgroundColor: isSelected ? 'rgba(0, 98, 255, 0.06)' : '#FAF9F5',
+                          border: isSelected ? '2px solid #0062FF' : '1px solid rgba(28, 25, 23, 0.08)',
+                          borderRadius: '12px',
                           padding: '10px 4px',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '4px',
+                          gap: '6px',
                           cursor: 'pointer',
-                          color: isSelected ? 'hsl(0, 0%, 95%)' : 'hsl(230, 15%, 65%)',
+                          color: isSelected ? '#0062FF' : '#57534E',
+                          boxShadow: isSelected ? '0 2px 8px rgba(0, 98, 255, 0.12)' : 'none',
                           transition: 'all 0.15s ease',
                         }}
                       >
-                        <span style={{ fontSize: '1.25rem' }}>{chain.icon}</span>
-                        <span style={{ fontSize: '0.75rem', fontWeight: isSelected ? 600 : 400 }}>
+                        <div
+                          style={{
+                            width: '26px',
+                            height: '26px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: '#FFFFFF',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          <img
+                            src={`https://img.logo.dev/${chain.domain}?token=${logoDevToken}&size=64&format=png`}
+                            alt={`${chain.name} logo`}
+                            width={20}
+                            height={20}
+                            style={{ objectFit: 'contain' }}
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              if (target.parentElement) {
+                                target.parentElement.textContent = chain.icon
+                              }
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.72rem', fontWeight: isSelected ? 700 : 500 }}>
                           {chain.name}
                         </span>
                       </button>
@@ -290,62 +345,85 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
               {/* Token Selector & Amount Calculator */}
               <div
                 style={{
-                  backgroundColor: 'hsl(230, 18%, 14%)',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  border: '1px solid hsla(0, 0%, 100%, 0.06)',
-                  marginBottom: '20px',
+                  backgroundColor: '#F7F5F0',
+                  borderRadius: '14px',
+                  padding: '1.125rem',
+                  border: '1px solid rgba(28, 25, 23, 0.08)',
+                  marginBottom: '1.25rem',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'hsl(230, 15%, 65%)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <span style={{ fontSize: '0.8125rem', color: '#78716C', fontWeight: 500 }}>
                     You Pay on {quote.fromChain.name}
                   </span>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    {availableTokens.map((t) => (
-                      <button
-                        key={t.symbol}
-                        type="button"
-                        onClick={() => setSelectedTokenSymbol(t.symbol)}
-                        style={{
-                          backgroundColor: t.symbol === selectedTokenSymbol ? 'hsl(265, 90%, 65%)' : 'hsl(230, 20%, 18%)',
-                          border: 'none',
-                          borderRadius: '6px',
-                          color: t.symbol === selectedTokenSymbol ? '#fff' : 'hsl(230, 15%, 70%)',
-                          padding: '4px 10px',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {t.symbol}
-                      </button>
-                    ))}
+                    {availableTokens.map((t) => {
+                      const logoDevToken = import.meta.env.VITE_LOGO_DEV_TOKEN || 'pk_BZOhereATUe11DHE7ILvBg'
+                      const tokenDomain = t.symbol === 'USDC' ? 'circle.com' : t.symbol === 'ETH' ? 'ethereum.org' : 'solana.com'
+                      const isTokenSelected = t.symbol === selectedTokenSymbol
+                      return (
+                        <button
+                          key={t.symbol}
+                          type="button"
+                          onClick={() => setSelectedTokenSymbol(t.symbol)}
+                          style={{
+                            backgroundColor: isTokenSelected ? '#0062FF' : '#FFFFFF',
+                            border: isTokenSelected ? '1px solid #0062FF' : '1px solid rgba(28, 25, 23, 0.1)',
+                            borderRadius: '8px',
+                            color: isTokenSelected ? '#FFFFFF' : '#57534E',
+                            padding: '3px 9px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            boxShadow: isTokenSelected ? '0 2px 6px rgba(0, 98, 255, 0.25)' : 'none',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <img
+                            src={`https://img.logo.dev/${tokenDomain}?token=${logoDevToken}&size=32&format=png`}
+                            alt={t.symbol}
+                            width={13}
+                            height={13}
+                            style={{ borderRadius: '50%', objectFit: 'contain' }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none'
+                            }}
+                          />
+                          <span>{t.symbol}</span>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <div style={{ fontSize: '1.6rem', fontWeight: 700, color: 'hsl(0, 0%, 95%)' }}>
-                    {quote.fromAmount} <span style={{ fontSize: '1rem', color: 'hsl(265, 90%, 65%)' }}>{quote.fromToken.symbol}</span>
+                  <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#181615', fontFamily: 'var(--font-mono)' }}>
+                    {quote.fromAmount}{' '}
+                    <span style={{ fontSize: '1rem', color: '#0062FF', fontWeight: 700 }}>
+                      {quote.fromToken.symbol}
+                    </span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: 'hsl(230, 15%, 65%)' }}>
-                    ≈ ${(parseFloat(quote.fromAmount) * quote.fromToken.priceUsd).toFixed(2)} USD
+                  <div style={{ fontSize: '0.8125rem', color: '#78716C', fontWeight: 500 }}>
+                    &asymp; ${(parseFloat(quote.fromAmount) * quote.fromToken.priceUsd).toFixed(2)} USD
                   </div>
                 </div>
 
                 <div
                   style={{
-                    marginTop: '14px',
-                    paddingTop: '12px',
-                    borderTop: '1px solid hsla(0, 0%, 100%, 0.06)',
+                    marginTop: '12px',
+                    paddingTop: '10px',
+                    borderTop: '1px solid rgba(28, 25, 23, 0.08)',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    fontSize: '0.8rem',
-                    color: 'hsl(230, 15%, 65%)',
+                    fontSize: '0.8125rem',
+                    color: '#57534E',
                   }}
                 >
-                  <span>Receiving on Monad:</span>
-                  <span style={{ color: 'hsl(155, 75%, 55%)', fontWeight: 600 }}>
+                  <span style={{ fontWeight: 500 }}>Receiving on Monad:</span>
+                  <span style={{ color: '#059669', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                     +{quote.toAmountMon} MON
                   </span>
                 </div>
@@ -354,37 +432,41 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
               {/* Model & Routing Specs */}
               <div
                 style={{
-                  fontSize: '0.8rem',
-                  color: 'hsl(230, 15%, 65%)',
-                  marginBottom: '20px',
+                  fontSize: '0.8125rem',
+                  color: '#78716C',
+                  marginBottom: '1.25rem',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '6px',
+                  gap: '8px',
+                  background: '#FFFFFF',
+                  padding: '0.85rem 1rem',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(28, 25, 23, 0.06)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Target Model:</span>
-                  <span style={{ color: 'hsl(0, 0%, 90%)' }}>{modelName}</span>
+                  <span style={{ color: '#181615', fontWeight: 600 }}>{modelName}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Rate:</span>
-                  <span>{quote.exchangeRate}</span>
+                  <span style={{ color: '#181615', fontFamily: 'var(--font-mono)' }}>{quote.exchangeRate}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Estimated Time:</span>
-                  <span>~{quote.estimatedTimeSeconds} seconds</span>
+                  <span style={{ color: '#059669', fontWeight: 600 }}>~{quote.estimatedTimeSeconds} seconds</span>
                 </div>
               </div>
 
               {errorMessage && (
                 <div
                   style={{
-                    backgroundColor: 'rgba(255, 59, 48, 0.1)',
-                    border: '1px solid rgba(255, 59, 48, 0.3)',
-                    color: '#ff6b6b',
+                    backgroundColor: '#FEF2F2',
+                    border: '1px solid #FECACA',
+                    color: '#EF4444',
                     padding: '10px 14px',
                     borderRadius: '8px',
-                    fontSize: '0.85rem',
+                    fontSize: '0.8125rem',
                     marginBottom: '16px',
                   }}
                 >
@@ -398,24 +480,32 @@ export const CrossChainFundingModal: React.FC<CrossChainFundingModalProps> = ({
                 onClick={handleExecute}
                 style={{
                   width: '100%',
-                  padding: '14px',
-                  backgroundColor: 'hsl(265, 90%, 65%)',
-                  color: '#fff',
+                  padding: '0.85rem',
+                  backgroundColor: '#0062FF',
+                  color: '#FFFFFF',
                   border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '1rem',
-                  fontWeight: 600,
+                  borderRadius: '12px',
+                  fontSize: '0.9375rem',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 16px hsla(265, 90%, 65%, 0.35)',
-                  transition: 'opacity 0.15s ease',
+                  boxShadow: '0 4px 14px rgba(0, 98, 255, 0.35)',
+                  transition: 'background 0.15s ease, transform 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0052D9'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0062FF'
+                  e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                <span>Authorize & Stream</span>
-                <span>→</span>
+                <span>Authorize &amp; Stream</span>
+                <ArrowRight size={16} />
               </button>
             </>
           )}

@@ -14,6 +14,7 @@ export interface SupportedChain {
   icon: string
   symbol: string
   badgeColor: string
+  domain: string
 }
 
 export interface SupportedToken {
@@ -31,6 +32,7 @@ export const SUPPORTED_ORIGIN_CHAINS: SupportedChain[] = [
     icon: '🔵',
     symbol: 'ETH',
     badgeColor: 'rgba(0, 82, 255, 0.15)',
+    domain: 'base.org',
   },
   {
     id: 'arbitrum',
@@ -39,6 +41,7 @@ export const SUPPORTED_ORIGIN_CHAINS: SupportedChain[] = [
     icon: '🔷',
     symbol: 'ETH',
     badgeColor: 'rgba(18, 170, 255, 0.15)',
+    domain: 'arbitrum.io',
   },
   {
     id: 'ethereum',
@@ -47,6 +50,7 @@ export const SUPPORTED_ORIGIN_CHAINS: SupportedChain[] = [
     icon: '⟠',
     symbol: 'ETH',
     badgeColor: 'rgba(98, 126, 234, 0.15)',
+    domain: 'ethereum.org',
   },
   {
     id: 'solana',
@@ -55,6 +59,7 @@ export const SUPPORTED_ORIGIN_CHAINS: SupportedChain[] = [
     icon: '🟣',
     symbol: 'SOL',
     badgeColor: 'rgba(20, 241, 149, 0.15)',
+    domain: 'solana.com',
   },
   {
     id: 'polygon',
@@ -63,6 +68,7 @@ export const SUPPORTED_ORIGIN_CHAINS: SupportedChain[] = [
     icon: '🟣',
     symbol: 'POL',
     badgeColor: 'rgba(130, 71, 229, 0.15)',
+    domain: 'polygon.technology',
   },
 ]
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { formatEther } from 'viem'
-import { Zap, ArrowRight, Volume2, VolumeX, ShieldCheck, Cpu } from 'lucide-react'
+import { ArrowRight, Volume2, VolumeX, ShieldCheck, Cpu } from 'lucide-react'
 import { TransactionLink } from './TransactionLink'
 import { truncateAddress } from '../../lib/utils'
 
@@ -54,7 +54,7 @@ function playPaymentPing() {
 export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
   creatorShareBps,
   creatorAddress,
-  seederAddress = '0x1234...swarm-peer',
+  seederAddress = '',
   chunkPriceWei = 100000000000000n, // 0.0001 MON default
   txHash,
   chunkIndex,
@@ -109,10 +109,10 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
         position: 'relative',
         overflow: 'hidden',
         border: pulseActive
-          ? '1px solid var(--color-accent)'
+          ? '1px solid #0062FF'
           : '1px solid var(--color-border-glass)',
         boxShadow: pulseActive
-          ? '0 0 32px hsla(265, 90%, 65%, 0.35), 0 8px 32px rgba(0,0,0,0.6)'
+          ? '0 0 32px rgba(0, 98, 255, 0.35), 0 8px 32px rgba(0,0,0,0.06)'
           : 'var(--shadow-card)',
         transition: 'all 300ms cubic-bezier(0.16, 1, 0.3, 1)',
         ...style,
@@ -126,7 +126,7 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
           left: '20%',
           width: '60%',
           height: '100%',
-          background: 'radial-gradient(ellipse at center, hsla(265, 90%, 65%, 0.12), transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(0, 98, 255, 0.08), transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -151,8 +151,8 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
               width: '24px',
               height: '24px',
               borderRadius: 'var(--radius-full)',
-              background: isLive ? 'hsla(155, 75%, 55%, 0.15)' : 'hsla(265, 90%, 65%, 0.15)',
-              border: `1px solid ${isLive ? 'var(--color-success)' : 'var(--color-accent)'}`,
+              background: isLive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(0, 98, 255, 0.1)',
+              border: `1px solid ${isLive ? 'var(--color-success)' : '#0062FF'}`,
             }}
           >
             {isLive ? (
@@ -167,7 +167,7 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
                 }}
               />
             ) : (
-              <Cpu size={13} color="var(--color-accent-bright)" />
+              <Cpu size={13} color="#0062FF" />
             )}
           </div>
           <div>
@@ -177,7 +177,7 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
                 fontWeight: 700,
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',
-                color: isLive ? 'var(--color-success)' : 'var(--color-accent-bright)',
+                color: isLive ? 'var(--color-success)' : '#0062FF',
               }}
             >
               {isSummary
@@ -228,7 +228,7 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
       >
         <div>
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)', display: 'block' }}>
-            {isSummary ? 'Total Swarm Fee Settled' : 'Atomic Payment per Chunk'}
+            {isSummary ? 'Total Transfer Fee Settled' : 'Atomic Payment per Chunk'}
           </span>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginTop: '0.1rem' }}>
             <span
@@ -292,11 +292,11 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
             position: 'relative',
           }}
         >
-          {/* Creator Segment (Left, Violet) */}
+          {/* Creator Segment (Left, Brand Blue) */}
           <div
             style={{
               width: `${creatorPercent}%`,
-              background: 'linear-gradient(135deg, hsl(265, 85%, 58%), hsl(265, 95%, 68%))',
+              background: 'linear-gradient(135deg, #0052D9, #0062FF)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -308,7 +308,6 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
-              <Zap size={13} style={{ flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, whiteSpace: 'nowrap' }}>
                 Creator ({creatorPercent}%)
               </span>
@@ -380,9 +379,11 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
             <span
               className="address-mono"
               style={{ color: 'var(--color-text-secondary)' }}
-              title={creatorAddress}
+              title={creatorAddress || 'Registered Model Creator'}
             >
-              {truncateAddress(creatorAddress, 4)}
+              {creatorAddress && creatorAddress.startsWith('0x') && creatorAddress.length === 42 && creatorAddress !== '0x0000000000000000000000000000000000000000'
+                ? truncateAddress(creatorAddress, 4)
+                : 'Protocol Creator'}
             </span>
           </div>
 
@@ -394,9 +395,11 @@ export const SplitVisualization: React.FC<SplitVisualizationProps> = ({
             <span
               className="address-mono"
               style={{ color: 'var(--color-text-secondary)' }}
-              title={seederAddress}
+              title={seederAddress || 'Active Seeder Peer'}
             >
-              {truncateAddress(seederAddress, 4)}
+              {seederAddress && seederAddress.startsWith('0x') && seederAddress.length === 42
+                ? truncateAddress(seederAddress, 4)
+                : 'Direct Peer Node'}
             </span>
           </div>
         </div>
