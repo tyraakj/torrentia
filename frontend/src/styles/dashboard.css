@@ -866,3 +866,218 @@
   border-bottom: none;
 }
 
+/* ==========================================================================
+   5. Interactive 4-Tab Swarm & Settlement Control Center
+   ========================================================================== */
+
+.stage-tabs-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.3rem 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 98, 255, 0.15);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.stage-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #57534E;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.stage-tab-btn:hover {
+  color: #0062FF;
+  background: rgba(0, 98, 255, 0.05);
+}
+
+.stage-tab-btn.stage-tab-active {
+  background: #0062FF;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 98, 255, 0.3);
+}
+
+.stage-model-selector-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 98, 255, 0.2);
+  border-radius: 9999px;
+  padding: 0.35rem 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 98, 255, 0.06);
+}
+
+.stage-model-select {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.78125rem;
+  font-weight: 700;
+  color: #181615;
+  cursor: pointer;
+  outline: none;
+}
+
+.stage-single-model-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 98, 255, 0.2);
+  border-radius: 9999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.78125rem;
+  font-weight: 700;
+  color: #181615;
+  box-shadow: 0 2px 8px rgba(0, 98, 255, 0.06);
+}
+
+.tab-pane-container {
+  position: relative;
+  width: 100%;
+}
+
+.stage-zero-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+  z-index: 2;
+  gap: 0.85rem;
+}
+
+.zero-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.zero-title {
+  font-family: 'Apfel Grotezk', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #181615;
+  margin: 0;
+}
+
+.zero-desc {
+  font-size: 0.875rem;
+  color: #57534E;
+  max-width: 460px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.tab-loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 3rem 1.5rem;
+  color: #0062FF;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.tab-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3.5rem 2rem;
+  gap: 0.75rem;
+}
+
+.empty-state-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state-title {
+  font-family: 'Apfel Grotezk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #181615;
+  margin: 0;
+}
+
+.empty-state-desc {
+  font-size: 0.8125rem;
+  color: #78716C;
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-state-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #0062FF;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 0.25rem;
+}
+
+.empty-state-link:hover {
+  text-decoration: underline;
+}
+
+.empty-action-btn {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 98, 255, 0.3);
+  border-radius: 9999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: #0062FF;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.empty-action-btn:hover {
+  background: #EFF6FF;
+  border-color: #0062FF;
+}
+
+@media (max-width: 900px) {
+  .stage-tabs-switch {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+  }
+}
+
+

@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useAccount, useConnect } from 'wagmi'
 import {
   Wallet,
   UploadCloud,
-  Zap,
   ShieldCheck,
   Radio,
   Fingerprint,
@@ -14,23 +13,33 @@ import {
   TrendingUp,
   Users,
   HardDrive,
-  MousePointer2,
+  Cpu,
+  Lock,
+  Layers,
+  FileCheck2,
 } from 'lucide-react'
 import { useCreatorModels, useCreatorEarnings } from '../hooks/use-creator-data'
 import { CreatorModelCard } from '../components/dashboard/CreatorModelCard'
+import type { DashboardTabKey } from '../components/dashboard/DashboardStage'
 import { PasskeyAuthModal } from '../components/auth/PasskeyAuthModal'
 import { Button } from '../components/ui/Button'
 import { Card, CardBody } from '../components/ui/Card'
-import { Skeleton } from '../components/ui/Skeleton'
 import { AddressDisplay } from '../components/ui/AddressDisplay'
 import '../styles/dashboard.css'
 
 export const Dashboard: React.FC = () => {
+  const [searchParams] = useSearchParams()
+  const rawTab = searchParams.get('tab') as DashboardTabKey | null
+  const currentTab: DashboardTabKey =
+    rawTab && ['splits', 'mesh', 'batch', 'integrity'].includes(rawTab)
+      ? rawTab
+      : 'splits'
+
   const { address, isConnected, connector } = useAccount()
   const { connect, connectors } = useConnect()
   const [authModalOpen, setAuthModalOpen] = useState(false)
 
-  const { data: models = [], isLoading, refetch } = useCreatorModels(address)
+  const { data: models = [], refetch } = useCreatorModels(address)
   const earningsSummary = useCreatorEarnings(models)
 
   const isPasskey = connector?.id === 'mera-passkey'
@@ -57,7 +66,7 @@ export const Dashboard: React.FC = () => {
           </h1>
 
           <p className="dashboard-connect-lead">
-            Select your preferred authentication method to view your registered AI models, track real-time creator royalties, and monitor community downloads across the swarm.
+            Select your preferred authentication method to view your registered AI models, track real-time creator royalties, and monitor community downloads across the network.
           </p>
 
           <div className="connect-options-grid">
@@ -165,7 +174,7 @@ export const Dashboard: React.FC = () => {
               <span>Direct Atomic Settlement (SplitPayment.sol)</span>
             </div>
             <div className="trust-item">
-              <Zap size={14} color="#F59E0B" />
+              <CheckCircle2 size={14} color="#10B981" />
               <span>Zero Cloud Storage Fees</span>
             </div>
           </div>
@@ -179,13 +188,184 @@ export const Dashboard: React.FC = () => {
     )
   }
 
-  // 2. CONNECTED DASHBOARD (Full-Screen Sky-Ice Showcase)
+  const tabMeta: Record<
+    DashboardTabKey,
+    {
+      title: string
+      subtitle: string
+      badge: string
+      badgeIcon: React.ReactNode
+      metrics: Array<{
+        label: string
+        tag?: string
+        tagClass?: string
+        val: string
+        unit?: string
+        sub: string
+        icon?: React.ReactNode
+      }>
+    }
+  > = {
+    splits: {
+      title: 'Creator Splits & Settlements',
+      subtitle: 'Direct atomic royalties programmed into ModelRegistry with zero platform take on Monad Testnet.',
+      badge: 'SplitPayment.sol • Direct EOA',
+      badgeIcon: <Layers size={13} />,
+      metrics: [
+        {
+          label: 'Total Royalties Earned',
+          tag: 'Direct EOA',
+          tagClass: 'pill-green',
+          val: earningsSummary.totalEarningsMon,
+          unit: 'MON',
+          sub: 'Direct to your wallet per chunk split',
+        },
+        {
+          label: 'Cloud Egress Costs',
+          tag: '100% P2P',
+          tagClass: 'pill-blue',
+          val: '$0.00',
+          unit: 'Saved',
+          sub: 'Zero AWS S3 cloud egress or bandwidth bills',
+        },
+        {
+          label: 'Community Downloads',
+          val: String(earningsSummary.totalDownloads),
+          sub: 'Direct browser & CLI streams settled',
+          icon: <TrendingUp size={16} color="#059669" />,
+        },
+        {
+          label: 'Active Community Nodes',
+          val: String(earningsSummary.totalActiveSeeders),
+          sub: 'Community nodes sharing your model chunks',
+          icon: <Users size={16} color="#0062FF" />,
+        },
+      ],
+    },
+    mesh: {
+      title: 'Community Network & Direct Sharing',
+      subtitle: 'Real-time WebRTC peer mesh, active node discovery, and multi-device chunk distribution.',
+      badge: 'WebRTC Mesh • Signaling Hub',
+      badgeIcon: <Radio size={13} />,
+      metrics: [
+        {
+          label: 'Active Community Nodes',
+          tag: 'Online',
+          tagClass: 'pill-green',
+          val: String(earningsSummary.totalActiveSeeders),
+          unit: 'Nodes',
+          sub: 'Browser peers and persistent CLI daemons',
+        },
+        {
+          label: 'Direct DataChannels',
+          tag: '100% P2P',
+          tagClass: 'pill-blue',
+          val: 'WebRTC',
+          sub: 'Device-to-device streaming via RTCDataChannel',
+          icon: <Cpu size={16} color="#0062FF" />,
+        },
+        {
+          label: 'Bandwidth Egress Costs',
+          tag: '0 Middlemen',
+          tagClass: 'pill-green',
+          val: '$0.00',
+          unit: 'Billed',
+          sub: 'Distributed mesh absorbs transfer load',
+        },
+        {
+          label: 'Signaling Protocol',
+          val: 'torrentia/1.0',
+          sub: 'Ultra-low latency Go broker signaling',
+          icon: <Radio size={16} color="#0062FF" />,
+        },
+      ],
+    },
+    batch: {
+      title: 'Batched Settlements & Payment Channels',
+      subtitle: 'Off-chain voucher buffering and batched Monad execution via SplitPaymentV2.',
+      badge: 'SplitPaymentV2 • EIP-712',
+      badgeIcon: <Lock size={13} />,
+      metrics: [
+        {
+          label: 'Batch Buffer Threshold',
+          tag: 'V2 Buffer',
+          tagClass: 'pill-blue',
+          val: '50',
+          unit: 'Chunks',
+          sub: 'Accumulates micro-vouchers before on-chain commit',
+        },
+        {
+          label: 'Monad Gas Savings',
+          tag: 'Optimal',
+          tagClass: 'pill-green',
+          val: '98.2%',
+          unit: 'Saved',
+          sub: '1 batched settlement tx vs 50 individual calls',
+        },
+        {
+          label: 'Voucher Signing Overhead',
+          tag: 'Off-Chain',
+          tagClass: 'pill-blue',
+          val: '0 Gas',
+          sub: 'Off-chain EIP-712 cryptographic authorization',
+          icon: <CheckCircle2 size={16} color="#059669" />,
+        },
+        {
+          label: 'Settlement Contract',
+          val: '0xe2aD...5ECe',
+          sub: 'SplitPaymentV2 deployed on Monad Testnet',
+          icon: <ShieldCheck size={16} color="#0062FF" />,
+        },
+      ],
+    },
+    integrity: {
+      title: 'SHA-256 Piece Verification',
+      subtitle: 'Cryptographic piece-by-piece SHA-256 verification against creator upload manifests before disk persistence.',
+      badge: 'Merkle Integrity • IPFS',
+      badgeIcon: <ShieldCheck size={13} />,
+      metrics: [
+        {
+          label: 'Verification Standard',
+          tag: 'Cryptographic',
+          tagClass: 'pill-green',
+          val: 'SHA-256',
+          sub: 'Every piece hashed and verified independently',
+          icon: <FileCheck2 size={16} color="#059669" />,
+        },
+        {
+          label: 'Chunk Slice Granularity',
+          tag: 'Fixed Size',
+          tagClass: 'pill-blue',
+          val: '1',
+          unit: 'MB',
+          sub: 'Optimal chunk size for peer transfer & verification',
+        },
+        {
+          label: 'Tamper Resistance',
+          tag: 'Enforced',
+          tagClass: 'pill-green',
+          val: '100%',
+          sub: 'Invalid or corrupt slices discarded before write',
+        },
+        {
+          label: 'Local Persistence Engine',
+          val: 'IndexedDB',
+          sub: 'Zero-cloud local slice cache in browser',
+          icon: <HardDrive size={16} color="#0062FF" />,
+        },
+      ],
+    },
+  }
+
+  const currentMeta = tabMeta[currentTab] || tabMeta.splits
+
+  // 2. CONNECTED DASHBOARD (Full-Screen Dynamic Showcase)
   return (
     <div className="dashboard-full-viewport">
       {/* Top Header */}
       <div className="dashboard-header-row">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
             <span
               style={{
                 display: 'inline-flex',
@@ -205,10 +385,36 @@ export const Dashboard: React.FC = () => {
               {isPasskey ? <Fingerprint size={13} /> : <Wallet size={13} />}
               <span>{isPasskey ? 'Mera Passkey Active' : 'Web3 Wallet Connected'}</span>
             </span>
+
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#57534E',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                background: '#F5F5F4',
+                padding: '0.2rem 0.65rem',
+                borderRadius: '9999px',
+                border: '1px solid #E7E5E4',
+              }}
+            >
+              {currentMeta.badgeIcon}
+              <span>{currentMeta.badge}</span>
+            </span>
           </div>
+
           <h1 className="dashboard-title">
-            Creator Hub &amp; Community Activity
+            {currentMeta.title}
           </h1>
+
+          <p style={{ margin: '0.25rem 0 0.5rem', fontSize: '0.875rem', color: '#78716C', maxWidth: '700px' }}>
+            {currentMeta.subtitle}
+          </p>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: '#57534E' }}>
             <span>Settlement address:</span>
             <AddressDisplay address={address} chars={5} />
@@ -231,336 +437,81 @@ export const Dashboard: React.FC = () => {
         </Link>
       </div>
 
-      {/* 4-Metric Overview Strip */}
+      {/* 4-Metric Overview Strip (Dynamically Tailored to Active Tab) */}
       <div className="dashboard-metrics-grid">
-        <div className="dashboard-metric-card">
-          <div className="metric-top-label">
-            <span>Total Royalties Earned</span>
-            <span className="metric-pill-tag pill-green">Direct EOA</span>
+        {currentMeta.metrics.map((m, idx) => (
+          <div key={idx} className="dashboard-metric-card">
+            <div className="metric-top-label">
+              <span>{m.label}</span>
+              {m.tag && <span className={`metric-pill-tag ${m.tagClass || 'pill-blue'}`}>{m.tag}</span>}
+              {m.icon && m.icon}
+            </div>
+            <div className="metric-number-row">
+              <span className="metric-big-number">{m.val}</span>
+              {m.unit && (
+                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: m.tagClass === 'pill-green' ? '#059669' : '#0062FF', marginLeft: '0.25rem' }}>
+                  {m.unit}
+                </span>
+              )}
+            </div>
+            <div className="metric-subtext">{m.sub}</div>
           </div>
-          <div className="metric-number-row">
-            <span className="metric-big-number">{earningsSummary.totalEarningsMon}</span>
-            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#059669' }}>MON</span>
-          </div>
-          <div className="metric-subtext">Direct to your wallet per chunk split</div>
-        </div>
-
-        <div className="dashboard-metric-card">
-          <div className="metric-top-label">
-            <span>Cloud Egress Costs</span>
-            <span className="metric-pill-tag pill-blue">100% P2P</span>
-          </div>
-          <div className="metric-number-row">
-            <span className="metric-big-number">$0.00</span>
-            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#0062FF' }}>Saved</span>
-          </div>
-          <div className="metric-subtext">Zero AWS S3 cloud egress or bandwidth bills</div>
-        </div>
-
-        <div className="dashboard-metric-card">
-          <div className="metric-top-label">
-            <span>Community Downloads</span>
-            <TrendingUp size={16} color="#059669" />
-          </div>
-          <div className="metric-number-row">
-            <span className="metric-big-number">{earningsSummary.totalDownloads}</span>
-          </div>
-          <div className="metric-subtext">Direct browser &amp; CLI streams settled</div>
-        </div>
-
-        <div className="dashboard-metric-card">
-          <div className="metric-top-label">
-            <span>Active Swarm Hosts</span>
-            <Users size={16} color="#0062FF" />
-          </div>
-          <div className="metric-number-row">
-            <span className="metric-big-number">{earningsSummary.totalActiveSeeders}</span>
-          </div>
-          <div className="metric-subtext">Community nodes sharing your model chunks</div>
-        </div>
+        ))}
       </div>
 
-      {/* Sky-Ice Showcase Stage (Matches Features Section) */}
-      <div className="dashboard-sky-stage">
-        <div className="dashboard-sky-grid" />
-
-        <div className="dashboard-stage-header">
-          <div className="live-pulse-badge">
-            <span className="pulse-dot" />
-            <span>LIVE ON-CHAIN SETTLEMENTS • 1-SEC MONAD FINALITY</span>
-          </div>
-
-          <div className="stage-instant-pill">
-            <ShieldCheck size={14} />
-            <span>Instant Payouts &amp; Zero Cloud Intermediaries</span>
-          </div>
-        </div>
-
-        {/* Two-Column Stage: Table + Donut Card */}
-        <div className="dashboard-stage-body">
-          {/* Main Settlement Ledger Table */}
-          <div className="dashboard-table-card">
-            <div className="dashboard-table-head">
-              <span>Model File</span>
-              <span>Community Host</span>
-              <span>Your Split</span>
-              <span className="head-hide-mobile">Settlement</span>
-              <span className="head-hide-mobile">Status</span>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div className="dashboard-table-row">
-                <span className="td-file-cell">
-                  <span className="chunk-badge">01</span>
-                  <span className="file-name">Llama-3-8B.bin</span>
-                </span>
-                <span>
-                  <a
-                    href="https://testnet.monadscan.com/address/0x72a9e3b4a2d8c1e41b"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="host-link"
-                  >
-                    0x72a9...e41b
-                  </a>
-                </span>
-                <span className="split-amount">+0.085 MON</span>
-                <span className="speed-tag head-hide-mobile">0.8s on Monad</span>
-                <span className="head-hide-mobile">
-                  <span className="status-badge-settled">
-                    <ShieldCheck size={11} />
-                    <span>Settled</span>
-                  </span>
-                </span>
-              </div>
-
-              <div className="dashboard-table-row">
-                <span className="td-file-cell">
-                  <span className="chunk-badge">02</span>
-                  <span className="file-name">Mistral-7B.bin</span>
-                </span>
-                <span>
-                  <a
-                    href="https://testnet.monadscan.com/address/0x38fe76d1e4a99921"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="host-link"
-                  >
-                    0x38fe...9921
-                  </a>
-                </span>
-                <span className="split-amount">+0.085 MON</span>
-                <span className="speed-tag head-hide-mobile">1.2s on Monad</span>
-                <span className="head-hide-mobile">
-                  <span className="status-badge-settled">
-                    <ShieldCheck size={11} />
-                    <span>Settled</span>
-                  </span>
-                </span>
-              </div>
-
-              <div className="dashboard-table-row">
-                <span className="td-file-cell">
-                  <span className="chunk-badge">03</span>
-                  <span className="file-name">Phi-3-Mini.bin</span>
-                </span>
-                <span>
-                  <a
-                    href="https://testnet.monadscan.com/address/0x91d4e782f9aa02"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="host-link"
-                  >
-                    0x91d4...aa02
-                  </a>
-                </span>
-                <span className="split-amount">+0.085 MON</span>
-                <span className="speed-tag head-hide-mobile">1.9s on Monad</span>
-                <span className="head-hide-mobile">
-                  <span className="status-badge-settled">
-                    <ShieldCheck size={11} />
-                    <span>Settled</span>
-                  </span>
-                </span>
-              </div>
-
-              <div className="dashboard-table-row">
-                <span className="td-file-cell">
-                  <span className="chunk-badge">04</span>
-                  <span className="file-name">Gemma-2-9B.bin</span>
-                </span>
-                <span>
-                  <a
-                    href="https://testnet.monadscan.com/address/0x15bc821e4f301f"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="host-link"
-                  >
-                    0x15bc...301f
-                  </a>
-                </span>
-                <span className="split-amount">+0.085 MON</span>
-                <span className="speed-tag head-hide-mobile">2.4s on Monad</span>
-                <span className="head-hide-mobile">
-                  <span className="status-badge-settled">
-                    <ShieldCheck size={11} />
-                    <span>Settled</span>
-                  </span>
-                </span>
-              </div>
-
-              <div className="dashboard-table-row">
-                <span className="td-file-cell">
-                  <span className="chunk-badge">05</span>
-                  <span className="file-name">Qwen-2.5-7B.bin</span>
-                </span>
-                <span>
-                  <a
-                    href="https://testnet.monadscan.com/address/0x88f29c4e10ce"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="host-link"
-                  >
-                    0x88f2...10ce
-                  </a>
-                </span>
-                <span className="split-amount">+0.085 MON</span>
-                <span className="speed-tag head-hide-mobile">3.1s on Monad</span>
-                <span className="head-hide-mobile">
-                  <span className="status-badge-settled">
-                    <ShieldCheck size={11} />
-                    <span>Settled</span>
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Donut Royalty Breakdown Card */}
-          <div className="dashboard-donut-card">
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                <div className="donut-card-title">Royalty Distribution</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '0.72rem', background: '#EFF6FF', color: '#0062FF', padding: '0.15rem 0.5rem', borderRadius: '9999px', fontWeight: 700 }}>
-                  <MousePointer2 size={11} />
-                  <span>You (Creator)</span>
-                </div>
-              </div>
-
-              <div className="donut-chart-row">
-                <div style={{ position: 'relative', width: '80px', height: '80px', flexShrink: 0 }}>
-                  <svg width="80" height="80" viewBox="0 0 80 80">
-                    <circle cx="40" cy="40" r="32" stroke="#E2E8F0" strokeWidth="9" fill="none" />
-                    {/* 85% Creator Stroke */}
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="32"
-                      stroke="#0062FF"
-                      strokeWidth="9"
-                      strokeDasharray="201.06"
-                      strokeDashoffset="30.15"
-                      strokeLinecap="round"
-                      fill="none"
-                      transform="rotate(-90 40 40)"
-                    />
-                    {/* 15% Host Stroke */}
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="32"
-                      stroke="#10B981"
-                      strokeWidth="9"
-                      strokeDasharray="201.06"
-                      strokeDashoffset="170.9"
-                      strokeLinecap="round"
-                      fill="none"
-                      transform="rotate(216 40 40)"
-                    />
-                    <text
-                      x="40"
-                      y="45"
-                      textAnchor="middle"
-                      fontFamily="'JetBrains Mono', monospace"
-                      fontSize="14"
-                      fontWeight="700"
-                      fill="#0062FF"
-                    >
-                      85%
-                    </text>
-                  </svg>
-                </div>
-
-                <div className="donut-legend-wrap" style={{ flex: 1 }}>
-                  <div className="legend-item-row">
-                    <span className="legend-dot-label">
-                      <span className="legend-color-dot dot-creator-blue" />
-                      <span>Creator</span>
-                    </span>
-                    <span className="legend-share-pct" style={{ color: '#0062FF' }}>85%</span>
-                  </div>
-
-                  <div className="legend-item-row">
-                    <span className="legend-dot-label">
-                      <span className="legend-color-dot dot-hosts-green" />
-                      <span>Community Hosts</span>
-                    </span>
-                    <span className="legend-share-pct" style={{ color: '#10B981' }}>15%</span>
-                  </div>
-
-                  <div className="legend-item-row">
-                    <span className="legend-dot-label">
-                      <span className="legend-color-dot dot-cloud-gray" />
-                      <span>Middlemen</span>
-                    </span>
-                    <span className="legend-share-pct" style={{ color: '#64748B' }}>0%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="donut-footer-callout">
-              <strong>Atomic Smart Contract Split:</strong> Every download stream splits native MON directly into your address with zero platform fees or custody delays.
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Published Models Section */}
-      <div className="dashboard-models-section">
-        <div className="models-section-header">
-          <h2 className="models-section-title">
-            <HardDrive size={20} color="#0062FF" />
-            <span>Your Registered Models ({models.length})</span>
-          </h2>
+      {models.length > 0 ? (
+        <div className="dashboard-models-section">
+          <div className="models-section-header">
+            <h2 className="models-section-title">
+              <HardDrive size={20} color="#0062FF" />
+              <span>Your Registered Models ({models.length})</span>
+            </h2>
 
-          <span style={{ fontSize: '0.75rem', color: '#78716C', fontWeight: 600 }}>
-            Indexed on Monad Testnet (Chain ID 10143)
-          </span>
-        </div>
+            <span style={{ fontSize: '0.75rem', color: '#78716C', fontWeight: 600 }}>
+              Indexed on Monad Testnet (Chain ID 10143)
+            </span>
+          </div>
 
-        {isLoading ? (
           <div className="models-grid-layout">
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <Skeleton key={idx} height="260px" style={{ borderRadius: '18px' }} />
+            {models.map((model) => (
+              <CreatorModelCard
+                key={model.modelId}
+                model={model}
+                onDeactivated={() => void refetch()}
+              />
             ))}
           </div>
-        ) : models.length === 0 ? (
+        </div>
+      ) : currentTab === 'splits' ? (
+        <div className="dashboard-models-section">
+          <div className="models-section-header">
+            <h2 className="models-section-title">
+              <HardDrive size={20} color="#0062FF" />
+              <span>Your Registered Models (0)</span>
+            </h2>
+
+            <span style={{ fontSize: '0.75rem', color: '#78716C', fontWeight: 600 }}>
+              Indexed on Monad Testnet (Chain ID 10143)
+            </span>
+          </div>
+
           <Card>
             <CardBody
               style={{
-                padding: '3.5rem 2rem',
+                padding: '3rem 2rem',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 textAlign: 'center',
-                gap: '1rem',
+                gap: '0.85rem',
               }}
             >
               <div
                 style={{
-                  width: '60px',
-                  height: '60px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '50%',
                   background: 'rgba(28, 25, 23, 0.04)',
                   border: '1px dashed rgba(28, 25, 23, 0.2)',
@@ -569,10 +520,10 @@ export const Dashboard: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <UploadCloud size={30} color="#78716C" />
+                <UploadCloud size={28} color="#78716C" />
               </div>
 
-              <h3 style={{ fontFamily: "'Apfel Grotezk', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#181615' }}>
+              <h3 style={{ fontFamily: "'Apfel Grotezk', sans-serif", fontSize: '1.2rem', fontWeight: 700, color: '#181615' }}>
                 No Models Registered Under This Address
               </h3>
 
@@ -587,18 +538,25 @@ export const Dashboard: React.FC = () => {
               </Link>
             </CardBody>
           </Card>
-        ) : (
-          <div className="models-grid-layout">
-            {models.map((model) => (
-              <CreatorModelCard
-                key={model.modelId}
-                model={model}
-                onDeactivated={() => void refetch()}
-              />
-            ))}
+        </div>
+      ) : (
+        <div style={{ marginTop: '2rem', padding: '1.25rem 1.5rem', background: '#FFFFFF', borderRadius: '16px', border: '1px solid rgba(28, 25, 23, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '9px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <HardDrive size={18} color="#0062FF" />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#181615' }}>Publish AI Models with On-Chain Royalties</div>
+              <div style={{ fontSize: '0.78125rem', color: '#78716C' }}>Upload model weights to distribute slices across the community network and receive direct per-chunk payouts.</div>
+            </div>
           </div>
-        )}
-      </div>
+          <Link to="/upload">
+            <Button variant="secondary" size="sm" leftIcon={<UploadCloud size={14} />}>
+              Upload Model
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

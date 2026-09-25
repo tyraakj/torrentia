@@ -1,18 +1,21 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useAccount, useDisconnect, useBalance } from 'wagmi'
 import { formatUnits } from 'viem'
 import { motion } from 'motion/react'
 import {
   Layers,
   UploadCloud,
-  LayoutDashboard,
   PanelLeftClose,
   PanelLeftOpen,
   ArrowUpRight,
   LogOut,
   Key,
   BookOpen,
+  Coins,
+  Radio,
+  Lock,
+  ShieldCheck,
 } from 'lucide-react'
 import { PasskeyAuthModal } from '../auth/PasskeyAuthModal'
 import { PasskeyNavbarBadge } from '../auth/PasskeyNavbarBadge'
@@ -24,6 +27,8 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const currentTab = searchParams.get('tab') || 'splits'
   const { address, isConnected, isConnecting, connector } = useAccount()
   const { disconnect } = useDisconnect()
   const { data: balanceData } = useBalance({ address })
@@ -31,10 +36,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
 
   const isPasskeyAccount = connector?.id === 'mera-passkey'
 
-  const navLinks = [
+  const catalogLinks = [
     { to: '/marketplace', label: 'Models', icon: <Layers size={18} /> },
     { to: '/upload', label: 'Publish', icon: <UploadCloud size={18} /> },
-    { to: '/dashboard', label: 'My Activity', icon: <LayoutDashboard size={18} /> },
+  ]
+
+  const featureLinks = [
+    { to: '/dashboard?tab=splits', tab: 'splits', label: 'Creator Splits', icon: <Coins size={18} /> },
+    { to: '/dashboard?tab=mesh', tab: 'mesh', label: 'Community Network', icon: <Radio size={18} /> },
+    { to: '/dashboard?tab=batch', tab: 'batch', label: 'Batched Settlements', icon: <Lock size={18} /> },
+    { to: '/dashboard?tab=integrity', tab: 'integrity', label: 'File Verification', icon: <ShieldCheck size={18} /> },
   ]
 
   const formattedBalance = balanceData
@@ -147,9 +158,76 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
           </div>
 
           {/* Navigation Links */}
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            {navLinks.map((link) => {
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            {catalogLinks.map((link) => {
               const isActive = location.pathname === link.to
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  title={isCollapsed ? link.label : undefined}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: isCollapsed ? '0' : '0.75rem',
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    padding: isCollapsed ? '0.65rem 0' : '0.6rem 0.85rem',
+                    borderRadius: '10px',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#ffffff' : '#57534e',
+                    background: isActive ? '#181615' : 'transparent',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'rgba(28, 25, 23, 0.06)'
+                      e.currentTarget.style.color = '#181615'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = '#57534e'
+                    }
+                  }}
+                >
+                  <span style={{ color: isActive ? '#ffffff' : '#57534e', display: 'flex' }}>
+                    {link.icon}
+                  </span>
+                  {!isCollapsed && <span>{link.label}</span>}
+                </Link>
+              )
+            })}
+
+            {/* Section Divider */}
+            {!isCollapsed ? (
+              <div
+                style={{
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  color: '#A8A29E',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  padding: '0.75rem 0.5rem 0.25rem',
+                }}
+              >
+                Network &amp; Activity
+              </div>
+            ) : (
+              <div
+                style={{
+                  height: '1px',
+                  background: 'rgba(28, 25, 23, 0.08)',
+                  margin: '0.45rem 0',
+                }}
+              />
+            )}
+
+            {featureLinks.map((link) => {
+              const isActive =
+                location.pathname === '/dashboard' && currentTab === link.tab
               return (
                 <Link
                   key={link.to}

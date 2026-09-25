@@ -117,7 +117,7 @@ export const CreatorModelCard: React.FC<CreatorModelCardProps> = ({
           <div>
             {isActive ? (
               <Badge variant="active">
-                <CheckCircle2 size={11} /> Active Swarm
+                <CheckCircle2 size={11} /> Network Active
               </Badge>
             ) : (
               <Badge variant="inactive">Deactivated</Badge>

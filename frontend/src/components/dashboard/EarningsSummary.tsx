@@ -1,5 +1,5 @@
 import React from 'react'
-import { Zap, TrendingUp, Users, HardDrive, ShieldCheck } from 'lucide-react'
+import { Layers, TrendingUp, Users, HardDrive, ShieldCheck } from 'lucide-react'
 import type { CreatorEarningsSummary } from '../../hooks/use-creator-data'
 
 export interface EarningsSummaryProps {
@@ -31,7 +31,7 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
           right: '-40px',
           width: '280px',
           height: '280px',
-          background: 'radial-gradient(circle, hsla(265, 90%, 65%, 0.25), transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0, 98, 255, 0.12), transparent 70%)',
           pointerEvents: 'none',
         }}
       />
@@ -47,11 +47,11 @@ export const EarningsSummary: React.FC<EarningsSummaryProps> = ({ summary, style
               width: '28px',
               height: '28px',
               borderRadius: 'var(--radius-full)',
-              background: 'rgba(124, 58, 237, 0.1)',
-              border: '1px solid rgba(124, 58, 237, 0.25)',
+              background: 'rgba(0, 98, 255, 0.08)',
+              border: '1px solid rgba(0, 98, 255, 0.2)',
             }}
           >
-            <Zap size={14} color="#7c3aed" />
+            <Layers size={14} color="#0062FF" />
           </div>
           <span
             style={{
