@@ -1,0 +1,868 @@
+/* ==========================================================================
+   Torrentia Dashboard Styles — Full-Screen Scaling & Sky-Ice Editorial Theme
+   ========================================================================== */
+
+.dashboard-full-viewport {
+  width: 100%;
+  min-height: 100%;
+  padding: 2.5rem 3.5rem 5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-full-viewport {
+    padding: 1.5rem 1.5rem 3rem;
+  }
+}
+
+/* ==========================================================================
+   1. Disconnected Dual-Method Authentication Portal
+   ========================================================================== */
+
+.dashboard-connect-hero {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 1.5rem auto 3rem;
+  max-width: 960px;
+}
+
+.dashboard-connect-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #0062FF;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.dashboard-connect-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #181615;
+  margin-bottom: 0.75rem;
+  line-height: 1.15;
+}
+
+.dashboard-connect-lead {
+  font-size: 1rem;
+  color: #57534E;
+  max-width: 580px;
+  line-height: 1.55;
+  margin-bottom: 2.5rem;
+}
+
+.connect-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+  width: 100%;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .connect-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.connect-option-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1px solid rgba(28, 25, 23, 0.1);
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.connect-option-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(28, 25, 23, 0.22);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.08);
+}
+
+.connect-option-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.badge-mera {
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #059669;
+}
+
+.badge-wallet {
+  background: #F5F3FF;
+  border: 1px solid #DDD6FE;
+  color: #7C3AED;
+}
+
+.connect-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.icon-mera {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(0, 98, 255, 0.12));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #059669;
+}
+
+.icon-wallet {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(79, 70, 229, 0.12));
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: #7C3AED;
+}
+
+.connect-card-name {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #181615;
+  margin-bottom: 0.35rem;
+}
+
+.connect-card-desc {
+  font-size: 0.875rem;
+  color: #57534E;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.connect-card-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #44403C;
+}
+
+.connect-card-perk {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.connect-cta-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-mera {
+  background: #181615;
+  color: #FFFFFF;
+}
+
+.btn-mera:hover {
+  background: #2E2A27;
+}
+
+.btn-wallet {
+  background: #F5F5F4;
+  color: #181615;
+  border: 1px solid rgba(28, 25, 23, 0.12);
+}
+
+.btn-wallet:hover {
+  background: #E7E5E4;
+}
+
+.dashboard-connect-trust {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2.25rem;
+  font-size: 0.8125rem;
+  color: #78716C;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ==========================================================================
+   2. Connected Creator Hub Top Header
+   ========================================================================== */
+
+.dashboard-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.dashboard-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 2.15rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #181615;
+  margin-bottom: 0.25rem;
+}
+
+/* ==========================================================================
+   3. 4-Column Metric Overview Strip
+   ========================================================================== */
+
+.dashboard-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboard-metric-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  padding: 1.35rem 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.metric-top-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #78716C;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric-number-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+.metric-big-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #181615;
+}
+
+.metric-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.pill-green {
+  background: #ECFDF5;
+  color: #059669;
+}
+
+.pill-blue {
+  background: #EFF6FF;
+  color: #0062FF;
+}
+
+.metric-subtext {
+  font-size: 0.75rem;
+  color: #A8A29E;
+}
+
+/* ==========================================================================
+   4. Organic Sky-Ice Showcase Stage (Matches Features Section)
+   ========================================================================== */
+
+.dashboard-sky-stage {
+  width: 100%;
+  background: linear-gradient(180deg, #F0F9FF 0%, #E0F2FE 100%);
+  border: 1px solid rgba(186, 230, 253, 0.9);
+  border-radius: 24px;
+  padding: 2.25rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 98, 255, 0.05);
+  margin-bottom: 2.75rem;
+  box-sizing: border-box;
+}
+
+.dashboard-sky-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0, 98, 255, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.dashboard-stage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 1.75rem;
+}
+
+.live-pulse-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 98, 255, 0.15);
+  border-radius: 9999px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #0062FF;
+  box-shadow: 0 2px 8px rgba(0, 98, 255, 0.08);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: dotPulse 2s infinite;
+}
+
+@keyframes dotPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.stage-instant-pill {
+  background: #0062FF;
+  color: #FFFFFF;
+  border-radius: 9999px;
+  padding: 0.45rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 8px 20px rgba(0, 98, 255, 0.25);
+}
+
+/* Two-column layout in Sky Stage: Table + Donut Card */
+.dashboard-stage-body {
+  display: flex;
+  gap: 1.75rem;
+  position: relative;
+  z-index: 2;
+  align-items: stretch;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-stage-body {
+    flex-direction: column;
+  }
+}
+
+/* Main Ledger Table Card */
+.dashboard-table-card {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-table-head {
+  background: #F8FAFC;
+  padding: 0.95rem 1.35rem;
+  display: grid;
+  grid-template-columns: 1.4fr 1.1fr 1fr 0.9fr 0.9fr;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748B;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+@media (max-width: 768px) {
+  .dashboard-table-head {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+  .head-hide-mobile {
+    display: none !important;
+  }
+}
+
+.dashboard-table-row {
+  padding: 0.9rem 1.35rem;
+  display: grid;
+  grid-template-columns: 1.4fr 1.1fr 1fr 0.9fr 0.9fr;
+  border-top: 1px solid #F8FAFC;
+  font-size: 0.8125rem;
+  color: #181615;
+  align-items: center;
+  transition: background 0.15s ease;
+}
+
+.dashboard-table-row:hover {
+  background: #F8FAFC;
+}
+
+@media (max-width: 768px) {
+  .dashboard-table-row {
+    grid-template-columns: 1.5fr 1fr 1fr;
+  }
+  .row-hide-mobile {
+    display: none !important;
+  }
+}
+
+.td-file-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chunk-badge {
+  background: #EFF6FF;
+  color: #0062FF;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.file-name {
+  font-weight: 600;
+  color: #181615;
+}
+
+.host-link {
+  font-family: 'JetBrains Mono', monospace;
+  color: #57534E;
+  text-decoration: none;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.12s ease;
+}
+
+.host-link:hover {
+  color: #0062FF;
+}
+
+.split-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #059669;
+}
+
+.speed-tag {
+  font-size: 0.75rem;
+  color: #78716C;
+}
+
+.status-badge-settled {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  background: #ECFDF5;
+  color: #059669;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* Donut Royalty Card */
+.dashboard-donut-card {
+  width: 330px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 1.5rem 1.65rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-donut-card {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.donut-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.donut-legend-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.donut-card-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #181615;
+  letter-spacing: -0.02em;
+}
+
+.legend-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.legend-dot-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #57534E;
+}
+
+.legend-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-creator-blue {
+  background: #0062FF;
+}
+
+.dot-hosts-green {
+  background: #10B981;
+}
+
+.dot-cloud-gray {
+  background: #CBD5E1;
+}
+
+.legend-share-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: #181615;
+}
+
+.donut-footer-callout {
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  font-size: 0.75rem;
+  color: #64748B;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   5. Published Models Catalog
+   ========================================================================== */
+
+.dashboard-models-section {
+  width: 100%;
+}
+
+.models-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.models-section-title {
+  font-family: 'Apfel Grotezk', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #181615;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.models-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* ==========================================================================
+   6. Publish Page Main Grid
+   ========================================================================== */
+
+.publish-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 1fr);
+  gap: 2rem;
+  align-items: start;
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .publish-main-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+}
+
+/* ==========================================================================
+   7. Model Pricing & Economics Step Styles (High-End Fintech)
+   ========================================================================== */
+
+.pricing-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(28, 25, 23, 0.14);
+  border-radius: 14px;
+  padding: 0.65rem 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.pricing-input-container:focus-within {
+  border-color: #0062FF;
+  box-shadow: 0 0 0 3px rgba(0, 98, 255, 0.12), 0 4px 12px rgba(0, 98, 255, 0.08);
+}
+
+.pricing-input-field {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #181615;
+  outline: none;
+  width: 100%;
+}
+
+.pricing-input-field::placeholder {
+  color: #A8A29E;
+}
+
+.pricing-currency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 10px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #0062FF;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pricing-presets-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.6rem;
+}
+
+.pricing-preset-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pricing-preset-btn:hover {
+  background: #EFF6FF;
+  border-color: #93C5FD;
+  color: #0062FF;
+}
+
+.pricing-preset-btn.active {
+  background: #181615;
+  color: #FFFFFF;
+  border-color: #181615;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Custom Precision Range Slider */
+.torrentia-range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 9999px;
+  background: #E2E8F0;
+  outline: none;
+  margin: 0.75rem 0;
+  cursor: pointer;
+}
+
+.torrentia-range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0062FF;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 98, 255, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.torrentia-range-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(0, 98, 255, 0.6);
+}
+
+.torrentia-range-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0062FF;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 98, 255, 0.45);
+  cursor: pointer;
+}
+
+/* Settlement Breakdown Ledger */
+.settlement-ledger-card {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+  border: 1px solid #DBEAFE;
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settlement-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.settlement-table th {
+  text-align: left;
+  padding: 0.5rem 0.65rem;
+  color: #64748B;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.settlement-table td {
+  padding: 0.65rem 0.65rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  color: #1E293B;
+  font-weight: 500;
+}
+
+.settlement-table tr:last-child td {
+  border-bottom: none;
+}
+
