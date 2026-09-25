@@ -16,6 +16,21 @@ import { createOnChainPaymentProvider, createOnChainPaymentVerifier } from '../s
 // Module-level singleton signaling client instance to avoid multiple socket connections
 let globalSignalingClient: SignalingClient | null = null
 
+// Module-level active seeder registry: modelId -> Seeder
+// Keeps seeders alive across page navigation so chunk announces survive unmount.
+const globalActiveSeedersByModel = new Map<string, Seeder>()
+let globalSignalingRegisteredUnsub: (() => void) | null = null
+
+function ensureGlobalRegisteredListener(): void {
+  if (globalSignalingRegisteredUnsub) return
+  const client = getGlobalSignalingClient()
+  globalSignalingRegisteredUnsub = client.on('registered', () => {
+    for (const seeder of globalActiveSeedersByModel.values()) {
+      void seeder.reannounce().catch(() => {})
+    }
+  })
+}
+
 export function getGlobalSignalingClient(address?: string): SignalingClient {
   if (!globalSignalingClient) {
     globalSignalingClient = new SignalingClient(undefined, address)
@@ -113,10 +128,25 @@ export function useSeeding(
       throw new Error('On-chain payment verification is unavailable')
     }
 
+    // Re-use existing global seeder for this model if already active
+    const existingGlobal = globalActiveSeedersByModel.get(modelId)
+    if (existingGlobal) {
+      seederRef.current = existingGlobal
+      setIsSeeding(true)
+      const held = await refreshHeldChunks()
+      setActivePeers(existingGlobal.activePeers)
+      return held
+    }
+
     const seeder = new Seeder(modelId, client, seederAddress, chunkPrice, effectiveVerifier)
     seederRef.current = seeder
 
     await seeder.startSeeding()
+
+    // Register in global map so announces survive page navigation
+    globalActiveSeedersByModel.set(modelId, seeder)
+    ensureGlobalRegisteredListener()
+
     setIsSeeding(true)
     const held = await refreshHeldChunks()
     setActivePeers(seeder.activePeers)
@@ -128,16 +158,28 @@ export function useSeeding(
       seederRef.current.stopSeeding()
       seederRef.current = null
     }
+    if (modelId) {
+      globalActiveSeedersByModel.delete(modelId)
+    }
     setIsSeeding(false)
     setActivePeers(0)
-  }, [])
+  }, [modelId])
 
-  // Cleanup on unmount
+  // Sync local isSeeding state with global registry on mount
+  // (e.g. when navigating back to a model page whose seeder is still active globally)
+  useEffect(() => {
+    if (modelId && globalActiveSeedersByModel.has(modelId)) {
+      const globalSeeder = globalActiveSeedersByModel.get(modelId)!
+      seederRef.current = globalSeeder
+      setIsSeeding(true)
+    }
+  }, [modelId])
+
+  // On unmount: do NOT stop the seeder — it survives in globalActiveSeedersByModel.
+  // Only clear the local ref so we don't double-stop on remount.
   useEffect(() => {
     return () => {
-      if (seederRef.current) {
-        seederRef.current.stopSeeding()
-      }
+      seederRef.current = null
     }
   }, [])
 

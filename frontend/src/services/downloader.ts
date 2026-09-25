@@ -165,7 +165,8 @@ export class Downloader {
       // Retry with backoff to cover the race between the creator's browser
       // completing startSeeding() and the signaling server's Redis entry
       // becoming visible (typical propagation: <2s on a cold Render instance).
-      const SEEDER_POLL_DELAYS_MS = [2000, 4000, 8000, 16000, 20000]
+      // Longer window also covers Render cold-start (~30s) for free-tier.
+      const SEEDER_POLL_DELAYS_MS = [1000, 2000, 4000, 8000, 16000, 24000, 30000]
       let seeders: SeederRecord[] = []
       for (let attempt = 0; attempt <= SEEDER_POLL_DELAYS_MS.length; attempt++) {
         seeders = await this.signaling.querySeeders(this.modelId)
@@ -173,13 +174,13 @@ export class Downloader {
         if (attempt < SEEDER_POLL_DELAYS_MS.length) {
           this.updateState({
             status: 'discovering',
-            error: `Waiting for seeder to announce… (attempt ${attempt + 1}/${SEEDER_POLL_DELAYS_MS.length})`,
+            error: `Waiting for a peer to announce… (attempt ${attempt + 1}/${SEEDER_POLL_DELAYS_MS.length})`,
           })
           await new Promise((r) => setTimeout(r, SEEDER_POLL_DELAYS_MS[attempt]))
         }
       }
       if (seeders.length === 0) {
-        throw new Error('No active seeders found for this model. The creator may need to keep their browser tab open, or run the CLI seeder daemon.')
+        throw new Error('No active peers found for this model. Please ensure the creator\'s browser tab is open on the model page, or that the torrentia-seeder CLI daemon is running with this model added.')
       }
 
       // 3. Sequentially download missing chunks

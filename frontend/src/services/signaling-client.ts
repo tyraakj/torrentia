@@ -344,19 +344,49 @@ export class SignalingClient {
 
   public querySeeders(modelId: string): Promise<SeederRecord[]> {
     return new Promise((resolve) => {
-      this.pendingQueries.set(modelId, resolve)
-      this.sendRaw({
-        type: 'query',
-        modelId,
-      })
+      // If a prior query for this modelId is already pending, resolve it empty and replace.
+      const prior = this.pendingQueries.get(modelId)
+      if (prior) {
+        this.pendingQueries.delete(modelId)
+        prior([])
+      }
 
-      // Timeout safety: if no response in 5s, return empty array
+      this.pendingQueries.set(modelId, resolve)
+
+      const sendQuery = () => {
+        this.sendRaw({ type: 'query', modelId })
+      }
+
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        // WS already open — send immediately
+        sendQuery()
+      } else {
+        // WS is connecting (Render cold-start). Wait for it to open, then send.
+        // Cap the wait at 12s — if still not open, the 12s timeout below will resolve [].
+        const unsubStatus = this.on('status', (s) => {
+          if (s === 'connected') {
+            unsubStatus()
+            if (this.pendingQueries.has(modelId)) {
+              sendQuery()
+            }
+          }
+        })
+        // Clean up status listener if the query resolves via timeout
+        const originalResolve = resolve
+        const wrappedResolve = (seeders: SeederRecord[]) => {
+          unsubStatus()
+          originalResolve(seeders)
+        }
+        this.pendingQueries.set(modelId, wrappedResolve)
+      }
+
+      // Timeout safety: if no response in 12s, return empty array
       setTimeout(() => {
         if (this.pendingQueries.has(modelId)) {
           this.pendingQueries.delete(modelId)
           resolve([])
         }
-      }, 5000)
+      }, 12000)
     })
   }
 
