@@ -1,17 +1,15 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useAccount, useDisconnect } from 'wagmi'
-import { Layers, UploadCloud, LayoutDashboard, LogOut, Key } from 'lucide-react'
+import { useAccount, useDisconnect, useConnect } from 'wagmi'
+import { Layers, UploadCloud, LayoutDashboard, LogOut, Wallet } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { AddressDisplay } from '../ui/AddressDisplay'
-import { PasskeyAuthModal } from '../auth/PasskeyAuthModal'
-import { PasskeyNavbarBadge } from '../auth/PasskeyNavbarBadge'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
-  const { address, isConnected, isConnecting, connector } = useAccount()
+  const { address, isConnected, isConnecting } = useAccount()
   const { disconnect } = useDisconnect()
-  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const { connect, connectors } = useConnect()
 
   const navLinks = [
     { to: '/marketplace', label: 'Explore', icon: <Layers size={15} /> },
@@ -19,158 +17,149 @@ export const Navbar: React.FC = () => {
     { to: '/dashboard', label: 'My Activity', icon: <LayoutDashboard size={15} /> },
   ]
 
-  const isPasskeyAccount = connector?.id === 'mera-passkey'
+  const handleConnect = () => {
+    const connector = connectors.find((c) => c.type === 'injected') ?? connectors[0]
+    if (connector) connect({ connector })
+  }
 
   return (
-    <>
-      <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          background: 'rgba(255, 255, 255, 0.82)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(28, 25, 23, 0.08)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
-          padding: '0 var(--space-8)',
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        {/* Brand Name Only (Logo icon removed) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}>
-          <Link
-            to="/"
+    <header
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        background: 'rgba(255, 255, 255, 0.82)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(28, 25, 23, 0.08)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+        padding: '0 var(--space-8)',
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}
+    >
+      {/* Brand */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}>
+        <Link
+          to="/"
+          style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+        >
+          <span
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
+              fontFamily: "'Apfel Grotezk', sans-serif",
+              fontWeight: 700,
+              fontSize: '1.25rem',
+              letterSpacing: '-0.03em',
+              color: '#1c1917',
             }}
           >
-            <span
-              style={{
-                fontFamily: "'Apfel Grotezk', sans-serif",
-                fontWeight: 700,
-                fontSize: '1.25rem',
-                letterSpacing: '-0.03em',
-                color: '#1c1917',
-              }}
-            >
-              Torrentia
-            </span>
-          </Link>
+            Torrentia
+          </span>
+        </Link>
 
-          {/* Navigation Links */}
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.to
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.8125rem',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    transition: 'all 0.15s ease',
-                    background: isActive ? 'rgba(28, 25, 23, 0.08)' : 'transparent',
-                    color: isActive ? '#1c1917' : '#78716c',
-                  }}
-                >
-                  {link.icon}
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-
-        {/* Right Area: Network Badge & Wallet Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-          {/* Monad Testnet Pill */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '9999px',
-              background: 'rgba(16, 185, 129, 0.1)',
-              border: '1px solid rgba(16, 185, 129, 0.25)',
-              fontSize: '0.75rem',
-              color: '#065f46',
-              fontWeight: 600,
-            }}
-          >
-            <span
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                backgroundColor: '#10b981',
-                boxShadow: '0 0 8px rgba(16, 185, 129, 0.7)',
-              }}
-            />
-            <span>Monad Testnet</span>
-          </div>
-
-          {/* Wallet Button / Passkey Badge */}
-          {isConnected && address ? (
-            isPasskeyAccount ? (
-              <PasskeyNavbarBadge address={address} />
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <AddressDisplay address={address} chars={4} showLink={true} />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  title="Disconnect Wallet"
-                  onClick={() => disconnect()}
-                  style={{
-                    padding: '0.35rem 0.6rem',
-                    borderRadius: '9999px',
-                    background: 'rgba(255, 255, 255, 0.8)',
-                    border: '1px solid rgba(28, 25, 23, 0.12)',
-                  }}
-                >
-                  <LogOut size={14} />
-                </Button>
-              </div>
+        {/* Navigation Links */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.to
+            return (
+              <Link
+                key={link.to}
+                to={link.to}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.45rem 0.85rem',
+                  borderRadius: '9999px',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  transition: 'all 0.15s ease',
+                  background: isActive ? 'rgba(28, 25, 23, 0.08)' : 'transparent',
+                  color: isActive ? '#1c1917' : '#78716c',
+                }}
+              >
+                {link.icon}
+                {link.label}
+              </Link>
             )
-          ) : (
+          })}
+        </nav>
+      </div>
+
+      {/* Right Area */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+        {/* Monad Testnet Pill */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '9999px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            fontSize: '0.75rem',
+            color: '#065f46',
+            fontWeight: 600,
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: '#10b981',
+              boxShadow: '0 0 8px rgba(16, 185, 129, 0.7)',
+            }}
+          />
+          <span>Monad Testnet</span>
+        </div>
+
+        {/* Wallet Button */}
+        {isConnected && address ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <AddressDisplay address={address} chars={4} showLink={true} />
             <Button
-              variant="primary"
+              variant="secondary"
               size="sm"
-              isLoading={isConnecting}
-              onClick={() => setAuthModalOpen(true)}
+              title="Disconnect Wallet"
+              onClick={() => disconnect()}
               style={{
+                padding: '0.35rem 0.6rem',
                 borderRadius: '9999px',
-                padding: '0.45rem 1.15rem',
-                background: 'linear-gradient(135deg, hsl(265, 90%, 65%), hsl(250, 85%, 60%))',
-                color: '#ffffff',
-                boxShadow: '0 4px 14px hsla(265, 90%, 65%, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                border: 'none',
+                background: 'rgba(255, 255, 255, 0.8)',
+                border: '1px solid rgba(28, 25, 23, 0.12)',
               }}
             >
-              <Key size={14} />
-              <span>Connect Wallet</span>
+              <LogOut size={14} />
             </Button>
-          )}
-        </div>
-      </header>
-
-      <PasskeyAuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-    </>
+          </div>
+        ) : (
+          <Button
+            variant="primary"
+            size="sm"
+            isLoading={isConnecting}
+            onClick={handleConnect}
+            style={{
+              borderRadius: '9999px',
+              padding: '0.45rem 1.15rem',
+              background: 'linear-gradient(135deg, hsl(265, 90%, 65%), hsl(250, 85%, 60%))',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px hsla(265, 90%, 65%, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              border: 'none',
+            }}
+          >
+            <Wallet size={14} />
+            <span>Connect Wallet</span>
+          </Button>
+        )}
+      </div>
+    </header>
   )
 }

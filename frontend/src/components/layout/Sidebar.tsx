@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { useAccount, useDisconnect, useBalance } from 'wagmi'
+import { useAccount, useDisconnect, useBalance, useConnect } from 'wagmi'
 import { formatUnits } from 'viem'
 import { motion } from 'motion/react'
 import {
@@ -10,15 +10,13 @@ import {
   PanelLeftOpen,
   ArrowUpRight,
   LogOut,
-  Key,
+  Wallet,
   BookOpen,
   Coins,
   Radio,
   Lock,
   ShieldCheck,
 } from 'lucide-react'
-import { PasskeyAuthModal } from '../auth/PasskeyAuthModal'
-import { PasskeyNavbarBadge } from '../auth/PasskeyNavbarBadge'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -29,12 +27,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const currentTab = searchParams.get('tab') || 'splits'
-  const { address, isConnected, isConnecting, connector } = useAccount()
+  const { address, isConnected, isConnecting } = useAccount()
   const { disconnect } = useDisconnect()
+  const { connect, connectors } = useConnect()
   const { data: balanceData } = useBalance({ address })
-  const [authModalOpen, setAuthModalOpen] = useState(false)
 
-  const isPasskeyAccount = connector?.id === 'mera-passkey'
+  const handleConnect = () => {
+    const connector = connectors.find((c) => c.type === 'injected') ?? connectors[0]
+    if (connector) connect({ connector })
+  }
 
   const catalogLinks = [
     { to: '/marketplace', label: 'Models', icon: <Layers size={18} /> },
@@ -335,86 +336,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
             }}
           >
             {isConnected && address ? (
-              isPasskeyAccount ? (
-                isCollapsed ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isCollapsed ? 'center' : 'space-between',
+                  width: isCollapsed ? 'auto' : '100%',
+                  gap: '0.5rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <div
                     style={{
-                      width: '32px',
-                      height: '32px',
+                      width: '28px',
+                      height: '28px',
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #10b981, #06b6d4)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
+                      background: 'linear-gradient(135deg, #181615, #475569)',
+                      flexShrink: 0,
                     }}
-                    title={`Mera Passkey: ${address}`}
-                    onClick={() => disconnect()}
-                  >
-                    <Key size={14} color="#ffffff" />
-                  </div>
-                ) : (
-                  <div style={{ width: '100%' }}>
-                    <PasskeyNavbarBadge address={address} />
-                  </div>
-                )
-              ) : (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: isCollapsed ? 'center' : 'space-between',
-                    width: isCollapsed ? 'auto' : '100%',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div
-                      style={{
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #181615, #475569)',
-                        flexShrink: 0,
-                      }}
-                    />
-                    {!isCollapsed && (
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          fontFamily: 'var(--font-mono)',
-                          color: '#181615',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {address.slice(0, 5)}...{address.slice(-4)}
-                      </span>
-                    )}
-                  </div>
+                  />
                   {!isCollapsed && (
-                    <button
-                      onClick={() => disconnect()}
-                      title="Disconnect"
+                    <span
                       style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: 'rgba(28, 25, 23, 0.45)',
-                        cursor: 'pointer',
-                        padding: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
+                        fontSize: '0.75rem',
+                        fontFamily: 'var(--font-mono)',
+                        color: '#181615',
+                        fontWeight: 600,
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(28, 25, 23, 0.45)')}
                     >
-                      <LogOut size={14} />
-                    </button>
+                      {address.slice(0, 5)}...{address.slice(-4)}
+                    </span>
                   )}
                 </div>
-              )
+                {!isCollapsed && (
+                  <button
+                    onClick={() => disconnect()}
+                    title="Disconnect"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'rgba(28, 25, 23, 0.45)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = '#ef4444')}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(28, 25, 23, 0.45)')}
+                  >
+                    <LogOut size={14} />
+                  </button>
+                )}
+              </div>
             ) : (
               <button
-                onClick={() => setAuthModalOpen(true)}
+                onClick={handleConnect}
                 disabled={isConnecting}
                 title={isCollapsed ? 'Connect Wallet' : undefined}
                 style={{
@@ -441,15 +417,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                   e.currentTarget.style.background = '#181615'
                 }}
               >
-                <Key size={14} />
+                <Wallet size={14} />
                 {!isCollapsed && <span className="sidebar-label">Connect</span>}
               </button>
             )}
           </div>
         </div>
       </motion.aside>
-
-      <PasskeyAuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </>
   )
 }

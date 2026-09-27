@@ -1,7 +1,6 @@
 import { defineChain } from 'viem'
 import { http, createConfig } from 'wagmi'
 import { injected } from 'wagmi/connectors'
-import { meraPasskey } from './mera-connector'
 
 export const monadTestnet = defineChain({
   id: 10143,
@@ -27,7 +26,7 @@ export const monadTestnet = defineChain({
 
 export const config = createConfig({
   chains: [monadTestnet],
-  connectors: [meraPasskey(), injected()],
+  connectors: [injected()],
   transports: {
     [monadTestnet.id]: http(),
   },

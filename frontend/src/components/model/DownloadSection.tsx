@@ -24,7 +24,6 @@ import { LivePaymentFeed } from '../payment/LivePaymentFeed'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { CrossChainFundingModal } from '../payment/CrossChainFundingModal'
-import { PasskeyAuthModal } from '../auth/PasskeyAuthModal'
 
 export interface DownloadSectionProps {
   model: IndexedModel
@@ -45,7 +44,6 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   const [checkingLocal, setCheckingLocal] = useState(true)
   const [copiedCli, setCopiedCli] = useState(false)
   const [isCrossChainFundingOpen, setIsCrossChainFundingOpen] = useState(false)
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
   // Download & Seeding hooks
   const {
@@ -101,7 +99,8 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
   }, [model.modelId, address, downloadState.status])
 
   const handleConnectWallet = () => {
-    setIsAuthModalOpen(true)
+    // Wallet connection is handled by the Connect button in the Navbar/Sidebar
+    // This is a no-op — the state machine will surface the connect prompt via the UI state
   }
 
   // Handle local export if pieces exist in IndexedDB
@@ -633,11 +632,7 @@ export const DownloadSection: React.FC<DownloadSectionProps> = ({
         modelName={model.modelName || 'AI Model Weights'}
       />
 
-      {/* WALLET / PASSKEY AUTH MODAL */}
-      <PasskeyAuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+      {/* WALLET AUTH — handled by Navbar/Sidebar connect buttons */}
     </div>
   )
 }

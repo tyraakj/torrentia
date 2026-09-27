@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAccount, useConnect } from 'wagmi'
 import {
@@ -6,8 +6,6 @@ import {
   UploadCloud,
   ShieldCheck,
   Radio,
-  Fingerprint,
-  Key,
   ExternalLink,
   CheckCircle2,
   TrendingUp,
@@ -21,7 +19,6 @@ import {
 import { useCreatorModels, useCreatorEarnings } from '../hooks/use-creator-data'
 import { CreatorModelCard } from '../components/dashboard/CreatorModelCard'
 import type { DashboardTabKey } from '../components/dashboard/DashboardStage'
-import { PasskeyAuthModal } from '../components/auth/PasskeyAuthModal'
 import { Button } from '../components/ui/Button'
 import { Card, CardBody } from '../components/ui/Card'
 import { AddressDisplay } from '../components/ui/AddressDisplay'
@@ -35,23 +32,17 @@ export const Dashboard: React.FC = () => {
       ? rawTab
       : 'splits'
 
-  const { address, isConnected, connector } = useAccount()
+  const { address, isConnected } = useAccount()
   const { connect, connectors } = useConnect()
-  const [authModalOpen, setAuthModalOpen] = useState(false)
 
   const { data: models = [], refetch } = useCreatorModels(address)
   const earningsSummary = useCreatorEarnings(models)
 
-  const isPasskey = connector?.id === 'mera-passkey'
-
   const handleConnectWallet = () => {
-    const injected = connectors.find((c) => c.type === 'injected') || connectors[0]
-    if (injected) {
-      connect({ connector: injected })
-    }
+    const injected = connectors.find((c) => c.type === 'injected') ?? connectors[0]
+    if (injected) connect({ connector: injected })
   }
 
-  // 1. WALLET DISCONNECTED STATE (Dual Option Architecture)
   if (!isConnected || !address) {
     return (
       <div className="dashboard-full-viewport">
@@ -66,57 +57,10 @@ export const Dashboard: React.FC = () => {
           </h1>
 
           <p className="dashboard-connect-lead">
-            Select your preferred authentication method to view your registered AI models, track real-time creator royalties, and monitor community downloads across the network.
+            Connect your wallet to view your registered AI models, track real-time creator royalties, and monitor community downloads across the network.
           </p>
 
-          <div className="connect-options-grid">
-            {/* Option 1: Mera Logic Passkey */}
-            <div className="connect-option-card">
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <div className="connect-card-icon icon-mera">
-                    <Fingerprint size={26} />
-                  </div>
-                  <span className="connect-option-badge badge-mera">
-                    Mera Logic • Recommended
-                  </span>
-                </div>
-
-                <div className="connect-card-name">Passkey (Mera Logic)</div>
-                <div className="connect-card-desc">
-                  Hardware-backed biometric authentication via Touch ID, Face ID, or Windows Hello. Derives a secure Monad EOA key with zero extensions or seed phrases.
-                </div>
-
-                <ul className="connect-card-perks">
-                  <li className="connect-card-perk">
-                    <CheckCircle2 size={15} color="#10B981" />
-                    <span>Instant 1-click biometric sign-in</span>
-                  </li>
-                  <li className="connect-card-perk">
-                    <CheckCircle2 size={15} color="#10B981" />
-                    <span>WebAuthn PRF deterministic key derivation</span>
-                  </li>
-                  <li className="connect-card-perk">
-                    <CheckCircle2 size={15} color="#10B981" />
-                    <span>Zero-prompt EIP-712 micro-voucher streaming</span>
-                  </li>
-                  <li className="connect-card-perk">
-                    <CheckCircle2 size={15} color="#10B981" />
-                    <span>Self-sovereign seed &amp; private key export</span>
-                  </li>
-                </ul>
-              </div>
-
-              <button
-                className="connect-cta-btn btn-mera"
-                onClick={() => setAuthModalOpen(true)}
-              >
-                <Key size={16} />
-                <span>Connect with Passkey</span>
-              </button>
-            </div>
-
-            {/* Option 2: Web3 Wallets */}
+          <div className="connect-options-grid" style={{ maxWidth: '480px' }}>
             <div className="connect-option-card">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -128,7 +72,7 @@ export const Dashboard: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="connect-card-name">Web3 Wallets</div>
+                <div className="connect-card-name">Web3 Wallet</div>
                 <div className="connect-card-desc">
                   Connect your existing Web3 browser wallet on Monad Testnet. Full support for MetaMask, Rabby, Coinbase Wallet, Backpack, and EIP-1193 injectors.
                 </div>
@@ -179,11 +123,6 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-
-        <PasskeyAuthModal
-          isOpen={authModalOpen}
-          onClose={() => setAuthModalOpen(false)}
-        />
       </div>
     )
   }
@@ -373,17 +312,17 @@ export const Dashboard: React.FC = () => {
                 gap: '0.35rem',
                 fontSize: '0.75rem',
                 fontWeight: 700,
-                color: isPasskey ? '#059669' : '#0062FF',
+                color: '#0062FF',
                 textTransform: 'uppercase',
                 letterSpacing: '0.04em',
-                background: isPasskey ? '#ECFDF5' : '#EFF6FF',
+                background: '#EFF6FF',
                 padding: '0.2rem 0.65rem',
                 borderRadius: '9999px',
-                border: isPasskey ? '1px solid #A7F3D0' : '1px solid #BFDBFE',
+                border: '1px solid #BFDBFE',
               }}
             >
-              {isPasskey ? <Fingerprint size={13} /> : <Wallet size={13} />}
-              <span>{isPasskey ? 'Mera Passkey Active' : 'Web3 Wallet Connected'}</span>
+              <Wallet size={13} />
+              <span>Web3 Wallet Connected</span>
             </span>
 
             <span
