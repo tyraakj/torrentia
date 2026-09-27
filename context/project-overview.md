@@ -2,7 +2,7 @@
 
 ## Product Definition
 
-**Tagline (P2P-first framing):** "Decentralized P2P AI Model Distribution — Fast, swarm-powered weight streaming with atomic on-chain incentives on Monad."
+**Tagline (P2P-first framing):** "Decentralized, verifiable delivery for open-source AI — rewarding creators and community hosts with sub-second micro-payments on Monad."
 
 ### What It Is
 A decentralized peer-to-peer distribution network and marketplace for AI model weights where:
@@ -22,7 +22,7 @@ Every architectural decision must trace back to one of these:
 
 ### Pitch Framing
 Using **P2P Innovation Framing** consistently across all copy/UI text:
-> "Decentralized P2P AI Model Distribution — Fast, swarm-powered weight streaming with atomic on-chain incentives on Monad."
+> "Decentralized, verifiable delivery for open-source AI — rewarding creators and community hosts with sub-second micro-payments on Monad."
 
 Highlighting the peer-to-peer swarm transfer as the breakthrough innovation: multi-gigabyte models distributed directly browser-to-browser via WebRTC, turning bandwidth consumers into earning seeders.
 
