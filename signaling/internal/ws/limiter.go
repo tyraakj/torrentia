@@ -28,7 +28,7 @@ func NewIPRateLimiter(limit int, window time.Duration) *IPRateLimiter {
 // Allow returns true if the remote IP of the request has not exceeded its connection limit.
 func (l *IPRateLimiter) Allow(r *http.Request) bool {
 	ip := extractIP(r)
-	if ip == "" {
+	if ip == "" || ip == "127.0.0.1" || ip == "::1" || ip == "localhost" {
 		return true
 	}
 
