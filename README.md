@@ -1,181 +1,242 @@
 # Torrentia
 
-> **Decentralized, verifiable delivery for open-source AI — rewarding creators and community hosts with sub-second micro-payments on Monad.**
+> Decentralized, verifiable delivery for open-source AI — rewarding creators and community hosts with on-chain micro-payments on Monad.
 
-Torrentia solves the infrastructure bottleneck behind open-source AI. Hosting and distributing multi-gigabyte model weights requires expensive centralized cloud bandwidth. A single provider outage or corporate policy decision can make a model unavailable globally.
+[![Monad Testnet](https://img.shields.io/badge/network-Monad%20Testnet-836EF9)](https://testnet.monadscan.com/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.24%2B-363636)](https://soliditylang.org/)
+[![Frontend](https://img.shields.io/badge/frontend-React%20%2B%20Vite-61DAFB)](https://vite.dev/)
+[![Go](https://img.shields.io/badge/backend-Go-00ADD8)](https://go.dev/)
+[![Transport](https://img.shields.io/badge/transport-WebRTC-333333)](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API)
+[![License](https://img.shields.io/badge/license-MIT-blue)](#license)
 
-Torrentia eliminates the central host. Creators publish verified model packages. Independent providers (seeders) deliver them directly to downloaders over WebRTC and earn automatic rewards per chunk delivered — settled atomically on Monad in the same transaction as the creator's royalty.
+Torrentia is a peer-to-peer marketplace and delivery network for open-source AI model weights. A creator uploads a model, Torrentia chunks and hashes it in the browser, stores a lightweight manifest on IPFS, and registers the model on Monad. Downloaders discover peers through the signaling service and receive chunks directly over WebRTC. Each chunk payment is settled atomically between the original creator and the seeder serving the data.
 
-As demand grows, the swarm gains more delivery capacity instead of routing every request through one server.
+The result is a distribution model in which demand adds swarm capacity instead of making the creator carry all bandwidth costs.
 
----
+## Links
 
-## Live Deployment
+- **Live app:** [torrentia.vercel.app](https://torrentia.vercel.app)
+- **Signaling service:** `wss://torrentia-signaling.onrender.com/ws`
+- **Hackathon submission:** [SUBMISSION.md](SUBMISSION.md)
+- **Project context and specifications:** [context/](context/)
 
-| | |
-|---|---|
-| **Frontend** | [torrentia.vercel.app](https://torrentia.vercel.app) |
-| **Network** | Monad Testnet (Chain ID `10143`) |
-| **Signaling Server** | `wss://torrentia-signaling.onrender.com/ws` |
-| **Envio GraphQL** | `https://indexer.bigdevenergy.link/<org>/torrentia/v1/graphql` |
+Torrentia currently targets **Monad Testnet** (chain ID `10143`). It is an experimental testnet application; do not use production funds.
 
-**Test credentials:** Connect any MetaMask / Rabby wallet funded with Monad Testnet MON from [faucet.monad.xyz](https://faucet.monad.xyz).
+## Why Torrentia
 
----
+Torrentia focuses on two infrastructure problems:
 
-## Smart Contracts — Monad Testnet
+1. **Scaling cost:** popular models create recurring centralized bandwidth and hosting costs.
+2. **Control:** a centralized host can throttle or remove a model.
+
+Torrentia addresses these with content-addressed chunks, browser-to-browser transfer, and an immutable on-chain payment rule. Torrentia does not claim to control or prevent out-of-band file sharing.
+
+## How it works
+
+```mermaid
+flowchart LR
+    C[Creator browser] -->|chunk + SHA-256| M[IPFS manifest]
+    C -->|register model| R[ModelRegistry on Monad]
+    C --> S[WebRTC seeder]
+    D[Downloader browser] -->|discover peers| T[Go signaling + tracker]
+    D -->|request chunk| S
+    S -->|402 + price + address| D
+    D -->|payForChunk with MON| P[SplitPayment on Monad]
+    P -->|creator share| C
+    P -->|seeder share| S
+    S -->|stream chunk| D
+    D -->|verify hash + store| I[IndexedDB]
+```
+
+1. **Upload:** the browser splits a model into 1 MiB chunks, computes SHA-256 hashes, pins a `ChunkManifest` to IPFS, and registers the model.
+2. **Discovery:** the downloader connects to the Go WebSocket service and finds peers advertising chunks for the model.
+3. **Transfer:** the peers establish a WebRTC data channel. The seeder remains responsible for delivering the requested chunk.
+4. **Payment gate:** the seeder returns a `402 Payment Required` challenge containing the model, chunk, uniform price, and seeder address.
+5. **Atomic settlement:** the downloader calls `SplitPayment.payForChunk(modelId, seederAddress)` with native MON. The contract splits the payment in one transaction.
+6. **Verification:** after receipt verification, the seeder sends the chunk. The downloader verifies its hash, stores it in IndexedDB, and reassembles the model when all chunks arrive.
+
+The creator share is configured in basis points at registration. With `creatorShareBps = 7000`, the creator receives 70% and the seeder receives 30% of every valid chunk payment.
+
+## Monad testnet contracts
 
 | Contract | Address | Explorer |
 |---|---|---|
-| `ModelRegistry` | `0xe2cEDee4817B11716728aed3C3d7AD0438813340` | [Monadscan ↗](https://testnet.monadscan.com/address/0xe2cEDee4817B11716728aed3C3d7AD0438813340) |
-| `SplitPayment` | `0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa` | [Monadscan ↗](https://testnet.monadscan.com/address/0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa) |
+| `ModelRegistry` | `0xe2cEDee4817B11716728aed3C3d7AD0438813340` | [View on Monadscan](https://testnet.monadscan.com/address/0xe2cEDee4817B11716728aed3C3d7AD0438813340) |
+| `SplitPayment` | `0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa` | [View on Monadscan](https://testnet.monadscan.com/address/0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa) |
 
-Both contracts verified on Sourcify. 28/28 Foundry unit tests pass.
+The contracts are intended for Monad Testnet. Verify the active addresses against the deployment configuration before deploying a new frontend build.
 
----
+## Current status
 
-## System Architecture
+| Area | Status | Notes |
+|---|---|---|
+| Smart contracts | Implemented | `ModelRegistry`, `SplitPayment`, deployment scripts, and Foundry tests are present. |
+| Upload pipeline | Implemented | Browser chunking/hashing, manifest pinning, and registration flow are present. |
+| WebRTC transfer | Implemented | Signaling, peer transfer, backpressure, hash verification, and IndexedDB storage are present. |
+| Go signaling/tracker | Implemented | WebSocket relay, seeder tracking, heartbeats, health endpoint, and graceful shutdown are present. |
+| Frontend marketplace | Implemented | Marketplace, model detail, upload, dashboard, download, and split visualization routes are present. |
+| Indexing | Available | The `indexer/` service uses Envio HyperIndex for contract-event indexing and GraphQL access. |
+| Production hardening | In progress | Testnet deployment, service observability, abuse handling, and operational guarantees still require environment-specific validation. |
 
-```
-Browser (Creator)                Browser (Downloader)
-      │                                  │
-      │ 1. Chunk → SHA-256 → IPFS pin    │
-      │ 2. Register on ModelRegistry     │
-      │                                  │ 3. Discover peers via
-      │                                  │    Go Signaling Tracker
-      │◄──────── WebRTC Data Channel ────┤
-      │                                  │ 4. Pay per chunk (MON)
-      │                    SplitPayment.sol atomically:
-      │                    → Creator royalty (configurable %)
-      │                    → Seeder reward (remainder)
-      │
-      │ 5. Seeder verifies on-chain receipt → streams chunk
-      │
-Envio HyperIndex
-      │ Indexes: ModelRegistered, ModelDeactivated, PaymentSplit
-      │ Entities: Model, PaymentSplitEvent, CreatorStat, SeederStat, NetworkOverview
-      └─► GraphQL API → Frontend marketplace, creator dashboard, seeder leaderboard
-```
+## Repository layout
 
----
-
-## What Makes This Work on Monad
-
-Micro-payments per 1 MB chunk are only viable because Monad makes them cheap and fast:
-
-| | Ethereum L1 | L2 Rollups | Monad |
-|---|---|---|---|
-| Block time | 12s | 0.25–2s | **~1s** |
-| Fee per chunk payment | ~$5–$25 | ~$0.05–$0.10 | **<$0.001** |
-| TPS | 15–30 | 50–150 | **10,000** |
-
-A 50-chunk model download costs ~$0.05 in gas on Ethereum. On Monad it's under $0.05 total. Per-chunk settlement is economically viable.
-
----
-
-## Core Features
-
-### For Creators
-- Upload any model format (`.safetensors`, `.gguf`, `.onnx`, `.bin`)
-- Set your own royalty split (1%–99%) at registration — enforced on-chain forever
-- Immutable creator attribution — `originalCreator` cannot be changed after registration
-- Censorship-resistant — no central operator can de-list your model
-
-### For Downloaders
-- Browser-native P2P download with SHA-256 chunk verification
-- Pay-as-you-download — no upfront cost, no subscription
-- Downloaded chunks immediately become seedable to new peers
-
-### For Seeders / Providers
-- Browser seeding: toggle "Start Seeding" after a download completes
-- CLI seeding: `torrentia-seeder` daemon for persistent NVMe-backed nodes
-
----
-
-## Repository Structure
-
-```
+```text
 torrentia/
-├── contracts/          # Solidity — ModelRegistry.sol, SplitPayment.sol
-│   └── test/           # 28 Foundry unit tests
-├── frontend/           # React 18 + TypeScript + Vite
-│   └── src/
-│       ├── pages/      # Marketplace, ModelDetail, Upload, Dashboard
-│       ├── hooks/      # useDownload, useSeeding, useDownloadStateMachine
-│       ├── services/   # P2P engine, chunk store, IPFS, payment, Envio client
-│       └── lib/        # Wagmi config, ABI exports, contract hooks
-├── signaling/          # Go — WebSocket signaling hub + seeder tracker
-│   └── cmd/
-│       ├── signaling/  # Signaling server (:8081)
-│       ├── broker/     # Upload broker with EIP-712 auth (:8082)
-│       ├── seeder/     # Persistent CLI seeder daemon
-│       └── gateway/    # Unified reverse proxy (:8090)
-└── indexer/            # Envio HyperIndex — config.yaml, schema.graphql, EventHandlers.ts
+├── contracts/          # Foundry project: Solidity contracts, tests, and scripts
+├── frontend/           # React + TypeScript + Vite application
+├── signaling/          # Go WebSocket signaling, tracker, broker, and seeder services
+├── indexer/             # Envio HyperIndex configuration and event handlers
+├── deploy/              # Deployment and infrastructure configuration
+├── scripts/             # Local tooling and seeder installation helpers
+├── context/             # Architecture, product, UI, and implementation specifications
+├── assets/              # Documentation and product assets
+├── SUBMISSION.md        # Hackathon tracks and implementation summary
+└── README.md
 ```
 
----
+## Prerequisites
 
-## Quick Start
+- Node.js compatible with the frontend toolchain
+- npm
+- Go `1.27.0` or a compatible newer Go release
+- Foundry (`forge`, `cast`, and `anvil`) for contract work
+- Docker, if running the local Envio stack or CLI seeder container
+- A Monad Testnet wallet funded with testnet MON for on-chain flows
+- A Pinata JWT for upload-broker deployments that pin manifests
 
-**Requirements:** Node.js ≥18, Go 1.22+, Foundry
+## Quick start
+
+### 1. Run contract tests
 
 ```bash
-# 1. Smart contracts
-cd contracts && forge test
-
-# 2. Go backend (signaling + broker)
-cd signaling
-go test ./...
-go run ./cmd/signaling --port 8081 &
-go run ./cmd/broker --port 8082 &
-
-# 3. Frontend
-cd frontend && npm install && npm run dev
+cd contracts
+forge test
 ```
 
-Create `frontend/.env.local`:
+For verbose traces:
+
+```bash
+forge test -vvv
+```
+
+### 2. Run the signaling service
+
+```bash
+cd signaling
+go test ./...
+go run ./cmd/signaling --port 8081
+```
+
+The local service exposes WebSocket signaling at `ws://localhost:8081/ws` and health information at `http://localhost:8081/health`.
+
+The repository also contains separate commands for the upload broker, persistent seeder, and gateway. Run `go run ./cmd/<command> --help` from `signaling` for command-specific options.
+
+### 3. Run the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Create `frontend/.env.local` with values appropriate for your environment:
 
 ```env
 VITE_MODEL_REGISTRY_ADDRESS=0xe2cEDee4817B11716728aed3C3d7AD0438813340
 VITE_SPLIT_PAYMENT_ADDRESS=0xFF9c3ce76Eba5647a7d22DF9A8b699d91F4bbdDa
-VITE_SIGNALING_URL=wss://torrentia-signaling.onrender.com/ws
-VITE_ENVIO_GRAPHQL_URL=http://localhost:8080/v1/graphql
+VITE_SIGNALING_URL=ws://localhost:8081/ws
 VITE_UPLOAD_BROKER_URL=http://localhost:8082
 ```
 
-```bash
-# 4. Envio indexer (requires Docker)
-cd indexer && pnpm install && pnpm codegen && pnpm envio local up
+For the hosted testnet services, use:
+
+```env
+VITE_SIGNALING_URL=wss://torrentia-signaling.onrender.com/ws
+VITE_UPLOAD_BROKER_URL=https://torrentia-upload-broker.onrender.com
 ```
 
-> Keep `PINATA_JWT` server-side only. Never expose it via `VITE_*`.
+Never expose `PINATA_JWT`, deployer private keys, or other server credentials through a `VITE_*` variable. Vite variables are bundled into the browser application.
 
----
-
-## CLI Seeder
-
-For persistent, headless seeding from a server or NVMe-backed node:
+### 4. Run the indexer (optional)
 
 ```bash
-# Install
-curl -sSL https://raw.githubusercontent.com/tyraakj/torrentia/main/scripts/install-seeder.sh | sh
-
-# Run
-torrentia-seeder \
-  --signaling wss://torrentia-signaling.onrender.com/ws \
-  --payout 0xYourAddress \
-  --rpc https://testnet-rpc.monad.xyz \
-  --chunk-dir ./chunks
+cd indexer
+npm install
+npm run codegen
+npm run dev
 ```
 
----
+The indexer is optional for the core contract and peer-transfer flows, but it supplies event-backed marketplace and dashboard data when configured.
 
-## Hackathon Submission
+## Local demo flow
 
-See [`SUBMISSION.md`](SUBMISSION.md) for full track and bounty alignment documentation.
+1. Open the frontend in two browser tabs.
+2. Connect a Monad Testnet wallet in the first tab.
+3. Upload a small model and keep the first tab seeding.
+4. Open the model detail page in the second tab.
+5. Start a download and observe peer discovery, chunk progress, hash verification, and the creator/seeder split visualization.
+6. Follow the Monadscan transaction links to inspect the on-chain settlement.
 
----
+Use small test files first. Large model transfers require suitable browser memory, IndexedDB capacity, network connectivity, and a configured upload broker/IPFS pinning service.
+
+## Engineering invariants
+
+These rules are part of the product design and should be preserved in every change:
+
+- **Uniform chunk price:** a chunk costs the same regardless of which seeder serves it.
+- **Atomic split:** creator and seeder settlement happens in one transaction.
+- **Immutable creator:** the registered `originalCreator` cannot be reassigned.
+- **Content-addressed transfer:** every received chunk is verified against its manifest hash.
+- **No central model host:** model data is transferred through the peer swarm; IPFS stores the manifest.
+- **Clear boundaries:** Go owns signaling/tracking, the indexer owns event indexing, and the frontend owns wallet, contract, IPFS, chunking, WebRTC, and UI logic.
+
+Do not introduce per-seeder pricing, staking, reputation, DAO governance, speculative tokenomics, or piracy-prevention claims without an explicit product decision and corresponding specification update.
+
+## Development commands
+
+```bash
+# Frontend
+cd frontend
+npm run build
+npm run lint
+
+# Signaling and Go services
+cd signaling
+go test ./...
+
+# Indexer
+cd indexer
+npm run codegen
+npm run test
+```
+
+Before submitting a change, run the relevant test suite and verify that the frontend production build succeeds.
+
+## Security and operational notes
+
+- Use a dedicated testnet wallet for local development.
+- Keep deployer keys and Pinata credentials outside source control.
+- Treat browser wallet/session storage, IPFS gateways, signaling availability, and testnet RPCs as environment-dependent services.
+- Validate payment receipts and event fields server-side or in the peer protocol before releasing chunks.
+- Do not represent testnet behavior, demo throughput, or service uptime as a production guarantee.
+
+## Documentation
+
+- [Product map](context/specs/00-product-map.md)
+- [Architecture context](context/architecture-context.md)
+- [Code standards](context/code-standards.md)
+- [Deployment and DevOps specification](context/specs/16-deployment-and-devops.md)
+- [Persistent CLI seeder specification](context/specs/17-persistent-cli-seeder.md)
+- [Hackathon submission](SUBMISSION.md)
+
+## Contributing
+
+1. Read the relevant document in `context/` before changing an architectural boundary.
+2. Keep changes scoped to the owning component.
+3. Add or update tests for contract, protocol, or state-machine behavior.
+4. Run the applicable build and test commands.
+5. Document new environment variables and operational assumptions.
 
 ## License
 
-MIT
+Torrentia is released under the [MIT License](LICENSE).
