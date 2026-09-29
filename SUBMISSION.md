@@ -24,7 +24,7 @@
 
 ### The Core Problem
 Open-source AI has a fundamental distribution and provenance bottleneck:
-- **Centralized Infrastructure Capture:** Today, distribution of multi-gigabyte model weights (e.g., Llama, Whisper, Mistral) relies almost entirely on centralized cloud hosts like HuggingFace or AWS S3. A single provider outage, corporate policy shift, or platform de-listing halts global access to critical open-source intelligence.
+- **Centralized Infrastructure Capture:** Today, distribution of multi-gigabyte model weights relies almost entirely on centralized cloud hosts. A single provider outage, corporate policy shift, or platform de-listing halts global access to critical open-source intelligence.
 - **Bandwidth Costs & Creator Disincentives:** Egress bandwidth for multi-gigabyte models costs millions. Model creators receive zero automated compensation when third parties download their weights.
 - **Lack of Cryptographic Provenance:** Centralized CDNs can modify or swap model files without user detection. Downloaders have no protocol-level guarantee that the weights downloaded match the creator's exact original artifacts.
 
