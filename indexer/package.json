@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "High-throughput Envio HyperIndex event indexer for Torrentia on Monad Testnet",
+  "type": "module",
   "scripts": {
+    "build": "envio codegen",
     "codegen": "envio codegen",
     "dev": "envio dev",
     "start": "envio start",
@@ -14,5 +16,8 @@
   },
   "devDependencies": {
     "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
