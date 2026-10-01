@@ -4,11 +4,11 @@ field_selection:
   transaction_fields:
     - hash
     - from
-networks:
+chains:
   - id: 10143
     hypersync_config:
       url: "https://10143.hypersync.xyz"
-    rpc_config:
+    rpc:
       url: "https://testnet-rpc.monad.xyz"
       initial_block_interval: 50
       interval_ceiling: 99
