@@ -6,8 +6,15 @@ field_selection:
     - from
 networks:
   - id: 10143
+    hypersync_config:
+      url: "https://10143.hypersync.xyz"
     rpc_config:
       url: "https://testnet-rpc.monad.xyz"
+      initial_block_interval: 50
+      interval_ceiling: 99
+      backoff_multiplicative: 0.5
+      acceleration_additive: 10
+      backoff_millis: 1000
     start_block: 63855640
     contracts:
       - name: ModelRegistry
