@@ -222,11 +222,8 @@ Before submitting a change, run the relevant test suite and verify that the fron
 
 ## Documentation
 
-- [Product map](context/specs/00-product-map.md)
 - [Architecture context](context/architecture-context.md)
 - [Code standards](context/code-standards.md)
-- [Deployment and DevOps specification](context/specs/16-deployment-and-devops.md)
-- [Persistent CLI seeder specification](context/specs/17-persistent-cli-seeder.md)
 - [Hackathon submission](SUBMISSION.md)
 
 ## Contributing
