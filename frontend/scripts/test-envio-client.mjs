@@ -130,7 +130,7 @@ function isConfigured(url) {
 assert.equal(isConfigured(''), false, 'Empty URL should not be configured')
 assert.equal(isConfigured('   '), false, 'Whitespace URL should not be configured')
 assert.equal(
-  isConfigured('https://indexer.bigdevenergy.link/tyraakj/torrentia-indexer/v1/graphql'),
+  isConfigured('https://indexer.dev.hyperindex.xyz/3094d70/v1/graphql'),
   true,
   'Valid URL should be configured',
 )

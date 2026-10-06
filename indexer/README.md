@@ -41,7 +41,7 @@ Envio Cloud deploys directly from GitHub and provides a managed PostgreSQL + Has
 4. Select `tyraakj/torrentia` repository and set directory to `indexer`.
 5. Under **Environment Variables**, add `ENVIO_API_TOKEN` with your free token from [app.envio.dev/api-tokens](https://app.envio.dev/api-tokens). This unlocks full-speed HyperSync for Monad Testnet.
 6. Envio Cloud will automatically run `envio codegen`, launch the indexing engine, and provision a public HTTPS GraphQL endpoint.
-7. Copy the GraphQL endpoint (e.g. `https://indexer.bigdevenergy.link/<org>/torrentia/v1/graphql`) and set it as `VITE_ENVIO_GRAPHQL_URL` in `frontend/.env`.
+7. Copy the GraphQL endpoint (Live instance: `https://indexer.dev.hyperindex.xyz/3094d70/v1/graphql`) and set it as `VITE_ENVIO_GRAPHQL_URL` in `frontend/.env`.
 
 ### Option 2: Via `envio-cloud` CLI
 ```bash

@@ -15,7 +15,8 @@
 | **Live Frontend** | [torrentia.vercel.app](https://torrentia.vercel.app) |
 | **GitHub Repository** | [github.com/tyraakj/torrentia](https://github.com/tyraakj/torrentia) |
 | **Signaling Server** | `wss://torrentia-backend.onrender.com/ws` |
-| **Envio HyperIndex** | [Live Envio Cloud Deployment](https://envio.dev/app/tyraakj/torrentia-2/0895fd1) |
+| **Envio HyperIndex** | [Live Envio Cloud Deployment](https://envio.dev/app/tyraakj/torrentia-2/b6034d1) |
+| **Envio GraphQL API** | [https://indexer.dev.hyperindex.xyz/3094d70/v1/graphql](https://indexer.dev.hyperindex.xyz/3094d70/v1/graphql) |
 | **Wallet Support** | MetaMask, Rabby, and standard EIP-1193 browser wallets |
 
 ---
