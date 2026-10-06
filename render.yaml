@@ -1,59 +1,21 @@
 services:
-  - type: keyvalue
-    name: torrentia-redis
-    plan: free
-    ipAllowList: []
-
   - type: web
-    name: torrentia-signaling
+    name: torrentia-backend
     env: docker
-    dockerfilePath: signaling/Dockerfile.signaling
+    dockerfilePath: signaling/Dockerfile.combined
     dockerContext: signaling
     plan: free
     healthCheckPath: /health
     envVars:
       - key: PORT
         value: 10000
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: torrentia-redis
-          property: connectionString
       - key: AUTH_REQUIRED
-        value: true
-
-  - type: web
-    name: torrentia-upload-broker
-    env: docker
-    dockerfilePath: signaling/Dockerfile.broker
-    dockerContext: signaling
-    plan: free
-    healthCheckPath: /health
-    envVars:
-      - key: PORT
-        value: 10000
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: torrentia-redis
-          property: connectionString
+        value: false
+      - key: ALLOWED_ORIGINS
+        value: "*"
       - key: PINATA_JWT
         sync: false
-      - key: ALLOWED_ORIGINS
-        value: "https://torrentiaa.vercel.app,https://torrentia.io,http://localhost:5173"
 
-  - type: web
-    name: torrentia-seeder
-    env: docker
-    dockerfilePath: signaling/Dockerfile.seeder
-    dockerContext: signaling
-    plan: starter
-    healthCheckPath: /health
-    envVars:
-      - key: REDIS_URL
-        fromService:
-          type: keyvalue
-          name: torrentia-redis
-          property: connectionString
-      - key: TORRENTIA_REQUIRE_REDIS
-        value: true
+
+
+

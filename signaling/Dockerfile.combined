@@ -1,0 +1,28 @@
+# Build Stage — compile all three Go binaries in one pass
+FROM golang:1.27-alpine AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/torrentia-signaling ./cmd/signaling
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/torrentia-broker ./cmd/broker
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/torrentia-gateway ./cmd/gateway
+
+# Runtime Stage — minimal Alpine image with all three binaries
+FROM alpine:3.20
+RUN apk add --no-cache ca-certificates
+
+COPY --from=build /out/torrentia-signaling  /usr/local/bin/torrentia-signaling
+COPY --from=build /out/torrentia-broker     /usr/local/bin/torrentia-broker
+COPY --from=build /out/torrentia-gateway    /usr/local/bin/torrentia-gateway
+COPY combined-entrypoint.sh                 /usr/local/bin/combined-entrypoint.sh
+RUN sed -i -e 's/\r$//' /usr/local/bin/combined-entrypoint.sh && chmod +x /usr/local/bin/combined-entrypoint.sh
+
+# Render injects $PORT (default 10000). The gateway listens on $PORT.
+# Signaling listens on 8081, broker on 8082 — both internal only.
+EXPOSE 10000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q --spider http://127.0.0.1:${PORT:-10000}/health || exit 1
+
+ENTRYPOINT ["/usr/local/bin/combined-entrypoint.sh"]
