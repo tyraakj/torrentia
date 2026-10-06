@@ -4,6 +4,7 @@ import { useAccount, useDisconnect, useConnect } from 'wagmi'
 import { Layers, UploadCloud, LayoutDashboard, LogOut, Wallet } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { AddressDisplay } from '../ui/AddressDisplay'
+import { TorrentiaLogo } from '../ui/TorrentiaLogo'
 
 export const Navbar: React.FC = () => {
   const location = useLocation()
@@ -44,8 +45,9 @@ export const Navbar: React.FC = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-8)' }}>
         <Link
           to="/"
-          style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}
         >
+          <TorrentiaLogo size={24} color="#0062FF" />
           <span
             style={{
               fontFamily: "'Apfel Grotezk', sans-serif",

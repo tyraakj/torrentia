@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import { TorrentiaLogo } from '../ui/TorrentiaLogo'
 
 export const SkylineFooter: React.FC = () => {
   const scrollToTop = () => {
@@ -12,7 +13,10 @@ export const SkylineFooter: React.FC = () => {
       <div className="clean-footer-inner">
         {/* Brand & Mission Line */}
         <div className="clean-footer-left">
-          <span className="clean-footer-logo font-apfel">TORRENTIA</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <TorrentiaLogo size={22} color="#0062FF" />
+            <span className="clean-footer-logo font-apfel">TORRENTIA</span>
+          </div>
           <span className="clean-footer-tagline">
             Community-powered AI model distribution. Built for Monad.
           </span>

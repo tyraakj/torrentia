@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import { TorrentiaLogo } from '../ui/TorrentiaLogo'
 
 export const LandingNavbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false)
@@ -24,8 +25,9 @@ export const LandingNavbar: React.FC = () => {
   return (
     <header className="landing-navbar-wrapper">
       <nav className={`landing-navbar-pill ${scrolled ? 'navbar-scrolled' : ''}`}>
-        {/* Brand Name Only (Logo icon removed) */}
+        {/* Brand Logo & Name */}
         <Link to="/" className="landing-nav-logo">
+          <TorrentiaLogo size={22} color="#0062FF" />
           <span className="landing-nav-logo-text">TORRENTIA</span>
         </Link>
 

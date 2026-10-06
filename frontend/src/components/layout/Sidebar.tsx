@@ -17,6 +17,7 @@ import {
   Lock,
   ShieldCheck,
 } from 'lucide-react'
+import { TorrentiaLogo } from '../ui/TorrentiaLogo'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -92,9 +93,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  gap: '0.6rem',
                   textDecoration: 'none',
                 }}
               >
+                <TorrentiaLogo size={24} color="#0062FF" />
                 <span
                   style={{
                     fontFamily: "'Apfel Grotezk', sans-serif",
@@ -108,31 +111,46 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse 
                 </span>
               </Link>
             ) : (
-              <button
-                onClick={onToggleCollapse}
-                title="Expand Sidebar"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '9px',
-                  background: 'rgba(28, 25, 23, 0.06)',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: '#181615',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(28, 25, 23, 0.12)'
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(28, 25, 23, 0.06)'
-                }}
-              >
-                <PanelLeftOpen size={18} />
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                <Link
+                  to="/"
+                  title="Torrentia Home"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textDecoration: 'none',
+                    padding: '2px',
+                  }}
+                >
+                  <TorrentiaLogo size={28} color="#0062FF" />
+                </Link>
+                <button
+                  onClick={onToggleCollapse}
+                  title="Expand Sidebar"
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    background: 'rgba(28, 25, 23, 0.06)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#181615',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(28, 25, 23, 0.12)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(28, 25, 23, 0.06)'
+                  }}
+                >
+                  <PanelLeftOpen size={16} />
+                </button>
+              </div>
             )}
 
             {!isCollapsed && (
