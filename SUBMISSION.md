@@ -14,8 +14,8 @@
 | **Target Network** | **Monad Testnet (Chain ID `10143`)** |
 | **Live Frontend** | [torrentia.vercel.app](https://torrentia.vercel.app) |
 | **GitHub Repository** | [github.com/tyraakj/torrentia](https://github.com/tyraakj/torrentia) |
-| **Signaling Server** | `wss://torrentia-signaling.onrender.com/ws` |
-| **Envio HyperIndex** | Configured for Monad Testnet (`indexer/`) |
+| **Signaling Server** | `wss://torrentia-backend.onrender.com/ws` |
+| **Envio HyperIndex** | [Live Envio Cloud Deployment](https://envio.dev/app/tyraakj/torrentia-2/0895fd1) |
 | **Wallet Support** | MetaMask, Rabby, and standard EIP-1193 browser wallets |
 
 ---
