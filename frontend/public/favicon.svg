@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" fill="none">
+  <!-- Torrentia Favicon -->
+  <path 
+    d="M 16 18 H 36 A 12 12 0 0 1 48 30 V 90 L 34 78 V 42 A 8 8 0 0 1 26 34 H 16 Z" 
+    fill="#0062FF" 
+  />
+  <path 
+    d="M 84 18 H 64 A 12 12 0 0 0 52 30 V 90 L 66 78 V 42 A 8 8 0 0 0 74 34 H 84 Z" 
+    fill="#0062FF" 
+  />
+</svg>
