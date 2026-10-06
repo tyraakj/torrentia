@@ -253,7 +253,7 @@ func (h *Hub) HandleMessage(p *Peer, raw []byte) error {
 
 		oldID := p.ID()
 		if oldID != "" && oldID != reg.PeerID {
-			h.sendError(p, "peer cannot change identity on an existing connection")
+			h.sendError(p, "peer cannot re-register identity on an existing connection")
 			return errors.New("peer identity change rejected")
 		}
 		// A wallet switch keeps the same browser peer ID. Remove old
@@ -382,7 +382,7 @@ func (h *Hub) sendError(p *Peer, msg string) {
 
 // ServeWS upgrades the HTTP request to WebSocket and attaches it to the Hub.
 func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
-	if h.origins != nil && !h.origins[r.Header.Get("Origin")] {
+	if h.origins != nil && !h.origins["*"] && !h.origins[r.Header.Get("Origin")] {
 		http.Error(w, "origin not allowed", http.StatusForbidden)
 		return
 	}

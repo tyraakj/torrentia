@@ -52,22 +52,26 @@ func main() {
 	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
 		opts, err := redis.ParseURL(redisURL)
 		if err != nil {
-			logger.Error("failed to parse REDIS_URL", "error", err)
-			shutdownWithCode(1)
+			logger.Warn("failed to parse REDIS_URL; falling back to in-process nonce store", "error", err)
+		} else {
+			client := redis.NewClient(opts)
+			pingCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if err := client.Ping(pingCtx).Err(); err != nil {
+				cancel()
+				_ = client.Close()
+				logger.Warn("failed to connect to Redis; falling back to in-process nonce store", "error", err)
+			} else {
+				cancel()
+				redisClient = client
+				nonceStore = broker.NewRedisNonceStore(redisClient)
+				logger.Info("using Redis nonce store", "addr", opts.Addr)
+			}
 		}
-		redisClient = redis.NewClient(opts)
-		pingCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if err := redisClient.Ping(pingCtx).Err(); err != nil {
-			cancel()
-			logger.Error("failed to connect to Redis for nonce store", "error", err)
-			shutdownWithCode(1)
-		}
-		cancel()
-		nonceStore = broker.NewRedisNonceStore(redisClient)
-		logger.Info("using Redis nonce store", "addr", opts.Addr)
-	} else {
+	}
+
+	if nonceStore == nil {
 		nonceStore = broker.NewMemoryNonceStore(10 * time.Minute)
-		logger.Warn("REDIS_URL is not set; using in-process nonce store for local development only")
+		logger.Info("using in-process memory nonce store")
 	}
 	if redisClient != nil {
 		defer redisClient.Close()

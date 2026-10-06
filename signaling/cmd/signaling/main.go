@@ -74,23 +74,26 @@ func main() {
 	if redisURL != "" {
 		opts, err := redis.ParseURL(redisURL)
 		if err != nil {
-			slog.Error("failed to parse REDIS_URL", "err", err)
-			return
+			slog.Warn("failed to parse REDIS_URL; falling back to in-memory tracker", "err", err)
+		} else {
+			client := redis.NewClient(opts)
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if err := client.Ping(pingCtx).Err(); err != nil {
+				pingCancel()
+				_ = client.Close()
+				slog.Warn("failed to connect to Redis; falling back to in-memory tracker", "err", err)
+			} else {
+				pingCancel()
+				rdb = client
+				slog.Info("connected to Redis for distributed presence and relay", "addr", opts.Addr)
+				seederTr = tracker.NewRedisTrackerWithClient(rdb)
+				challengeStore = auth.NewRedisChallengeStore(rdb)
+			}
 		}
-		rdb = redis.NewClient(opts)
-		pingCtx, pingCancel := context.WithTimeout(context.Background(), 5*time.Second)
-		if err := rdb.Ping(pingCtx).Err(); err != nil {
-			pingCancel()
-			slog.Error("failed to connect to Redis", "err", err)
-			return
-		}
-		pingCancel()
+	}
 
-		slog.Info("connected to Redis for distributed presence and relay", "addr", opts.Addr)
-		seederTr = tracker.NewRedisTrackerWithClient(rdb)
-		challengeStore = auth.NewRedisChallengeStore(rdb)
-	} else {
-		slog.Info("REDIS_URL not set; running in local in-memory fallback mode")
+	if seederTr == nil {
+		slog.Info("running in local in-memory tracker mode")
 		memTracker := tracker.NewTracker()
 		seederTr = memTracker
 		challengeStore = auth.NewMemoryChallengeStore()
@@ -271,14 +274,14 @@ func main() {
 func setCORSHeaders(w http.ResponseWriter, r *http.Request, allowedOrigins map[string]bool) bool {
 	origin := r.Header.Get("Origin")
 	if origin != "" {
-		if allowedOrigins == nil || allowedOrigins[origin] {
+		if allowedOrigins == nil || allowedOrigins["*"] || allowedOrigins[origin] {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Add("Vary", "Origin")
 		} else {
 			w.WriteHeader(http.StatusForbidden)
 			return false
 		}
-	} else if allowedOrigins == nil {
+	} else if allowedOrigins == nil || allowedOrigins["*"] {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 	}
 
