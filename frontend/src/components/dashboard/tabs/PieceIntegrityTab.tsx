@@ -10,7 +10,7 @@ import {
   Copy,
 } from 'lucide-react'
 import type { IndexedModel, ChunkManifest } from '../../../lib/types'
-import { fetchManifest } from '../../../services/ipfs'
+import { fetchManifest, isSyntheticCid } from '../../../services/ipfs'
 import { getHeldChunks } from '../../../services/chunk-store'
 import { formatFileSize, truncateAddress } from '../../../lib/utils'
 
@@ -38,15 +38,39 @@ export const PieceIntegrityTab: React.FC<PieceIntegrityTabProps> = ({ model }) =
       setErrorMsg(null)
 
       try {
-        // 1. Fetch real IPFS manifest
+        // 1. Fetch real IPFS manifest or resolve demo manifest
         const cid = model.metadataURI ? model.metadataURI.replace(/^ipfs:\/\//, '') : ''
         if (!cid) {
           throw new Error('No IPFS metadata URI registered for this model')
         }
 
-        const fetchedManifest = await fetchManifest(cid)
-        if (isMounted) {
+        let fetchedManifest: ChunkManifest | null = null
+        try {
+          fetchedManifest = await fetchManifest(cid)
+        } catch {
+          if (isSyntheticCid(cid) || model.isDemo) {
+            const chunkCount = model.chunkCount || 1
+            const chunkSize = 1048576
+            fetchedManifest = {
+              modelId: model.modelId,
+              modelName: model.modelName || 'Model Weights',
+              totalSize: model.totalSize || chunkCount * chunkSize,
+              chunkSize,
+              chunks: Array.from({ length: chunkCount }, (_, idx) => ({
+                index: idx,
+                hash: '',
+                size: chunkSize,
+              })),
+              modelCard: '',
+              createdAt: model.registeredAt,
+            }
+          }
+        }
+
+        if (isMounted && fetchedManifest) {
           setManifest(fetchedManifest)
+        } else if (!fetchedManifest) {
+          throw new Error('Model manifest could not be retrieved from IPFS')
         }
 
         // 2. Fetch locally stored chunks from IndexedDB
@@ -112,9 +136,9 @@ export const PieceIntegrityTab: React.FC<PieceIntegrityTabProps> = ({ model }) =
             <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#181615' }}>
               Cryptographic Piece Ledger ({chunks.length || model?.chunkCount || 1} chunks)
             </span>
-            {cid && (
+            {cid && !isSyntheticCid(cid) ? (
               <a
-                href={`https://gateway.pinata.cloud/ipfs/${cid}`}
+                href={`https://ipfs.io/ipfs/${cid}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -129,7 +153,20 @@ export const PieceIntegrityTab: React.FC<PieceIntegrityTabProps> = ({ model }) =
                 <span>IPFS Manifest</span>
                 <ExternalLink size={12} />
               </a>
-            )}
+            ) : cid ? (
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#78716C',
+                  fontWeight: 500,
+                  background: 'rgba(28, 25, 23, 0.04)',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                }}
+              >
+                Demo Passport
+              </span>
+            ) : null}
           </div>
 
           <div className="dashboard-table-head">
@@ -247,15 +284,21 @@ export const PieceIntegrityTab: React.FC<PieceIntegrityTabProps> = ({ model }) =
                   <span style={{ fontSize: '0.75rem', fontFamily: "'JetBrains Mono', monospace", color: '#181615' }}>
                     {truncateAddress(cid, 8)}
                   </span>
-                  <a
-                    href={`https://gateway.pinata.cloud/ipfs/${cid}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: '#0062FF', display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', fontWeight: 600 }}
-                  >
-                    <span>View</span>
-                    <ExternalLink size={12} />
-                  </a>
+                  {!isSyntheticCid(cid) ? (
+                    <a
+                      href={`https://ipfs.io/ipfs/${cid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#0062FF', display: 'inline-flex', alignItems: 'center', gap: '2px', fontSize: '0.75rem', fontWeight: 600 }}
+                    >
+                      <span>View</span>
+                      <ExternalLink size={12} />
+                    </a>
+                  ) : (
+                    <span style={{ color: '#78716C', fontSize: '0.75rem', fontWeight: 500 }}>
+                      Demo
+                    </span>
+                  )}
                 </div>
               </div>
             )}

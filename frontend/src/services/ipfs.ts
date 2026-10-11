@@ -2,7 +2,7 @@ import { ChunkManifest } from '../lib/types'
 import { computeManifestHash, buildUploadIntent, submitToUploadBroker } from './broker-client'
 import { allowMockFallbacks } from '../lib/app-mode'
 
-const IPFS_TIMEOUT_MS = 30000
+const IPFS_TIMEOUT_MS = 7000
 
 // In-memory / local storage cache for instant offline & demo retrieval
 const localManifestCache = new Map<string, ChunkManifest>()
@@ -71,7 +71,22 @@ export async function pinManifest(
 }
 
 /**
- * Fetches a ChunkManifest from IPFS with 30s timeout and single retry.
+ * Checks whether a CID is an offline/demo synthetic identifier rather than a real multihash.
+ */
+export function isSyntheticCid(cid: string): boolean {
+  if (!cid) return true
+  const lower = cid.toLowerCase()
+  return (
+    lower.startsWith('bafkreidemo') ||
+    lower.startsWith('bafkreifallback') ||
+    lower.startsWith('bafyreib') && lower.endsWith('demo') ||
+    lower.includes('demo') ||
+    lower.includes('fallback')
+  )
+}
+
+/**
+ * Fetches a ChunkManifest from IPFS with timeout and fallback across reliable gateways.
  */
 export async function fetchManifest(cid: string): Promise<ChunkManifest> {
   // 1. Check in-memory cache
@@ -91,10 +106,22 @@ export async function fetchManifest(cid: string): Promise<ChunkManifest> {
     }
   }
 
-  // 3. Network fetch with 30s timeout and 1 retry
+  // 3. For synthetic or demo CIDs, do NOT query public IPFS gateways
+  // (public gateways do not have them and will reject them with 400 Bad Request)
+  if (isSyntheticCid(cid)) {
+    throw new Error(`Synthetic demo CID ${cid} not found in local cache`)
+  }
+
+  // 4. Network fetch with 7s timeout and fallback across active CORS-enabled gateways
+  const customGateway = typeof import.meta !== 'undefined' && import.meta.env?.VITE_IPFS_GATEWAY_URL
+    ? [String(import.meta.env.VITE_IPFS_GATEWAY_URL).replace(/\/$/, '') + `/ipfs/${cid}`]
+    : []
+
   const gateways = [
+    ...customGateway,
+    `https://ipfs.io/ipfs/${cid}`,
+    `https://dweb.link/ipfs/${cid}`,
     `https://gateway.pinata.cloud/ipfs/${cid}`,
-    `https://cloudflare-ipfs.com/ipfs/${cid}`,
   ]
 
   let lastError: unknown

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft, AlertCircle, Radio, ShieldCheck, FileQuestion } from 'lucide-react'
 import { useModel, useModelPayments } from '../hooks/use-models'
-import { fetchManifest } from '../services/ipfs'
+import { fetchManifest, isSyntheticCid } from '../services/ipfs'
 import type { ChunkManifest } from '../lib/types'
 import { allowMockFallbacks } from '../lib/app-mode'
 import { ModelHeader } from '../components/model/ModelHeader'
@@ -44,12 +44,18 @@ export const ModelDetail: React.FC = () => {
         }
       }
 
+      const isDemoModel =
+        !cid ||
+        isSyntheticCid(cid) ||
+        Boolean(model.isDemo)
+
       // Strict Mode Governance (Spec 25): In testnet/mainnet, do NOT generate synthetic manifests
-      if (!allowMockFallbacks()) {
+      // for real IPFS CIDs that failed network resolution
+      if (!isDemoModel && !allowMockFallbacks()) {
         if (isMounted) {
           setManifest(null)
           setManifestError(
-            'Model information is temporarily unavailable. Please try again in a moment.',
+            'Model information is temporarily unavailable on IPFS. Please try again in a moment.',
           )
         }
         return
