@@ -120,7 +120,7 @@ export class SignalingClient {
       url ||
       (import.meta.env.VITE_SIGNALING_URL as string) ||
       (import.meta.env.PROD
-        ? 'wss://torrentia-signaling.onrender.com/ws'
+        ? 'wss://torrentia-backend.onrender.com/ws'
         : 'ws://localhost:8081/ws')
     this.url = normalizeSignalingUrl(rawUrl)
   }
@@ -402,7 +402,7 @@ export class SignalingClient {
   private scheduleReconnect(): void {
     if (this.isExplicitlyClosed || this.reconnectTimer) return
 
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay)
+    const delay = Math.min(1000 * Math.pow(1.5, Math.min(this.reconnectAttempts, 8)), this.maxReconnectDelay)
     this.reconnectAttempts++
 
     this.reconnectTimer = setTimeout(() => {

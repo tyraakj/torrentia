@@ -62,7 +62,7 @@ export const SwarmMeshTab: React.FC<SwarmMeshTabProps> = ({ model }) => {
 
   const cliCommand = model?.modelId
     ? `torrentia-seeder --model ${model.modelId}`
-    : `torrentia-seeder --signal wss://torrentia-signaling.onrender.com/ws`
+    : `torrentia-seeder --signal wss://torrentia-backend.onrender.com/ws`
 
   const handleCopyCli = () => {
     navigator.clipboard.writeText(cliCommand).catch(() => {})

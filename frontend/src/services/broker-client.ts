@@ -38,7 +38,10 @@ export interface UploadBrokerResponse {
   chunkCount: number
 }
 
-const DEFAULT_BROKER_URL = 'http://localhost:8082'
+const DEFAULT_BROKER_URL =
+  typeof import.meta !== 'undefined' && import.meta.env?.PROD
+    ? 'https://torrentia-backend.onrender.com'
+    : 'http://localhost:8082'
 
 /**
  * Computes the SHA-256 hex hash of the canonical manifest JSON string.
