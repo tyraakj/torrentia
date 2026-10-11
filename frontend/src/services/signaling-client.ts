@@ -119,6 +119,7 @@ export class SignalingClient {
     const rawUrl =
       url ||
       (import.meta.env.VITE_SIGNALING_URL as string) ||
+      (import.meta.env.VITE_BACKEND_URL as string) ||
       (import.meta.env.PROD
         ? 'wss://torrentia-backend.onrender.com/ws'
         : 'ws://localhost:8081/ws')

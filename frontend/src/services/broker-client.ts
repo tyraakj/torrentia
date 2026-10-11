@@ -91,7 +91,12 @@ export async function submitToUploadBroker(
   manifest: ChunkManifest,
   brokerUrl?: string
 ): Promise<UploadBrokerResponse> {
-  const baseUrl = (brokerUrl || import.meta.env.VITE_UPLOAD_BROKER_URL || DEFAULT_BROKER_URL).replace(/\/$/, '')
+  const baseUrl = (
+    brokerUrl ||
+    import.meta.env.VITE_UPLOAD_BROKER_URL ||
+    import.meta.env.VITE_BACKEND_URL ||
+    DEFAULT_BROKER_URL
+  ).replace(/\/$/, '')
   const rawJSON = JSON.stringify(manifest)
 
   const payload = {
