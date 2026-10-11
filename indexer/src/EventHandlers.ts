@@ -121,7 +121,33 @@ SplitPayment.PaymentSplit.handler(async ({ event, context }) => {
   const creatorAmount = event.params.creatorAmount;
   const totalAmount = event.params.totalPaid;
 
-  const eventId = `${event.chainId}-${event.transaction.hash}-${event.logIndex}`;
+  const chainId = 10143;
+  const eventId = `${chainId}-${event.transaction.hash}-${event.logIndex}`;
+
+  // Ensure Model entity exists to prevent foreign key constraint violations
+  let model = context.Model.get(modelId);
+  if (!model) {
+    model = {
+      id: modelId,
+      creator,
+      metadataURI: "",
+      chunkPrice: totalAmount,
+      chunkCount: 1,
+      totalSize: 1048576n,
+      creatorShareBps: 7000,
+      active: true,
+      registeredAtBlock: event.block.number,
+      registeredAtTimestamp: event.block.timestamp,
+      txHash: event.transaction.hash,
+      totalPaidChunks: 0n,
+      totalVolumeMon: 0n,
+      totalCreatorEarningsMon: 0n,
+      totalSeederEarningsMon: 0n,
+      uniqueSeedersCount: 0,
+      lastPaymentTimestamp: event.block.timestamp,
+    };
+    context.Model.set(model);
+  }
 
   const paymentEvent: PaymentSplitEvent = {
     id: eventId,
@@ -139,15 +165,12 @@ SplitPayment.PaymentSplit.handler(async ({ event, context }) => {
   context.PaymentSplitEvent.set(paymentEvent);
 
   // Update Model Aggregates
-  const model = context.Model.get(modelId);
-  if (model) {
-    model.totalPaidChunks += 1n;
-    model.totalVolumeMon += totalAmount;
-    model.totalCreatorEarningsMon += creatorAmount;
-    model.totalSeederEarningsMon += seederAmount;
-    model.lastPaymentTimestamp = event.block.timestamp;
-    context.Model.set(model);
-  }
+  model.totalPaidChunks += 1n;
+  model.totalVolumeMon += totalAmount;
+  model.totalCreatorEarningsMon += creatorAmount;
+  model.totalSeederEarningsMon += seederAmount;
+  model.lastPaymentTimestamp = event.block.timestamp;
+  context.Model.set(model);
 
   // Update Creator Stats
   const creatorStat = context.CreatorStat.get(creator);
